@@ -1,3 +1,4 @@
+import { withEdgeMiddleware } from '../_shared/middleware.ts';
 
 // @ts-nocheck
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
@@ -72,12 +73,12 @@ async function analyzeEmailWithAI(subject: string, body: string, isSales: boolea
     }
 }
 
-serve(async (req) => {
+serve(withEdgeMiddleware('handle-inbound-email', async (req, logger) => {
     // 1. Verify Webhook Secret
     const receivedSecret = req.headers.get('X-Webhook-Secret');
     if (WEBHOOK_SECRET && receivedSecret !== WEBHOOK_SECRET) {
         console.error('CRITICAL: Unauthorized Email Hook Attempt');
-        return new Response('Unauthorized', { status: 401 });
+        return new Response('Unauthorized', { status: 401 }));
     }
 
     try {

@@ -10,7 +10,7 @@ export function Tools() {
     const isRtl = lang === 'he';
 
     return (
-        <div className="pt-2 pb-24 md:pb-8 md:pt-8 px-5 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden relative z-0">
+        <div className="pt-2 md:pt-8 px-4 sm:px-6 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden relative z-0">
             {/* Ambient Background Glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/10 dark:bg-primary/5 blur-[100px] rounded-full pointer-events-none -z-10" />
             

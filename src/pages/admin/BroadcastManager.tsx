@@ -135,7 +135,7 @@ export default function BroadcastManager() {
                             <select
                                 value={form.type}
                                 onChange={e => setForm({ ...form, type: e.target.value as Broadcast['type'] })}
-                                className="w-full p-3 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
+                                className="w-full p-2 sm:p-4 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
                             >
                                 <option value="info">Information (Blue)</option>
                                 <option value="warning">Warning (Amber)</option>
@@ -149,7 +149,7 @@ export default function BroadcastManager() {
                                 type="datetime-local"
                                 value={form.expires_at || ''}
                                 onChange={e => setForm({ ...form, expires_at: e.target.value })}
-                                className="w-full p-3 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
+                                className="w-full p-2 sm:p-4 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
                             />
                         </div>
                         <div className="md:col-span-2">
@@ -158,13 +158,13 @@ export default function BroadcastManager() {
                                 type="text"
                                 value={form.target_link || ''}
                                 onChange={e => setForm({ ...form, target_link: e.target.value })}
-                                className="w-full p-3 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
+                                className="w-full p-2 sm:p-4 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
                                 placeholder="/dashboard, /pricing, etc."
                             />
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-4">
+                    <div className="flex justify-end gap-2 sm:gap-4 pt-4">
                         <button onClick={() => setIsEditing(false)} className="px-6 py-2.5 text-xs font-black uppercase text-muted-foreground hover:text-foreground transition-all">Cancel</button>
                         <button
                             onClick={handleSave}
@@ -194,7 +194,7 @@ export default function BroadcastManager() {
                         ) : (
                             broadcasts.map(b => (
                                 <tr key={b.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
-                                    <td className="px-6 py-5">
+                                    <td className="px-6 py-4 sm:py-6">
                                         <span className={cn(
                                             "px-2 py-0.5 rounded text-xs font-black uppercase tracking-widest",
                                             b.is_active ? "bg-blue-100 text-blue-700" : "bg-muted text-muted-foreground"
@@ -202,8 +202,8 @@ export default function BroadcastManager() {
                                             {b.is_active ? 'Active' : 'Archived'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-5">
-                                        <div className="flex items-center gap-3">
+                                    <td className="px-6 py-4 sm:py-6">
+                                        <div className="flex items-center gap-2 sm:gap-4">
                                             <div className={cn(
                                                 "w-2 h-2 rounded-full",
                                                 b.type === 'info' ? "bg-primary" :
@@ -219,7 +219,7 @@ export default function BroadcastManager() {
                                             </div>
                                         )}
                                     </td>
-                                    <td className="px-6 py-5 text-center">
+                                    <td className="px-6 py-4 sm:py-6 text-center">
                                         {b.expires_at ? (
                                             <div className="flex flex-col items-center">
                                                 <div className="text-xs font-black text-foreground dark:text-white">
@@ -233,7 +233,7 @@ export default function BroadcastManager() {
                                             <div className="text-xs font-black text-gray-300 uppercase">Perpetual</div>
                                         )}
                                     </td>
-                                    <td className="px-6 py-5 text-right">
+                                    <td className="px-6 py-4 sm:py-6 text-right">
                                         <div className="flex justify-end gap-2">
                                             <button onClick={() => handleEdit(b)} className="p-2 text-muted-foreground hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all"><PencilSquareIcon className="w-5 h-5" /></button>
                                             <button onClick={() => handleDelete(b.id)} className="p-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"><TrashIcon className="w-5 h-5" /></button>

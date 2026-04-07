@@ -22,7 +22,7 @@ export function FloatingContactButton() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => navigate('/contact')}
-                className={`fixed bottom-32 sm:bottom-24 ${isRtl ? 'left-8' : 'right-8'} z-[100] p-4 bg-green-500 hover:bg-secondary text-white rounded-2xl shadow-2xl flex items-center gap-3 group overflow-hidden`}
+                className={`fixed bottom-32 sm:bottom-24 ${isRtl ? 'left-8' : 'right-8'} z-[100] p-4 bg-green-500 hover:bg-secondary text-white rounded-2xl shadow-2xl flex items-center gap-2 sm:gap-4 group overflow-hidden`}
             >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
 

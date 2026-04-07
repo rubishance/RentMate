@@ -17,7 +17,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, action,
 
     return (
         <div className="flex items-center justify-between relative h-14 mb-4 px-0 pt-2">
-            <div className={`flex items-center gap-3 min-w-[33%] ${isRtl ? 'justify-end' : 'justify-start'}`}>
+            <div className={`flex items-center gap-2 sm:gap-4 min-w-[33%] ${isRtl ? 'justify-end' : 'justify-start'}`}>
                 {Icon && (
                     <div className="p-2.5 bg-brand-navy/5 rounded-xl shrink-0">
                         <Icon className="w-6 h-6 text-brand-navy" />

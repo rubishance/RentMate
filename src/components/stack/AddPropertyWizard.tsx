@@ -231,7 +231,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
     };
 
     return (
-        <div className="flex flex-col h-[100dvh] bg-background dark:bg-black overflow-hidden relative">
+        <div className="flex flex-col h-full bg-background dark:bg-black overflow-x-hidden relative rounded-2xl sm:rounded-none">
             {/* PROGRESS TRACKER */}
             <div className="absolute top-0 inset-x-0 h-1.5 bg-black/5 dark:bg-white/5 z-[100]">
                 <motion.div
@@ -242,30 +242,21 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                 />
             </div>
 
-            {/* HEADER */}
-            <div className="h-24 flex items-center justify-between px-8 md:px-12 glass-premium dark:bg-neutral-900/60 border-b border-white/5 z-10 pt-4 backdrop-blur-2xl">
-                <div className="flex items-center gap-6">
-                    <div className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-2xl flex items-center justify-center text-primary shadow-minimal border border-white/5">
+            {/* STEPPER HEADER (No Close Button) */}
+            <div className="flex items-center px-6 py-6 border-b border-border/40 z-10 bg-background/80 backdrop-blur-md">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-sm border border-primary/20">
                         {STEPS[currentStep].icon}
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70 leading-none mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground leading-none mb-1">
                             {t('step')} {currentStep + 1} / {STEPS.length}
                         </span>
-                        <span className="font-black text-xl tracking-tighter text-foreground leading-none lowercase">
+                        <span className="font-bold text-lg tracking-tight text-foreground leading-none">
                             <bdi>{t(STEPS[currentStep].titleKey as any)}</bdi>
                         </span>
                     </div>
                 </div>
-
-                <Button
-                    onClick={() => pop()}
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full w-12 h-12 glass-premium dark:bg-neutral-800/40 border-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10"
-                >
-                    <Trash2 className="w-5 h-5 opacity-30" />
-                </Button>
             </div>
 
             {/* CONTENT */}
@@ -297,10 +288,10 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                     className="p-10 space-y-10"
                                 >
                                     {currentStep === 0 && (
-                                        <div className="space-y-6 py-4">
+                                        <div className="space-y-6 py-6">
                                             <motion.div variants={itemVariants} className="space-y-4">
                                                 <ValidatedField isValid={!!formData.property_type}>
-                                                    <div className="p-6 rounded-[2rem] bg-white dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700 mb-4">
+                                                    <div className="p-6 rounded-2xl bg-white dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700 mb-4">
                                                         <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block mb-4 text-center">
                                                             {t('selectCategory')}
                                                         </label>
@@ -312,7 +303,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                 </ValidatedField>
 
                                                 <ValidatedField isValid={!!formData.city && formData.city.length > 2}>
-                                                    <div className="p-5 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
+                                                    <div className="p-6 sm:p-6 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
                                                         <GoogleAutocomplete
                                                             label={t('city')}
                                                             value={formData.city || ''}
@@ -324,7 +315,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                 </ValidatedField>
 
                                                 <ValidatedField isValid={!!formData.address && formData.address.length > 5}>
-                                                    <div className="p-5 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
+                                                    <div className="p-6 sm:p-6 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
                                                         <GoogleAutocomplete
                                                             label={t('address')}
                                                             value={formData.address || ''}
@@ -340,9 +331,9 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                     )}
 
                                     {currentStep === 1 && (
-                                        <motion.div variants={itemVariants} className="space-y-8 py-4">
+                                        <motion.div variants={itemVariants} className="space-y-8 py-6">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="p-6 rounded-[2rem] bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                                                <div className="p-6 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
                                                     <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('rooms')}</label>
                                                     <Input
                                                         type="number"
@@ -354,7 +345,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                     />
                                                 </div>
 
-                                                <div className="p-6 rounded-[2rem] bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                                                <div className="p-6 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
                                                     <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('sqm')}</label>
                                                     <Input
                                                         type="number"
@@ -388,7 +379,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                     type="button"
                                                                     onClick={() => setFormData(prev => ({ ...prev, [amenity.id]: !isActive }))}
                                                                     className={cn(
-                                                                        "flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all duration-300 group relative overflow-hidden",
+                                                                        "flex flex-col items-center justify-center gap-2 p-2 sm:p-4 rounded-2xl border transition-all duration-300 group relative overflow-hidden",
                                                                         isActive
                                                                             ? "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/20 scale-[1.02] z-10"
                                                                             : "bg-background dark:bg-neutral-800/50 border-transparent text-muted-foreground hover:bg-muted/50 hover:scale-[1.01]"
@@ -420,7 +411,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                     </div>
                                                 </div>
 
-                                                <div className="col-span-1 md:col-span-2 space-y-4 pt-4 border-t border-slate-100 dark:border-neutral-800">
+                                                <div className="col-span-1 md:col-span-2 space-y-4 pt-6 border-t border-slate-100 dark:border-neutral-800">
                                                     <div className="flex items-center justify-between">
                                                         <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">{t('propertyImage') || 'Property Image'}</label>
                                                         <div className="flex p-1 bg-muted/50 dark:bg-neutral-800 rounded-xl">
@@ -428,7 +419,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                 size="sm"
                                                                 variant="ghost"
                                                                 onClick={() => setUploadMode('upload')}
-                                                                className={cn("px-3 py-1 text-xs font-black uppercase h-7", uploadMode === 'upload' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
+                                                                className={cn("px-2 sm:px-4 py-1 text-xs font-black uppercase h-7", uploadMode === 'upload' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
                                                             >
                                                                 {t('upload') || 'Upload'}
                                                             </Button>
@@ -439,7 +430,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                     setUploadMode('url');
                                                                     handleGoogleMapsFetch();
                                                                 }}
-                                                                className={cn("px-3 py-1 text-xs font-black uppercase h-7", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
+                                                                className={cn("px-2 sm:px-4 py-1 text-xs font-black uppercase h-7", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
                                                             >
                                                                 Google Maps
                                                             </Button>
@@ -447,7 +438,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                     </div>
 
                                                     {uploadMode === 'url' && isFetchingMap && (
-                                                        <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-[2rem] bg-background/50 dark:bg-neutral-800/20">
+                                                        <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl bg-background/50 dark:bg-neutral-800/20">
                                                             <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
                                                             <span className="text-xs font-black uppercase tracking-widest text-muted-foreground animate-pulse">
                                                                 {t('fetchingStreetView')}
@@ -456,7 +447,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                     )}
 
                                                     {uploadMode === 'upload' && (
-                                                        <div className="relative border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-[2rem] p-8 hover:bg-background dark:hover:bg-neutral-800/50 transition-all text-center group cursor-pointer">
+                                                        <div className="relative border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl p-8 hover:bg-background dark:hover:bg-neutral-800/50 transition-all text-center group cursor-pointer">
                                                             <input
                                                                 type="file"
                                                                 accept="image/*"
@@ -483,7 +474,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                 initial={{ opacity: 0, scale: 0.9 }}
                                                                 animate={{ opacity: 1, scale: 1 }}
                                                                 exit={{ opacity: 0, scale: 0.9 }}
-                                                                className="relative w-full h-48 rounded-[2rem] overflow-hidden border border-slate-100 dark:border-neutral-800 shadow-lg group"
+                                                                className="relative w-full h-48 rounded-2xl overflow-hidden border border-slate-100 dark:border-neutral-800 shadow-lg group"
                                                             >
                                                                 <SecureImage
                                                                     bucket="property-images"

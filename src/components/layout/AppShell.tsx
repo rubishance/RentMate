@@ -93,7 +93,7 @@ export function AppShell() {
                     <main
                         id="main-content"
                         className={cn(
-                            "flex-1 overflow-y-auto overflow-x-hidden px-0 pb-24 pb-safe md:pb-8 scroll-smooth relative z-10",
+                            "flex-1 overflow-y-auto overflow-x-hidden px-0 pb-[104px] md:pb-8 scroll-smooth relative z-10",
                             location.pathname.startsWith('/properties/') && location.pathname.length > '/properties/'.length
                                 ? "pt-0" 
                                 : "pt-4 md:pt-8"

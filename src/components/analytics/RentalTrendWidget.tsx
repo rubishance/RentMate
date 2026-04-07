@@ -9,9 +9,12 @@ import {
     ChevronRight,
     Search,
     Map,
-    ChevronDown
+    ChevronDown,
+    Info
 } from 'lucide-react';
+import { Fragment } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Popover, Transition } from '@headlessui/react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { rentalTrendService } from '../../services/rental-trend.service';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
@@ -27,7 +30,7 @@ interface RentalTrendWidgetProps {
 }
 
 export const RentalTrendWidget: React.FC<RentalTrendWidgetProps> = ({ isExpanded: externalIsExpanded, onToggleExpand }) => {
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
     const { preferences, setPinnedCities } = useUserPreferences();
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -91,19 +94,86 @@ export const RentalTrendWidget: React.FC<RentalTrendWidgetProps> = ({ isExpanded
     }
 
     return (
-        <Card className="w-full h-full relative overflow-hidden group flex flex-col justify-start border border-border shadow-sm bg-white/40 dark:bg-slate-900/40 backdrop-blur-md rounded-[2.5rem]">
-            <CardContent className="p-5 md:p-6 flex flex-col flex-1 h-full">
+        <Card className="w-full h-full relative group flex flex-col justify-start border border-border shadow-sm bg-white/40 dark:bg-slate-900/40 backdrop-blur-md rounded-2xl">
+            <CardContent className="p-4 sm:p-6 md:p-6 flex flex-col flex-1 h-full">
                 <div className="space-y-4 flex-1">
                     <div 
                         className="flex items-center justify-between cursor-pointer group/header relative z-10"
                         onClick={toggleExpand}
                     >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             <div className="p-2 bg-slate-100 dark:bg-neutral-800 rounded-xl shrink-0">
                                 <TrendingUp className="w-5 h-5 text-teal-500" />
                             </div>
-                            <h3 className="text-xl font-black font-heading text-primary">
+                            <h3 className="text-xl font-black font-heading text-primary flex items-center gap-2">
                                 {t('marketIntelligence')}
+                                <Popover className="relative flex items-center">
+                                    {({ open }) => (
+                                        <>
+                                            <Popover.Button as="div" onClick={(e) => e.stopPropagation()}>
+                                                <button
+                                                    className={cn("transition-colors p-1 rounded-full outline-none", open ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/20' : 'text-muted-foreground/50 hover:text-brand-500 hover:bg-slate-100 dark:hover:bg-neutral-800')}
+                                                    title={lang === 'he' ? 'מידע על הנתונים' : 'Data Information'}
+                                                >
+                                                    <Info className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                                                </button>
+                                            </Popover.Button>
+                                            
+                                            <Transition
+                                                as={Fragment}
+                                                enter="transition ease-out duration-200"
+                                                enterFrom="opacity-0 scale-95"
+                                                enterTo="opacity-100 scale-100"
+                                                leave="transition ease-in duration-150"
+                                                leaveFrom="opacity-100 scale-100"
+                                                leaveTo="opacity-0 scale-95"
+                                            >
+                                                <Popover.Panel 
+                                                    className="absolute z-[100] w-[320px] max-w-[calc(100vw-3rem)] left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-auto sm:-right-2 top-full mt-2 origin-top" 
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <div className="overflow-hidden rounded-2xl shadow-premium border border-border bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-4 sm:p-6 flex flex-col gap-4">
+                                                        <div className="border-b border-border pb-4">
+                                                            <h4 className="text-sm font-black uppercase tracking-widest text-foreground">
+                                                                {lang === 'he' ? 'מקור ואמינות הנתונים' : 'Data Source & Reliability'}
+                                                            </h4>
+                                                            <p className="text-[13px] text-muted-foreground leading-relaxed mt-2 font-medium">
+                                                                {lang === 'he' 
+                                                                    ? 'מודיעין השוק מעניק תמונת מצב מבוססת-נתונים של השוק, ממש כמו מדד מניות. מומלץ להיעזר במגמות אלו לקבלת החלטות מושכלות לקראת חידוש חוזה או העלאת שכר דירה.'
+                                                                    : 'Market Intelligence provides a data-driven snapshot of the rental market, just like a stock index. Use these insights to make informed decisions before renewing contracts or increasing rent.'}
+                                                            </p>
+                                                        </div>
+                                                        
+                                                        <div className="space-y-3">
+                                                            <div className="flex justify-between items-center text-sm">
+                                                                <span className="text-muted-foreground">{lang === 'he' ? 'עדכון אחרון:' : 'Last Updated:'}</span>
+                                                                <span className="font-bold text-foreground truncate pl-2" dir={lang === 'he' ? "rtl" : "ltr"}>{lang === 'he' ? 'מרץ 2026' : 'March 2026'}</span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center text-sm">
+                                                                <span className="text-muted-foreground">{lang === 'he' ? 'מקור מידע:' : 'Source:'}</span>
+                                                                <span className="font-bold text-foreground text-left line-clamp-2">
+                                                                    {lang === 'he' ? 'למ״ס ומאגרי מידע מוסדיים' : 'CBS & Official Repositories'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center text-sm">
+                                                                <span className="text-muted-foreground">{lang === 'he' ? 'מערכת שקלול:' : 'Evaluation Engine:'}</span>
+                                                                <span className="font-bold text-brand-600 dark:text-brand-400">RentMate AI V4</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-1 bg-yellow-500/10 border border-yellow-500/20 p-2 sm:p-4 rounded-xl">
+                                                            <p className="text-[11px] leading-relaxed text-yellow-700 dark:text-yellow-500 font-medium">
+                                                                {lang === 'he' 
+                                                                    ? '* הנתונים נועדו להערכה כללית בלבד. אין לראות בכך ייעוץ עסקי או התחייבות פיננסית.'
+                                                                    : '* Data is intended for general estimation only. It does not constitute business or financial advice.'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </Popover.Panel>
+                                            </Transition>
+                                        </>
+                                    )}
+                                </Popover>
                             </h3>
                         </div>
                         <div className="flex items-center gap-2">
@@ -136,7 +206,7 @@ export const RentalTrendWidget: React.FC<RentalTrendWidgetProps> = ({ isExpanded
                                 <div className="pt-2">
                                     {pinnedCities.length === 0 ? (
                                         <GlassCard className="p-8 text-center border-dashed border-2 border-border dark:border-gray-800">
-                                            <MapPin className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                                            <MapPin className="h-10 w-10 text-gray-300 mx-auto mb-2 sm:mb-4" />
                                             <p className="text-muted-foreground dark:text-muted-foreground mb-4">
                                                 {t('noCitiesPinnedDescription')}
                                             </p>
@@ -195,7 +265,7 @@ export const RentalTrendWidget: React.FC<RentalTrendWidgetProps> = ({ isExpanded
                                                                 {Math.abs(data.annualGrowth)}%
                                                             </div>
                                                         </div>
-                                                        <div className="mt-3 pt-3 border-t border-border dark:border-gray-800 flex justify-between text-sm text-muted-foreground">
+                                                        <div className="mt-2 sm:mt-4 pt-3 border-t border-border dark:border-gray-800 flex justify-between text-sm text-muted-foreground">
                                                             <span>{t('fiveYears')}: {data.historical['5Y']}%</span>
                                                             <span>{t('mom')}: {data.monthOverMonth}%</span>
                                                         </div>
@@ -237,7 +307,7 @@ export const RentalTrendWidget: React.FC<RentalTrendWidgetProps> = ({ isExpanded
                                             {pinnedCities.map((pinned, index) => (
                                                 <span
                                                     key={`${pinned.city}-${index}`}
-                                                    className="inline-flex items-center gap-1 px-3 py-1 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-full text-sm font-medium border border-brand-100 dark:border-brand-900/50"
+                                                    className="inline-flex items-center gap-1 px-2 sm:px-4 py-1 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-full text-sm font-medium border border-brand-100 dark:border-brand-900/50"
                                                 >
                                                     {t(pinned.city)} ({pinned.rooms})
                                                     <button onClick={() => removeCityCard(index)}>
@@ -281,6 +351,8 @@ export const RentalTrendWidget: React.FC<RentalTrendWidgetProps> = ({ isExpanded
                             </div>
                         </div>
                     </Modal>
+
+
                 </div>
             </CardContent>
         </Card>

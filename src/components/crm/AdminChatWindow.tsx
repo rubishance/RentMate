@@ -142,7 +142,7 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
                                 key={msg.id}
                                 className={`flex flex-col ${msg.role === 'admin' ? 'items-end' : 'items-start'}`}
                             >
-                                <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium ${msg.role === 'admin'
+                                <div className={`max-w-[85%] p-2 sm:p-4 rounded-2xl text-sm font-medium ${msg.role === 'admin'
                                         ? 'bg-brand-600 text-white rounded-tr-none'
                                         : 'bg-white dark:bg-gray-800 border border-border dark:border-gray-700 text-foreground dark:text-gray-100 rounded-tl-none shadow-sm'
                                     }`}>
@@ -159,14 +159,14 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
             </div>
 
             {/* Input Area */}
-            <form onSubmit={handleSend} className="p-3 border-t border-border dark:border-gray-700 bg-white dark:bg-gray-800">
+            <form onSubmit={handleSend} className="p-2 sm:p-4 border-t border-border dark:border-gray-700 bg-white dark:bg-gray-800">
                 <div className="relative">
                     <input
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type a message..."
-                        className="w-full pl-4 pr-12 py-3 bg-muted dark:bg-foreground border border-transparent focus:border-brand-500 rounded-xl text-sm outline-none transition-all"
+                        className="w-full pl-4 pr-12 py-2 sm:py-4 bg-muted dark:bg-foreground border border-transparent focus:border-brand-500 rounded-xl text-sm outline-none transition-all"
                         disabled={loading || sending}
                     />
                     <button

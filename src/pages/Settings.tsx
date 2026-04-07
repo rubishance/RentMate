@@ -110,10 +110,10 @@ export function Settings() {
     ];
 
     return (
-        <div className="pb-4 pt-2 md:pt-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 px-5">
+        <div className="pb-4 pt-2 md:pt-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 px-4 sm:px-6">
             {/* Header */}
             <div className="space-y-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
+                <div className="inline-flex items-center gap-2 px-2 sm:px-4 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
                     <User className="w-3 h-3 text-primary" />
                     <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-primary">
                         {t('preferencesAndAccount')}
@@ -127,11 +127,11 @@ export function Settings() {
             {/* User Profile Card */}
             <div
                 onClick={() => setIsEditProfileOpen(true)}
-                className="glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 flex items-center gap-6 md:gap-10 cursor-pointer shadow-minimal hover:shadow-jewel transition-all duration-300 group relative overflow-hidden"
+                className="glass-premium dark:bg-neutral-900/60 border-white/10 rounded-2xl md:rounded-2xl p-6 md:p-10 flex items-center gap-6 md:gap-10 cursor-pointer shadow-minimal hover:shadow-jewel transition-all duration-300 group relative overflow-hidden"
             >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[4rem] -translate-y-full group-hover:translate-y-0 transition-transform duration-500 pointer-events-none" />
 
-                <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[2rem] bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center text-foreground font-black text-2xl md:text-4xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-minimal border border-white/5">
+                <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-2xl bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center text-foreground font-black text-2xl md:text-4xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-minimal border border-white/5">
                     {userData.full_name?.charAt(0) || userData.email?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 space-y-1 md:space-y-2">
@@ -147,7 +147,7 @@ export function Settings() {
             {isAdmin && (
                 <div
                     onClick={() => window.location.href = '/admin'}
-                    className="bg-primary rounded-[3rem] p-10 shadow-jewel cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all group overflow-hidden relative"
+                    className="bg-primary rounded-2xl p-10 shadow-jewel cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all group overflow-hidden relative"
                 >
                     <div className="absolute top-0 right-0 w-48 h-48 bg-white/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:scale-125 transition-transform duration-500" />
                     <div className="flex items-center justify-between relative z-10 text-white">
@@ -167,7 +167,7 @@ export function Settings() {
                         <div className="px-4">
                             <span className="text-xs font-black text-muted-foreground uppercase opacity-70 tracking-[0.5em] block mb-2">{section.title}</span>
                         </div>
-                        <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] overflow-hidden shadow-minimal divide-y divide-white/5">
+                        <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-2xl overflow-hidden shadow-minimal divide-y divide-white/5">
                             {section.items.map((item) => {
                                 const Icon = item.icon;
                                 return (
@@ -197,7 +197,7 @@ export function Settings() {
                 <div className="px-4">
                     <span className="text-xs font-black text-muted-foreground uppercase opacity-70 tracking-[0.5em] block mb-2">{t('appearance')}</span>
                 </div>
-                <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] p-10 shadow-minimal space-y-10">
+                <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-2xl p-10 shadow-minimal space-y-10">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-center gap-6">
                             <div className="w-14 h-14 rounded-2xl glass-premium border-white/10 flex items-center justify-center">
@@ -253,7 +253,7 @@ export function Settings() {
                 <div className="px-4">
                     <span className="text-xs font-black text-muted-foreground uppercase opacity-70 tracking-[0.5em] block mb-2">{t('support')}</span>
                 </div>
-                <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] overflow-hidden shadow-minimal">
+                <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-minimal">
                     <button
                         onClick={() => setIsContactOpen(!isContactOpen)}
                         className="w-full flex items-center gap-8 p-10 hover:bg-background/50 dark:hover:bg-neutral-800/20 transition-all text-left group"
@@ -288,13 +288,13 @@ export function Settings() {
                                         value={contactMessage}
                                         onChange={(e) => setContactMessage(e.target.value)}
                                         placeholder={t('typeMessageHere')}
-                                        className="w-full min-h-[200px] p-10 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] resize-none outline-none font-medium placeholder:font-black placeholder:uppercase placeholder:text-xs placeholder:tracking-widest transition-all focus:border-primary/20 shadow-minimal"
+                                        className="w-full min-h-[200px] p-10 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-2xl resize-none outline-none font-medium placeholder:font-black placeholder:uppercase placeholder:text-xs placeholder:tracking-widest transition-all focus:border-primary/20 shadow-minimal"
                                         disabled={isSendingMessage}
                                     />
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <button
                                             onClick={() => navigate('/contact')}
-                                            className="p-6 bg-green-500/10 dark:bg-green-500/5 border border-green-500/20 rounded-[2rem] flex items-center gap-4 hover:bg-green-500/20 transition-all group"
+                                            className="p-6 bg-green-500/10 dark:bg-green-500/5 border border-green-500/20 rounded-2xl flex items-center gap-4 hover:bg-green-500/20 transition-all group"
                                         >
                                             <div className="w-12 h-12 rounded-xl bg-green-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
                                                 <MessageCircle className="w-6 h-6" />
@@ -307,7 +307,7 @@ export function Settings() {
 
                                         <button
                                             onClick={() => window.location.href = 'mailto:support@rentmate.co.il'}
-                                            className="p-6 bg-primary/10 dark:bg-primary/5 border border-primary/20 rounded-[2rem] flex items-center gap-4 hover:bg-primary/20 transition-all group"
+                                            className="p-6 bg-primary/10 dark:bg-primary/5 border border-primary/20 rounded-2xl flex items-center gap-4 hover:bg-primary/20 transition-all group"
                                         >
                                             <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center group-hover:scale-110 transition-transform">
                                                 <Mail className="w-6 h-6" />
@@ -359,7 +359,7 @@ export function Settings() {
                 <div className="text-center space-y-8">
                     <button
                         onClick={() => navigate('/accessibility')}
-                        className="text-xs font-black uppercase tracking-[0.3em] text-primary hover:text-foreground transition-all px-8 py-3 bg-primary/5 rounded-full hover:bg-primary/10"
+                        className="text-xs font-black uppercase tracking-[0.3em] text-primary hover:text-foreground transition-all px-8 py-2 sm:py-4 bg-primary/5 rounded-full hover:bg-primary/10"
                     >
                         {t('accessibilityStatement')}
                     </button>

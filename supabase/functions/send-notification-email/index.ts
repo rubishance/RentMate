@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { create, getNumericDate } from "https://deno.land/x/djwt@v2.8/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.21.0";
+import { withEdgeMiddleware } from '../_shared/middleware.ts';
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -11,7 +12,7 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+serve(withEdgeMiddleware('send-notification-email', async (req, logger) => {
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
     }
@@ -186,4 +187,4 @@ serve(async (req) => {
             status: 400,
         });
     }
-});
+}));

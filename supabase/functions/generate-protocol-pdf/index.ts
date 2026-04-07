@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { jsPDF } from 'https://esm.sh/jspdf@2.5.1';
 import autoTable from 'https://esm.sh/jspdf-autotable@3.5.28';
+import { withEdgeMiddleware } from '../_shared/middleware.ts';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -37,7 +38,7 @@ async function loadFont(url: string): Promise<string> {
     return btoa(binary);
 }
 
-serve(async (req) => {
+serve(withEdgeMiddleware('generate-protocol-pdf', async (req, logger) => {
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders });
     }
@@ -255,4 +256,4 @@ serve(async (req) => {
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }
-});
+}));

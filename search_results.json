@@ -1,0 +1,68 @@
+[
+  {
+    "file": "C:\\Users\\ראובן שאנס\\.gemini\\antigravity\\brain\\3ac65a1d-3186-49aa-afae-754db67c9fb1\\walkthrough.md",
+    "match": "1. **הוספנו כפתור \"העלאת מסמך\" (Add Document)**",
+    "contextBefore": "",
+    "contextAfter": "   - הכפתור החדש עושה שימוש באייקון מסמכים (FileStack) ועיצוב תואם לשאר הכפתורים."
+  },
+  {
+    "file": "C:\\Users\\ראובן שאנס\\.gemini\\antigravity\\brain\\3ac65a1d-3186-49aa-afae-754db67c9fb1\\walkthrough.md",
+    "match": "   - הכפתור החדש עושה שימוש באייקון מסמכים (FileStack) ועיצוב תואם לשאר הכפתורים.",
+    "contextBefore": "1. **הוספנו כפתור \"העלאת מסמך\" (Add Document)**",
+    "contextAfter": "   - לחיצה על הכפתור מעבירה ישירות למסך המסמכים (Global Documents) ופותחת **אוטומטית** את חלון העלאת המסמך החדש."
+  },
+  {
+    "file": "C:\\Users\\ראובן שאנס\\.gemini\\antigravity\\brain\\3ac65a1d-3186-49aa-afae-754db67c9fb1\\walkthrough.md",
+    "match": "   - לחיצה על הכפתור מעבירה ישירות למסך המסמכים (Global Documents) ופותחת **אוטומטית** את חלון העלאת המסמך החדש.",
+    "contextBefore": "   - הכפתור החדש עושה שימוש באייקון מסמכים (FileStack) ועיצוב תואם לשאר הכפתורים.",
+    "contextAfter": ""
+  },
+  {
+    "file": "C:\\Users\\ראובן שאנס\\.gemini\\antigravity\\brain\\5d90f926-381c-40fb-9054-237f09d957bc\\implementation_plan.md",
+    "match": "חיבור מחדש של הכפתורים שהסתרנו בעבר – אך הפעם עם המערכות האמיתיות מאחוריהם.",
+    "contextBefore": "### Phase 3: ניהול שוכרים, קריאות שירות ותקשורת (CRM)",
+    "contextAfter": "- **Tenant Management List:** רשימת שוכרים ופרטי קשר, עם יכולת לחיצה שמפעילה ישירות קישור ל-WhatsApp / טלפון לפי המספר."
+  },
+  {
+    "file": "C:\\Users\\ראובן שאנס\\.gemini\\antigravity\\brain\\5d90f926-381c-40fb-9054-237f09d957bc\\implementation_plan.md",
+    "match": "- בניית קומפוננטת צ'אט (בועות שיחה, קלט טקסט, כפתור שלח).",
+    "contextBefore": "- הוספת ממשק צ'אט עבור העוזר האישי.",
+    "contextAfter": "- קריאה למנוע ה-AI הקיים של Renty לניתוח שאלות."
+  },
+  {
+    "file": "C:\\Users\\ראובן שאנס\\.gemini\\antigravity\\brain\\5d90f926-381c-40fb-9054-237f09d957bc\\implementation_plan.md",
+    "match": "- הוספת כפתור \"סורק AI\" בווידג'טים של דף הבית.",
+    "contextBefore": "#### [MODIFY] `src/navigation/AppNavigator.tsx` ו-`src/components/dashboard/Widgets.tsx`",
+    "contextAfter": "- הוספת כפתור עגול נייד (FAB) או אייקון עליון בסרגל לגישה מהירה ל-Renty Assistant."
+  },
+  {
+    "file": "C:\\Users\\ראובן שאנס\\.gemini\\antigravity\\brain\\5d90f926-381c-40fb-9054-237f09d957bc\\implementation_plan.md",
+    "match": "- הוספת כפתור עגול נייד (FAB) או אייקון עליון בסרגל לגישה מהירה ל-Renty Assistant.",
+    "contextBefore": "- הוספת כפתור \"סורק AI\" בווידג'טים של דף הבית.",
+    "contextAfter": ""
+  },
+  {
+    "file": "C:\\Users\\ראובן שאנס\\.gemini\\antigravity\\brain\\5d90f926-381c-40fb-9054-237f09d957bc\\implementation_plan.md",
+    "match": "> 2. **ניווט:** בנינו את הניווט כ-Tabs תחתונים. במסכים מורכבים (כמו הגדרות או פרופיל), האם זה בסדר לצאת מה-Tabs ולפתוח מסכים על מסך מלא כולל כפתור חזור למעלה? (זו הדרך המקובלת באפליקציות חנות).",
+    "contextBefore": "> 1. **מצלמה או קבצים?** במודולים כמו סריקת מסמכים, האם אתה רוצה שאחבר ממשק גישה ישירה למצלמה (Native Camera) או שנסתפק בלחיצה שפותחת את ה\"גלריה/קבצים\"? הדבר משפיע על התקנת חבילות נוספות (Permissions).",
+    "contextAfter": ""
+  },
+  {
+    "file": "C:\\Users\\ראובן שאנס\\.gemini\\antigravity\\brain\\5d90f926-381c-40fb-9054-237f09d957bc\\walkthrough.md",
+    "match": "- **הזמנת שוכר פוטנציאלי**: הוספנו כפתורי שיתוף (Native Share API) המאפשרים לבעל הנכס לחלוק מרחוק קישור להליך ההצטרפות (Tenant Onboarding Link) לשוכר חדש.",
+    "contextBefore": "- **מערכת ניהול שוכרים (`TenantsListScreen`)**: בניית מסך ייעודי השולף שוכרים פעילים מתוך החוזים ומציג אותם. ביצענו אינטגרציה חיה של פרטי קשר (Deep Links) שמאפשרת חיוג ישיר לסלולר ופתיחת שיחות ב-WhatsApp מהאפליקציה תוך תמיכה מלאה במספרי +972.",
+    "contextAfter": ""
+  },
+  {
+    "file": "C:\\Users\\ראובן שאנס\\.gemini\\antigravity\\brain\\5d90f926-381c-40fb-9054-237f09d957bc\\walkthrough.md",
+    "match": "- **מיקומיי כפתורים בקליק אחד**: מסך התצוגה המהירה (SmartActionsWidget) כעת כולל למשל גישה מהירה לחיוג וניהול שוכרים ישירות מדף הבית.",
+    "contextBefore": "- **דשבורד Payments ו-Finance**: הושלמה הליבה הפיננסית, מחשבונים משולבים דופק למ״ס, ויכולות מעקב אחר חובות מוסדרים מהווב ישירות למובייל.",
+    "contextAfter": ""
+  },
+  {
+    "file": "C:\\Users\\ראובן שאנס\\.gemini\\antigravity\\brain\\5d90f926-381c-40fb-9054-237f09d957bc\\walkthrough.md",
+    "match": "- **גישה מהירה ב-Dashboard**: כפתורי גישה הוטמעו בתוך ה-SmartActionsWidget לחיבור והפעלה מהירה מדף הבית של האפליקציה.",
+    "contextBefore": "- **סורק החוזים (AI Scanner)**: מסך ייעודי המספק חוויית העלאת קבצים או צילום מסמכים ישירות באפליקציה, חיבור Endpoint מותאם ל- Edge Functions ב-Supabase לצורך פענוח מידע אוטומטי מהמסמך - ובכך יוצר תשתית מלאה לסריקה תוך כדי תנועה וללא תלות ב-Web.",
+    "contextAfter": ""
+  }
+]

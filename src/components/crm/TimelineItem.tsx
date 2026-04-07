@@ -82,7 +82,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
                             href={interaction.metadata.external_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1 px-2 flex items-center gap-1.5 bg-muted hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-muted-foreground rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+                            className="p-1 px-2 flex items-center gap-2 bg-muted hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-muted-foreground rounded-xl text-xs font-black uppercase tracking-widest transition-all"
                         >
                             <ArrowDownTrayIcon className="w-3 h-3 rotate-180" />
                             LINK
@@ -159,7 +159,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
                         </div>
 
                         {interaction.metadata.ai_analysis.ai_summary && (
-                            <div className="bg-white/50 dark:bg-black/20 p-3 rounded-xl border border-border dark:border-gray-700/50">
+                            <div className="bg-white/50 dark:bg-black/20 p-2 sm:p-4 rounded-xl border border-border dark:border-gray-700/50">
                                 <span className="text-xs font-black text-muted-foreground uppercase tracking-widest block mb-1">AI Summary</span>
                                 <p className="text-xs italic text-muted-foreground">{interaction.metadata.ai_analysis.ai_summary}</p>
                             </div>
@@ -168,7 +168,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
                         {interaction.metadata?.auto_reply_draft && (
                             <div className="bg-brand-50/30 dark:bg-brand-500/5 p-4 rounded-xl border border-brand-100 dark:border-brand-500/20">
                                 <span className="text-xs font-black text-brand-600 uppercase tracking-widest block mb-2">AI Proposed Response</span>
-                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{interaction.metadata.auto_reply_draft}</p>
+                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-4">{interaction.metadata.auto_reply_draft}</p>
                                 <button className="px-4 py-2 bg-brand-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-brand-700 transition-all shadow-minimal">
                                     Approve & Send
                                 </button>
@@ -178,7 +178,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
                 )}
 
                 {isTicket && interaction.metadata?.resolution_notes && (
-                    <div className="mt-3 pt-3 border-t border-border dark:border-gray-700">
+                    <div className="mt-2 sm:mt-4 pt-3 border-t border-border dark:border-gray-700">
                         <span className="text-xs font-black text-muted-foreground uppercase tracking-widest block mb-1">Resolution Notes</span>
                         <p className="text-gray-800 dark:text-gray-200">{interaction.metadata.resolution_notes}</p>
                     </div>
@@ -186,7 +186,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
             </div>
 
             {interaction.type === 'error_report' && (
-                <div className="mt-3 p-3 bg-red-50/50 dark:bg-red-900/10 rounded-xl border border-red-100/50 dark:border-red-900/20">
+                <div className="mt-2 sm:mt-4 p-2 sm:p-4 bg-red-50/50 dark:bg-red-900/10 rounded-xl border border-red-100/50 dark:border-red-900/20">
                     <div className="flex items-start gap-2 text-xs text-destructive">
                         <ExclamationTriangleIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
                         <div className="space-y-1">
@@ -210,7 +210,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
             {(isBot || interaction.type === 'human_chat' || isWhatsApp) && (
                 <button
                     onClick={() => onOpenBotChat(interaction.metadata)}
-                    className={`mt-3 text-xs font-black uppercase tracking-widest hover:underline flex items-center gap-1 group/btn ${isBot ? 'text-primary' :
+                    className={`mt-2 sm:mt-4 text-xs font-black uppercase tracking-widest hover:underline flex items-center gap-1 group/btn ${isBot ? 'text-primary' :
                         isWhatsApp ? 'text-[#25D366]' :
                             'text-brand-600'
                         }`}

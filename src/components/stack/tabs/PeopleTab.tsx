@@ -1,15 +1,23 @@
 import { Property } from '../../../types/database';
+import { EmptyState } from '../../common/EmptyState';
+import { useTranslation } from '../../../hooks/useTranslation';
+import { Users } from 'lucide-react';
 
 interface PeopleTabProps {
     property: Property;
 }
 
 export function PeopleTab({ property }: PeopleTabProps) {
+    const { t } = useTranslation();
     return (
-        <div className="p-6">
-            <div className="text-center py-10 bg-background dark:bg-neutral-800 rounded-2xl border border-dashed border-slate-200 dark:border-neutral-700">
-                <p className="text-muted-foreground">No tenants assigned to this property.</p>
-            </div>
+        <div className="py-8">
+            <EmptyState
+                icon={Users}
+                title={t('noActiveContracts')}
+                description={t('noTenantsInThisProperty')}
+                actionLabel={t('addContract')}
+                onAction={() => {}}
+            />
         </div>
     );
 }

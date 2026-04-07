@@ -90,7 +90,7 @@ export default function AdminInvoices() {
                         Monitor revenue, view system-generated invoices, and manage payment statuses.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <button
                         onClick={fetchInvoices}
                         className="p-2.5 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm"
@@ -108,7 +108,7 @@ export default function AdminInvoices() {
             </div>
 
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-3 text-red-700 dark:text-red-400 font-bold text-sm">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-2 sm:gap-4 text-red-700 dark:text-red-400 font-bold text-sm">
                     <AlertCircle className="w-6 h-6 flex-shrink-0" />
                     {error}
                 </div>
@@ -120,7 +120,7 @@ export default function AdminInvoices() {
                     <button
                         key={status}
                         onClick={() => setFilterStatus(status)}
-                        className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filterStatus === status
+                        className={`px-4 sm:px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filterStatus === status
                             ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm border border-border dark:border-gray-700'
                             : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
@@ -132,7 +132,7 @@ export default function AdminInvoices() {
 
             {/* Invoices List */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-border dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="p-4 sm:p-6 border-b border-border dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
                     <h2 className="text-base font-black text-foreground dark:text-white uppercase tracking-tight">Financial Records</h2>
                     <div className="flex items-center gap-2 text-xs font-black text-muted-foreground uppercase tracking-widest">
                         <FunnelIcon className="w-4 h-4" />
@@ -161,8 +161,8 @@ export default function AdminInvoices() {
                             ) : (
                                 filteredInvoices.map((invoice) => (
                                     <tr key={invoice.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center gap-3">
+                                        <td className="px-6 py-4 sm:py-6">
+                                            <div className="flex items-center gap-2 sm:gap-4">
                                                 <div className={`p-2 rounded-xl border ${invoice.status === 'paid' ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800' :
                                                     'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800'
                                                     }`}>
@@ -174,13 +174,13 @@ export default function AdminInvoices() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5 text-center">
+                                        <td className="px-6 py-4 sm:py-6 text-center">
                                             <div className="font-black text-foreground dark:text-white text-sm">
                                                 {invoice.currency === 'ILS' ? '₪' : invoice.currency} {invoice.amount.toLocaleString()}
                                             </div>
                                             <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Sub-Total</div>
                                         </td>
-                                        <td className="px-6 py-5 text-center">
+                                        <td className="px-6 py-4 sm:py-6 text-center">
                                             <span className={`px-2.5 py-1 text-xs font-black uppercase tracking-widest rounded-xl border ${invoice.status === 'paid' ? 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800' :
                                                 invoice.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800' :
                                                     'bg-blue-50 text-muted-foreground border-border dark:bg-foreground dark:border-gray-700'
@@ -188,13 +188,13 @@ export default function AdminInvoices() {
                                                 {invoice.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-left">
-                                            <div className="flex items-center justify-end gap-1.5 font-bold text-muted-foreground dark:text-muted-foreground text-xs">
+                                        <td className="px-6 py-4 sm:py-6 text-left">
+                                            <div className="flex items-center justify-end gap-2 font-bold text-muted-foreground dark:text-muted-foreground text-xs">
                                                 <Clock className="w-3.5 h-3.5" />
                                                 {new Date(invoice.issue_date).toLocaleDateString('he-IL')}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5">
+                                        <td className="px-6 py-4 sm:py-6">
                                             <div className="flex items-center justify-end gap-1">
                                                 <button
                                                     onClick={() => handleDownload(invoice.id)}

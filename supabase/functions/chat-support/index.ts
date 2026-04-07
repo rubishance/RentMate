@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { withEdgeMiddleware } from '../_shared/middleware.ts';
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
@@ -887,7 +888,7 @@ async function debugEntity(args: any, userId: string, hasAiConsent?: boolean) {
     };
 }
 
-serve(async (req) => {
+serve(withEdgeMiddleware('chat-support', async (req, logger) => {
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
     }
@@ -1431,4 +1432,4 @@ ${knowledgeBase}`;
             { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
     }
-});
+}));

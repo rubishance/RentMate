@@ -66,8 +66,8 @@ export function AddUserModal({ isOpen, onClose, onSuccess, plans }: AddUserModal
     };
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-window rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden">
+        <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-window w-full shadow-2xl animate-in fade-in slide-in-from-bottom-10 sm:zoom-in-95 duration-200 overflow-hidden relative h-auto max-h-[90dvh] flex flex-col rounded-t-3xl border-0 mt-auto sm:max-h-[85vh] sm:rounded-2xl sm:border sm:border-border/50 sm:mt-0 max-w-md">
                 {/* Header */}
                 <div className="p-6 border-b border-border dark:border-gray-700 flex items-center justify-between">
                     <div>
@@ -147,20 +147,20 @@ export function AddUserModal({ isOpen, onClose, onSuccess, plans }: AddUserModal
                         />
                     </div>
 
-                    <div className="pt-4 flex gap-3">
+                    <div className="pt-6 flex gap-2 sm:gap-4">
                         <Button
                             type="button"
                             variant="ghost"
                             // variant="ghost" or "secondary" might be better if bg-muted isnt a variant
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 text-gray-700 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors h-auto"
+                            className="flex-1 px-6 py-2 text-gray-700 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors h-auto"
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 px-4 py-2 bg-brand-600 text-white hover:bg-brand-700 rounded-xl font-medium transition-colors shadow-lg shadow-brand-500/30 flex items-center justify-center gap-2 h-auto"
+                            className="flex-1 px-6 py-2 bg-brand-600 text-white hover:bg-brand-700 rounded-xl font-medium transition-colors shadow-lg shadow-brand-500/30 flex items-center justify-center gap-2 h-auto"
                         >
                             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                             {loading ? 'Sending...' : 'Send Invite'}

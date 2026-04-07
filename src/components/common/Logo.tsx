@@ -22,7 +22,7 @@ export const Logo: React.FC<LogoProps> = ({
 
     return (
         <div
-            className={cn("flex items-center gap-3 select-none", className)}
+            className={cn("flex items-center gap-2 sm:gap-4 select-none", className)}
             onClick={onClick}
         >
             <svg

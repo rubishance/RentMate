@@ -53,7 +53,7 @@ export const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
     return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -73,7 +73,7 @@ export const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
                             transition: { type: 'spring', stiffness: 300, damping: 30 }
                         }}
                         exit={{ opacity: 0, scale: 0.95, y: 10, transition: { duration: 0.2 } }}
-                        className="relative w-full max-w-sm bg-background dark:bg-neutral-900 rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-border/50 overflow-hidden flex flex-col z-10"
+                        className="relative w-full max-w-sm bg-background dark:bg-neutral-900 shadow-[0_8px_32px_rgba(0,0,0,0.12)] border-0 sm:border sm:border-border/50 h-auto max-h-[90dvh] pb-6 sm:pb-0 overflow-hidden flex flex-col z-10 rounded-t-3xl sm:rounded-2xl mt-auto sm:mt-0"
                     >
                         <div className="flex flex-col items-center text-center p-6 sm:p-8 space-y-4">
                             <div className="w-16 h-16 rounded-[1.2rem] bg-background dark:bg-neutral-800 flex items-center justify-center shadow-sm border border-slate-100 dark:border-neutral-700/50 mb-2">
@@ -89,7 +89,7 @@ export const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
                             </p>
                         </div>
                         
-                        <div className="flex gap-3 px-6 pb-6 w-full">
+                        <div className="flex gap-2 sm:gap-4 px-6 pb-6 w-full">
                             <Button
                                 variant="secondary"
                                 onClick={onClose}

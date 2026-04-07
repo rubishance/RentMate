@@ -1,7 +1,7 @@
 import { FileText, Image as ImageIcon, FileStack, Banknote, Folder as FolderIcon } from 'lucide-react';
 import type { DocumentCategory } from '../types/database';
 
-export type CategoryTabType = 'media' | 'utilities' | 'documents' | 'checks' | 'protocols' | 'receipts';
+export type CategoryTabType = 'media' | 'utilities' | 'documents' | 'checks' | 'protocols' | 'receipts' | 'tenant_form';
 
 export interface CategoryConfig {
     id: CategoryTabType;
@@ -89,6 +89,18 @@ export const DOCUMENT_CATEGORIES: CategoryConfig[] = [
         descFallbackHe: 'פרוטוקולים חתומים ומאושרים',
         descFallbackEn: 'Signed delivery protocols',
         allowManualUpload: false, // Generated via the Protocol Builder
+    },
+    {
+        id: 'tenant_form',
+        icon: FileText,
+        color: 'text-blue-600 dark:text-blue-400',
+        bg: 'bg-blue-50 dark:bg-blue-900/20',
+        labelKey: 'tenantForms',
+        fallbackHe: 'טופסי הרשמה',
+        fallbackEn: 'Signup Forms',
+        descFallbackHe: 'טופסי הרשמת שוכר ופרטים אישיים',
+        descFallbackEn: 'Tenant signup forms and details',
+        allowManualUpload: false, // Generated via external tenant flow
     }
 ];
 

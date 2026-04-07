@@ -23,7 +23,7 @@ export function SettingsTray() {
             {/* Toggle Button */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 p-3 bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-border dark:border-white/10 rounded-full shadow-lg md:hidden"
+                className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 p-2 sm:p-4 bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-border dark:border-white/10 rounded-full shadow-lg md:hidden"
             >
                 <Settings className="w-5 h-5 text-muted-foreground dark:text-muted-foreground" />
             </button>

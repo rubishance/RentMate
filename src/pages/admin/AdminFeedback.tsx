@@ -96,7 +96,7 @@ export default function AdminFeedback() {
                         Manage bug reports, feature requests, and general user sentiments.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <button
                         onClick={fetchFeedback}
                         className="p-2.5 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm"
@@ -107,7 +107,7 @@ export default function AdminFeedback() {
             </div>
 
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-3 text-red-700 dark:text-red-400 font-bold text-sm">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-2 sm:gap-4 text-red-700 dark:text-red-400 font-bold text-sm">
                     <ExclamationTriangleIcon className="w-6 h-6 flex-shrink-0" />
                     {error}
                 </div>
@@ -119,7 +119,7 @@ export default function AdminFeedback() {
                     <button
                         key={status}
                         onClick={() => setFilterStatus(status)}
-                        className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filterStatus === status
+                        className={`px-4 sm:px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filterStatus === status
                             ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm border border-border dark:border-gray-700'
                             : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
@@ -145,7 +145,7 @@ export default function AdminFeedback() {
 
                             {/* Main Content */}
                             <div className="flex-1 space-y-4">
-                                <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                                     <span className={`px-2.5 py-1 rounded-xl text-xs font-black uppercase tracking-widest border ${item.type === 'bug' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:border-red-800' :
                                         item.type === 'feature' ? 'bg-primary-50 text-primary-700 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
                                             'bg-blue-50 text-muted-foreground border-border dark:bg-foreground dark:border-gray-700 dark:text-muted-foreground'
@@ -197,7 +197,7 @@ export default function AdminFeedback() {
                                         href={item.screenshot_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary-600 hover:text-primary-700 transition-colors bg-primary-50 dark:bg-primary-900/20 px-3 py-2 rounded-xl border border-primary-100 dark:border-primary-800"
+                                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary-600 hover:text-primary-700 transition-colors bg-primary-50 dark:bg-primary-900/20 px-2 sm:px-4 py-2 rounded-xl border border-primary-100 dark:border-primary-800"
                                     >
                                         <PhotoIcon className="w-4 h-4" />
                                         Screenshot

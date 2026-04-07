@@ -53,18 +53,6 @@ export const LINKAGE_TYPES: LinkageTypeConfig[] = [
         icon: Home,
         color: 'text-indigo-500',
         bg: 'bg-indigo-100 dark:bg-indigo-900/30'
-    },
-    {
-        id: 'construction',
-        labelKey: 'construction',
-        linkedLabelKey: 'linkedToConstruction',
-        fallbackHe: 'מדד תשומות הבנייה',
-        fallbackEn: 'Construction Inputs Index',
-        linkedFallbackHe: 'צמוד למדד תשומות הבנייה',
-        linkedFallbackEn: 'Linked to Construction',
-        icon: ArrowUpRight,
-        color: 'text-amber-500',
-        bg: 'bg-amber-100 dark:bg-amber-900/30'
     }
 ];
 

@@ -18,7 +18,7 @@ export const Switch: React.FC<SwitchProps> = ({
     className,
 }) => {
     return (
-        <div className={cn("flex items-center gap-3", className)}>
+        <div className={cn("flex items-center gap-2 sm:gap-4", className)}>
             {label && <span className="text-sm font-medium text-foreground">{label}</span>}
             <button
                 type="button"

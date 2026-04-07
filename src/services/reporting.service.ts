@@ -67,12 +67,20 @@ export const ReportService = {
     /**
      * Generates a professional PDF report using Supabase Edge Function
      */
-    async generatePDF(propertyId: string, startDate: string, endDate: string, lang: 'he' | 'en' = 'he'): Promise<void> {
-        console.log('[ReportService] Generating report...', { propertyId, startDate, endDate, lang });
+    async generatePDF(
+        propertyId: string, 
+        startDate: string, 
+        endDate: string, 
+        lang: 'he' | 'en' = 'he',
+        includeAssetDetails: boolean = true,
+        includeExpenses: boolean = false,
+        selectedExpenseIds: string[] = []
+    ): Promise<void> {
+        console.log('[ReportService] Generating report...', { propertyId, startDate, endDate, lang, includeAssetDetails, includeExpenses });
 
         try {
             const { data, error } = await supabase.functions.invoke('generate-report', {
-                body: { propertyId, startDate, endDate, lang }
+                body: { propertyId, startDate, endDate, lang, includeAssetDetails, includeExpenses, selectedExpenseIds }
             });
 
             if (error) {

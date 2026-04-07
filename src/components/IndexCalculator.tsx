@@ -191,7 +191,7 @@ export function IndexCalculator() {
 
 
     return (
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Calculator className="w-5 h-5 text-primary" />
@@ -207,18 +207,17 @@ export function IndexCalculator() {
                     <select
                         value={indexType}
                         onChange={(e) => setIndexType(e.target.value as any)}
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all"
+                        className="w-full px-4 py-2 sm:py-4 bg-slate-50 dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all"
                     >
                         <option value="cpi">{t('cpi')}</option>
                         <option value="housing">{t('housingServices')}</option>
-                        <option value="construction">{t('constructionInputs')}</option>
                         <option value="usd">{t('usdRate')}</option>
                         <option value="eur">{t('eurRate')}</option>
                     </select>
                 </div>
 
                 {/* Linkage Sub Type */}
-                {(indexType === 'cpi' || indexType === 'housing' || indexType === 'construction') && (
+                {(indexType === 'cpi' || indexType === 'housing') && (
                     <div className="space-y-2">
                         <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">{t('linkageCalculationMethod')}</label>
                         <SegmentedControl
@@ -288,7 +287,7 @@ export function IndexCalculator() {
                 />
 
                 {/* Floor Switch */}
-                <div className="flex flex-col justify-end gap-3 pb-2 px-2">
+                <div className="flex flex-col justify-end gap-2 sm:gap-4 pb-2 px-2">
                     <div className="flex items-center justify-between gap-4">
                         <span className="text-xs font-black uppercase tracking-widest text-black dark:text-white">{t('floorIndex')}</span>
                         <Switch
@@ -301,7 +300,7 @@ export function IndexCalculator() {
 
             {/* Result Section */}
             {calculatedResult && (
-                <div className="mt-4 pt-4 border-t border-border flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
+                <div className="mt-4 pt-4 border-t border-border flex flex-col gap-2 sm:gap-4 animate-in fade-in slide-in-from-top-2">
 
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -311,7 +310,7 @@ export function IndexCalculator() {
                             </span>
                         </div>
 
-                        <div className="flex items-center gap-3 bg-primary/5 px-6 py-3 rounded-2xl border border-primary/10">
+                        <div className="flex items-center gap-2 sm:gap-4 bg-primary/5 px-6 py-2 sm:py-4 rounded-2xl border border-primary/10">
                             <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('newRent')}:</span>
                             <span className="text-2xl font-black text-foreground">
                                 ₪{calculatedResult.newRent.toLocaleString()}
@@ -320,7 +319,7 @@ export function IndexCalculator() {
                     </div>
 
                     {/* Detailed Formula Display handled by Service */}
-                    <div className="bg-secondary/20 p-3 rounded-xl text-xs font-mono text-muted-foreground overflow-x-auto whitespace-nowrap flex items-center justify-between">
+                    <div className="bg-secondary/20 p-2 sm:p-4 rounded-xl text-xs font-mono text-muted-foreground overflow-x-auto whitespace-nowrap flex items-center justify-between">
                         <span>{calculatedResult.formula}</span>
                         <Button
                             variant="ghost"

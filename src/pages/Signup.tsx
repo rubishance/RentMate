@@ -25,7 +25,8 @@ export function Signup() {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [fullName, setFullName] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -70,8 +71,8 @@ export function Signup() {
             return;
         }
 
-        if (!fullName.trim()) {
-            setError(isRtl ? 'יש למלא שם מלא' : 'Full name is required');
+        if (!firstName.trim() || !lastName.trim()) {
+            setError(isRtl ? 'יש למלא שם פרטי ושם משפחה' : 'First and last name are required');
             setLoading(false);
             return;
         }
@@ -98,7 +99,7 @@ export function Signup() {
                 password,
                 options: {
                     data: {
-                        full_name: fullName.trim(),
+                        full_name: `${firstName.trim()} ${lastName.trim()}`,
                         phone_number: phone.trim() || null,
                         marketing_consent: marketingConsent,
                         plan_id: planFromUrl || 'free'
@@ -154,7 +155,8 @@ export function Signup() {
                                 handleAuth={handleAuth}
                                 email={email} setEmail={setEmail}
                                 password={password} setPassword={setPassword}
-                                fullName={fullName} setFullName={setFullName}
+                                firstName={firstName} setFirstName={setFirstName}
+                                lastName={lastName} setLastName={setLastName}
                                 phone={phone} setPhone={setPhone}
                                 agreeToTerms={agreeToTerms} setAgreeToTerms={setAgreeToTerms}
                                 marketingConsent={marketingConsent} setMarketingConsent={setMarketingConsent}
@@ -191,7 +193,7 @@ const ConfirmationView = ({ email, onBack, isRtl, t }: any) => (
 );
 
 const SignupFormView = ({
-    handleAuth, email, setEmail, password, setPassword, fullName, setFullName,
+    handleAuth, email, setEmail, password, setPassword, firstName, setFirstName, lastName, setLastName,
     phone, setPhone, agreeToTerms, setAgreeToTerms, marketingConsent, setMarketingConsent, loading, error, handleSocialLogin,
     t, isRtl, effectiveTheme
 }: any) => (
@@ -205,47 +207,64 @@ const SignupFormView = ({
             {error && <div className="bg-destructive/10 text-destructive p-4 rounded-xl text-sm border border-destructive/20 text-center font-bold shadow-sm">{error}</div>}
 
             <div className="space-y-6 sm:space-y-10">
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2 sm:gap-4">
                     <Button
                         variant="outline"
                         onClick={() => handleSocialLogin('google')}
                         disabled={loading}
-                        className="w-full h-12 text-sm font-bold gap-3"
+                        className="w-full h-12 text-sm font-bold"
+                        leftIcon={<img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />}
                     >
-                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
                         <span>{isRtl ? 'המשך עם Google' : 'Continue with Google'}</span>
                     </Button>
                     <Button
                         variant="outline"
                         onClick={() => handleSocialLogin('apple')}
                         disabled={loading}
-                        className="w-full h-12 text-sm font-bold gap-3"
+                        className="w-full h-12 text-sm font-bold"
+                        leftIcon={
+                            <svg viewBox="0 0 384 512" className="w-5 h-5 fill-current">
+                                <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+                            </svg>
+                        }
                     >
-                        <svg viewBox="0 0 384 512" className="w-5 h-5 fill-current">
-                            <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
-                        </svg>
                         <span>{isRtl ? 'המשך עם Apple' : 'Continue with Apple'}</span>
                     </Button>
                 </div>
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-                    <div className="relative flex justify-center text-xs font-bold uppercase tracking-widest text-muted-foreground"><span className="bg-window px-3">{t('auth_or_continue')}</span></div>
+                    <div className="relative flex justify-center text-xs font-bold uppercase tracking-widest text-muted-foreground"><span className="bg-window px-2 sm:px-4">{t('auth_or_continue')}</span></div>
                 </div>
             </div>
 
             <form className="space-y-4 sm:space-y-6" onSubmit={handleAuth}>
-                <div>
-                    <label className="block text-sm font-semibold text-foreground mb-1">
-                        {isRtl ? 'שם מלא' : 'Full Name'}
-                    </label>
-                    <Input
-                        type="text"
-                        required
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        placeholder={isRtl ? 'שם מלא' : 'Full Name'}
-                        className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-3' : 'pl-3'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
-                    />
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-semibold text-foreground mb-1">
+                            {isRtl ? 'שם פרטי' : 'First Name'}
+                        </label>
+                        <Input
+                            type="text"
+                            required
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            placeholder={isRtl ? 'שם פרטי' : 'First Name'}
+                            className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner py-2.5 md:py-2 sm:py-4 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-foreground mb-1">
+                            {isRtl ? 'שם משפחה' : 'Last Name'}
+                        </label>
+                        <Input
+                            type="text"
+                            required
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            placeholder={isRtl ? 'שם משפחה' : 'Last Name'}
+                            className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner py-2.5 md:py-2 sm:py-4 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                        />
+                    </div>
                 </div>
                 <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
@@ -256,7 +275,7 @@ const SignupFormView = ({
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="050-0000000"
-                        className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-3' : 'pl-3'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                        className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner py-2.5 md:py-2 sm:py-4 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
                         dir="ltr"
                     />
                 </div>
@@ -270,7 +289,7 @@ const SignupFormView = ({
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="name@example.com"
-                        className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10' : 'pl-10'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                        className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner py-2.5 md:py-2 sm:py-4 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
                         leftIcon={<Mail className="w-4 h-4 text-muted-foreground" />}
                         dir="ltr"
                     />
@@ -285,7 +304,7 @@ const SignupFormView = ({
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-3' : 'pl-3'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                        className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner py-2.5 md:py-2 sm:py-4 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
                         dir="ltr"
                     />
                 </div>

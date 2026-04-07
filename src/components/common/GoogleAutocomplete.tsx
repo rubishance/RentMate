@@ -161,7 +161,7 @@ export function GoogleAutocomplete({
                                 onClick={() => handleSelect(item)}
                                 className="w-full text-left rtl:text-right px-4 py-4 rounded-2xl hover:bg-background dark:hover:bg-white/5 transition-all flex items-center gap-4 group/item border border-transparent hover:border-slate-100 dark:hover:border-white/10"
                             >
-                                <div className="p-3 bg-muted/50 dark:bg-white/5 rounded-2xl text-muted-foreground group-hover/item:text-primary group-hover/item:bg-primary/10 transition-all">
+                                <div className="p-2 sm:p-4 bg-muted/50 dark:bg-white/5 rounded-2xl text-muted-foreground group-hover/item:text-primary group-hover/item:bg-primary/10 transition-all">
                                     <MapPin className="w-5 h-5 transition-transform group-hover/item:scale-110" />
                                 </div>
                                 <div className="flex-1 min-w-0">

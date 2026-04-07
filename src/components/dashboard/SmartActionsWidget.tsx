@@ -65,7 +65,7 @@ export function SmartActionsWidget({ stats, loading, isExpanded: externalIsExpan
         return (
             <Card className="h-full flex items-center justify-center">
                 <CardContent className="w-full">
-                    <div className="animate-pulse flex flex-col items-center gap-3 w-full">
+                    <div className="animate-pulse flex flex-col items-center gap-2 sm:gap-4 w-full">
                         <div className="h-5 md:h-6 w-1/2 bg-muted rounded"></div>
                         <div className="h-3 md:h-4 w-3/4 bg-background rounded"></div>
                     </div>
@@ -80,7 +80,7 @@ export function SmartActionsWidget({ stats, loading, isExpanded: externalIsExpan
     const topAction = actions[0];
 
     return (
-        <Card className="h-full flex flex-col justify-between overflow-hidden relative group border-primary/20 bg-slate-900 text-white dark:bg-slate-950">
+        <Card className="h-full rounded-2xl flex flex-col justify-between overflow-hidden relative group border-primary/20 bg-slate-900 text-white dark:bg-slate-950">
             {/* Background Decoration */}
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity z-0 pointer-events-none">
                 <Sparkles className="w-48 h-48 transform rotate-12" />
@@ -93,7 +93,7 @@ export function SmartActionsWidget({ stats, loading, isExpanded: externalIsExpan
                 )}
                 onClick={toggleExpand}
             >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <div className="p-2 bg-slate-100 dark:bg-neutral-800 rounded-xl shrink-0">
                         <Sparkles className="w-5 h-5 text-amber-500" />
                     </div>

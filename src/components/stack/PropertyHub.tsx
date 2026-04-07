@@ -27,6 +27,7 @@ import {
   FileSignature,
   Users,
   ChevronDown,
+  Link as LinkIcon,
 } from "lucide-react";
 import {
   Menu,
@@ -58,6 +59,7 @@ import { CompressionService } from "../../services/compression.service";
 import { getPropertyPlaceholder } from "../../lib/property-placeholders";
 import { useSignedUrl } from "../../hooks/useSignedUrl";
 import { ProtocolWizard } from "../properties/ProtocolWizard";
+import { useToast } from "../../hooks/useToast";
 import { GlobalDocumentUploadModal } from "../modals/GlobalDocumentUploadModal";
 import { BalconyIcon, SafeRoomIcon, StorageIcon, CarIcon, BedIcon, RulerIcon } from "../../components/icons/NavIcons";
 
@@ -83,6 +85,7 @@ export function PropertyHub({
   const { t, lang } = useTranslation();
   const navigate = useNavigate();
   const { push, pop } = useStack();
+  const { success, error: toastError } = useToast();
   const { set, clear } = useDataCache();
   const [activeTab, setActiveTab] = useState<TabType>(
     initialTab || "contracts",
@@ -96,6 +99,17 @@ export function PropertyHub({
   const [isUploading, setIsUploading] = useState(false);
   const [isFetchingMap, setIsFetchingMap] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+
+  const handleCopyTenantLink = async () => {
+    setIsMoreMenuOpen(false);
+    const link = `${window.location.origin}/apply/${propertyId}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      success(t("tenantLinkCopied"));
+    } catch (err) {
+      toastError(t("copyLinkError"));
+    }
+  };
 
   const handleGoogleMapsFetch = async () => {
     if (!editedProperty.address || !editedProperty.city) {
@@ -441,8 +455,8 @@ export function PropertyHub({
   return (
     <div className="flex flex-col h-full bg-background dark:bg-black">
       {/* 1. Header Details */}
-      <div className="relative shrink-0 px-5 md:px-6 z-10 pt-6 pb-6 bg-primary text-primary-foreground shadow-2xl rounded-b-[2rem] border-b border-white/10">
-        <div className="flex justify-between items-start gap-3 md:gap-4">
+      <div className="relative shrink-0 px-4 sm:px-6 md:px-6 z-10 pt-6 pb-6 bg-primary text-primary-foreground shadow-2xl rounded-b-[2rem] border-b border-white/10">
+        <div className="flex justify-between items-start gap-2 sm:gap-4 md:gap-4">
           <div className="flex items-start gap-4 flex-1 min-w-0">
             <Button
               onClick={handleBack}
@@ -459,7 +473,7 @@ export function PropertyHub({
             </Button>
             <div className="flex-1 min-w-0">
               {/* Status Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-3xl rounded-full border border-white/20 text-sm font-black uppercase tracking-widest mb-2 shadow-lg">
+              <div className="inline-flex items-center gap-2 px-2 sm:px-4 py-1 bg-white/10 backdrop-blur-3xl rounded-full border border-white/20 text-sm font-black uppercase tracking-widest mb-2 shadow-lg">
               {(() => {
                 const today = new Date().toISOString().split("T")[0];
                 const hasActiveContract = (property as any).contracts?.some(
@@ -493,7 +507,7 @@ export function PropertyHub({
             {marketTrend && (
               <div
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1 ml-2 backdrop-blur-md rounded-full border text-sm font-black uppercase tracking-widest mb-2 transition-all shadow-lg",
+                  "inline-flex items-center gap-2 px-2 sm:px-4 py-1 ml-2 backdrop-blur-md rounded-full border text-sm font-black uppercase tracking-widest mb-2 transition-all shadow-lg",
                   marketTrend.annualGrowth > 0
                     ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-300"
                     : "bg-red-500/20 border-red-400/30 text-red-300",
@@ -511,9 +525,9 @@ export function PropertyHub({
             )}
 
             {isEditing ? (
-              <div className="space-y-6 bg-black/20 p-4 md:p-6 rounded-[2rem] border border-white/10 backdrop-blur-3xl shadow-xl mt-4">
+              <div className="space-y-6 bg-black/20 p-4 md:p-6 rounded-2xl border border-white/10 backdrop-blur-3xl shadow-xl mt-4">
                 <div className="p-4 rounded-[1.5rem] bg-white/5 border border-white/10">
-                  <label className="text-sm font-black uppercase tracking-[0.2em] text-white/70 block mb-3 text-center">
+                  <label className="text-sm font-black uppercase tracking-[0.2em] text-white/70 block mb-2 sm:mb-4 text-center">
                     {t("selectCategory") || t("propertyType")}
                   </label>
                   <PropertyTypeSelect
@@ -598,7 +612,7 @@ export function PropertyHub({
                     </span>
                     <div className="h-px flex-1 bg-muted/50 dark:bg-neutral-800" />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
                     {[
                       {
                         key: "has_balcony",
@@ -634,7 +648,7 @@ export function PropertyHub({
                             }))
                           }
                           className={cn(
-                            "flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all duration-300 group relative overflow-hidden",
+                            "flex flex-col items-center justify-center gap-2 p-2 sm:p-4 rounded-2xl border transition-all duration-300 group relative overflow-hidden",
                             isActive
                               ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-600/20 scale-[1.02] z-10"
                               : "bg-background dark:bg-neutral-800/50 border-transparent text-muted-foreground hover:bg-muted/50 hover:scale-[1.01]",
@@ -682,7 +696,7 @@ export function PropertyHub({
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "px-3 py-1 text-sm font-black uppercase h-7",
+                          "px-2 sm:px-4 py-1 text-sm font-black uppercase h-7",
                           uploadMode === "upload"
                             ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700"
                             : "text-muted-foreground hover:bg-transparent hover:text-foreground",
@@ -698,7 +712,7 @@ export function PropertyHub({
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "px-3 py-1 text-sm font-black uppercase h-7",
+                          "px-2 sm:px-4 py-1 text-sm font-black uppercase h-7",
                           uploadMode === "url"
                             ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700"
                             : "text-muted-foreground hover:bg-transparent hover:text-foreground",
@@ -793,7 +807,7 @@ export function PropertyHub({
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col gap-3 max-w-full">
+              <div className="flex flex-col gap-2 sm:gap-4 max-w-full">
                 <div className="flex flex-col gap-1 min-w-0">
                   <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white leading-tight md:leading-none break-words line-clamp-2">
                     {property.address}
@@ -804,7 +818,7 @@ export function PropertyHub({
                     </p>
                     
                     {activeContract && activeContract.start_date && (
-                      <div className="flex items-center gap-1.5 text-white/80 font-medium pt-1">
+                      <div className="flex items-center gap-2 text-white/80 font-medium pt-1">
                         <Calendar className="w-4 h-4" />
                         <span>
                           {format(parseISO(activeContract.start_date), "dd/MM/yyyy")}
@@ -819,7 +833,7 @@ export function PropertyHub({
                           {activeContract.option_periods.map((opt: any, index: number) => {
                             if (!opt.endDate) return null;
                             return (
-                              <div key={index} className="flex items-center gap-1.5 text-white/70 text-xs font-medium">
+                              <div key={index} className="flex items-center gap-2 text-white/70 text-xs font-medium">
                                 <span className="w-4 text-center">•</span>
                                 <span>
                                   {lang === "he" ? `אופציה ${index + 1}` : `Option ${index + 1}`}:{" "}
@@ -875,7 +889,7 @@ export function PropertyHub({
                         gap: 8,
                       }}
                       className={cn(
-                        "z-[100] min-w-[200px] bg-window rounded-[2rem] shadow-2xl border border-slate-100 dark:border-neutral-800 p-2 focus:outline-none font-sans",
+                        "z-[100] min-w-[200px] bg-window rounded-2xl shadow-2xl border border-slate-100 dark:border-neutral-800 p-2 focus:outline-none font-sans",
                         "animate-in fade-in zoom-in-95 duration-100",
                       )}
                     >
@@ -904,6 +918,26 @@ export function PropertyHub({
                             </Button>
                           )}
                         </MenuItem>
+                        <div className="h-[1px] bg-background dark:bg-neutral-800 my-2 mx-4" />
+                        <MenuItem>
+                          {({ focus }) => (
+                            <Button
+                              onClick={handleCopyTenantLink}
+                              variant="ghost"
+                              leftIcon={
+                                <LinkIcon className="w-4 h-4 text-brand-500" />
+                              }
+                              className={cn(
+                                "w-full justify-start gap-2 sm:gap-4 px-4 py-2 sm:py-4 rounded-2xl text-base font-bold transition-all h-auto",
+                                focus
+                                  ? "bg-background dark:bg-neutral-800 text-foreground"
+                                  : "text-muted-foreground",
+                              )}
+                            >
+                              {t('createTenantSignLink')}
+                            </Button>
+                          )}
+                        </MenuItem>
                         <MenuItem>
                           {({ focus }) => (
                             <Button
@@ -915,7 +949,7 @@ export function PropertyHub({
                                 </span>
                               }
                               className={cn(
-                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-base font-bold transition-all h-auto",
+                                "w-full justify-start gap-2 sm:gap-4 px-4 py-2 sm:py-4 rounded-2xl text-base font-bold transition-all h-auto",
                                 focus
                                   ? "bg-background dark:bg-neutral-800 text-foreground"
                                   : "text-muted-foreground",
@@ -937,7 +971,7 @@ export function PropertyHub({
                                 <FilePlus className="w-4 h-4 text-emerald-500" />
                               }
                               className={cn(
-                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-base font-bold transition-all h-auto",
+                                "w-full justify-start gap-2 sm:gap-4 px-4 py-2 sm:py-4 rounded-2xl text-base font-bold transition-all h-auto",
                                 focus
                                   ? "bg-background dark:bg-neutral-800 text-foreground"
                                   : "text-muted-foreground",
@@ -957,7 +991,7 @@ export function PropertyHub({
                                 <Edit2 className="w-4 h-4 text-brand-500" />
                               }
                               className={cn(
-                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-base font-bold transition-all h-auto",
+                                "w-full justify-start gap-2 sm:gap-4 px-4 py-2 sm:py-4 rounded-2xl text-base font-bold transition-all h-auto",
                                 focus
                                   ? "bg-background dark:bg-neutral-800 text-foreground"
                                   : "text-muted-foreground",
@@ -975,7 +1009,7 @@ export function PropertyHub({
                               variant="ghost"
                               leftIcon={<Trash2 className="w-4 h-4" />}
                               className={cn(
-                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-base font-bold transition-all h-auto",
+                                "w-full justify-start gap-2 sm:gap-4 px-4 py-2 sm:py-4 rounded-2xl text-base font-bold transition-all h-auto",
                                 focus
                                   ? "bg-red-50 dark:bg-red-900/20 text-red-600"
                                   : "text-destructive",
@@ -996,7 +1030,7 @@ export function PropertyHub({
       </div>
 
       {/* 2. Tabs Navigation */}
-      <div className="px-5 md:px-6 relative z-20 w-full mb-2">
+      <div className="px-4 sm:px-6 md:px-6 relative z-20 w-full mb-2">
         {/* Unified Sliding Tabs (Toggle) */}
         <div className="flex gap-1 bg-white/5 backdrop-blur-3xl p-1.5 rounded-[1.8rem] border border-white/10 shadow-xl w-full items-center justify-between">
           {tabs.map((tab) => {
@@ -1007,7 +1041,7 @@ export function PropertyHub({
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex-1 flex justify-center items-center gap-2 px-2 md:px-6 py-2.5 md:py-3 rounded-[1.3rem] transition-all duration-700 whitespace-nowrap group relative min-w-0",
+                  "flex-1 flex justify-center items-center gap-2 px-2 md:px-6 py-2.5 md:py-2 sm:py-4 rounded-[1.3rem] transition-all duration-700 whitespace-nowrap group relative min-w-0",
                   isActive
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02] z-10"
                     : "text-muted-foreground hover:text-foreground hover:bg-white/5 dark:hover:bg-white/5",
@@ -1036,8 +1070,8 @@ export function PropertyHub({
       </div>
 
       {/* 3. Tab Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 pt-6 pb-6">
-        <div className="px-5 md:px-6 h-full">
+      <div className="flex-1 overflow-y-auto min-h-0 pt-6">
+        <div className="px-4 sm:px-6 md:px-6 h-full">
           {activeTab === "contracts" && (
             <ContractsTab
               key={refreshKey}

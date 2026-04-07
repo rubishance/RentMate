@@ -35,6 +35,8 @@ export function DocumentTimeline({ documents, onDocumentClick, loading, property
             case 'checks':
             case 'check': return t('checksStorage') || (lang === 'he' ? 'צ\'קים' : 'Checks');
             case 'maintenance': return t('maintenance') || (lang === 'he' ? 'תחזוקה' : 'Maintenance');
+            case 'tenant_form': return lang === 'he' ? 'טופס הרשמה' : 'Signup Form';
+            case 'protocols': return lang === 'he' ? 'פרוטוקול מסירה' : 'Handover Protocol';
             default: return t(category) || category;
         }
     };
@@ -129,7 +131,7 @@ export function DocumentTimeline({ documents, onDocumentClick, loading, property
                                         role="button"
                                         tabIndex={0}
                                         onClick={() => onDocumentClick(doc)}
-                                        className="bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-[20px] shadow-sm border border-slate-100 dark:border-white/5 p-3 flex sm:p-4 items-center justify-between w-full transition-all group overflow-hidden relative hover:bg-neutral-50 dark:hover:bg-neutral-800/80 hover:shadow-md cursor-pointer outline-none focus:ring-2 focus:ring-primary/20 grid grid-cols-[80px_1fr_80px] sm:grid-cols-[110px_1fr_110px] gap-1.5 sm:gap-4"
+                                        className="bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-[20px] shadow-sm border border-slate-100 dark:border-white/5 p-2 sm:p-4 flex sm:p-4 items-center justify-between w-full transition-all group overflow-hidden relative hover:bg-neutral-50 dark:hover:bg-neutral-800/80 hover:shadow-md cursor-pointer outline-none focus:ring-2 focus:ring-primary/20 grid grid-cols-[80px_1fr_80px] sm:grid-cols-[110px_1fr_110px] gap-2 sm:gap-4"
                                     >
                                         {/* Right Column: Date & Asset */}
                                         <div className="flex flex-col items-start min-w-0 overflow-hidden text-start pr-0.5 sm:pr-0">
@@ -137,7 +139,7 @@ export function DocumentTimeline({ documents, onDocumentClick, loading, property
                                                 {doc.document_date ? format(parseISO(doc.document_date), 'dd/MM/yy') : format(new Date(doc.created_at), 'dd/MM/yy')}
                                             </span>
                                             {address && (
-                                                <div className="w-full flex items-center justify-start gap-1 sm:gap-1.5 mt-0.5 sm:mt-1 text-[13px] sm:text-lg font-bold text-slate-500 dark:text-slate-400 tracking-tight overflow-hidden leading-tight">
+                                                <div className="w-full flex items-center justify-start gap-1 sm:gap-2 mt-0.5 sm:mt-1 text-[13px] sm:text-lg font-bold text-slate-500 dark:text-slate-400 tracking-tight overflow-hidden leading-tight">
                                                     <Building2 className="w-[13px] h-[13px] sm:w-[18px] sm:h-[18px] shrink-0" />
                                                     <span className="truncate flex-1 block pt-[1px]" title={address}>{address}</span>
                                                 </div>

@@ -288,7 +288,7 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
 
                     {/* Folder Metadata */}
                     <div className="relative space-y-5">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div className="space-y-1.5">
                                 <Input
                                     label={t('subject')}
@@ -341,7 +341,7 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
                             <div className="w-full py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl group-hover:border-orange-500 group-hover:bg-orange-50/30 dark:group-hover:bg-orange-900/10 transition-all flex flex-col items-center justify-center text-center gap-2">
-                                <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-full group-hover:scale-110 transition-transform">
+                                <div className="p-2 sm:p-4 bg-orange-50 dark:bg-orange-900/20 rounded-full group-hover:scale-110 transition-transform">
                                     <Upload className="w-6 h-6 text-warning" />
                                 </div>
                                 <div>
@@ -356,7 +356,7 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                             <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                                 {stagedFiles.map((file) => (
                                     <div key={file.id} className="bg-white/60 dark:bg-gray-800/60 p-4 rounded-xl border border-border dark:border-gray-700 shadow-sm backdrop-blur-sm hover:shadow-md transition-all">
-                                        <div className="flex justify-between items-start mb-3">
+                                        <div className="flex justify-between items-start mb-2 sm:mb-4">
                                             <div className="flex items-center gap-2 overflow-hidden">
                                                 <div className="p-1.5 bg-warning/10 text-warning rounded-xl">
                                                     <Hammer className="w-4 h-4" />
@@ -375,19 +375,19 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
 
                                         {/* AI Badge */}
                                         {file.isAnalyzing ? (
-                                            <div className="mb-3 flex items-center gap-2 text-xs text-orange-500 animate-pulse">
+                                            <div className="mb-2 sm:mb-4 flex items-center gap-2 text-xs text-orange-500 animate-pulse">
                                                 <Loader2 className="w-3 h-3 animate-spin" />
                                                 {t('scanningBill', { defaultValue: 'Analyzing receipt...' })}
                                             </div>
                                         ) : file.aiData ? (
-                                            <div className="mb-3 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-xl w-fit">
+                                            <div className="mb-2 sm:mb-4 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-xl w-fit">
                                                 <Sparkles className="w-3 h-3" />
                                                 <span>{t('autoFilledByGemini', { defaultValue: 'Auto-filled by Gemini' })}</span>
                                                 <span className="font-mono opacity-70">({(file.aiData.confidence * 100).toFixed(0)}% conf)</span>
                                             </div>
                                         ) : null}
 
-                                        <div className="grid grid-cols-2 gap-3 mb-3">
+                                        <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-2 sm:mb-4">
                                             <div className="space-y-1">
                                                 <Input
                                                     label={t('vendor')}
@@ -410,7 +410,7 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                                                 />
                                             </div>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-3">
+                                        <div className="grid grid-cols-2 gap-2 sm:gap-4">
                                             <div className="space-y-1">
                                                 <Select
                                                     label={t('issueType')}
@@ -445,8 +445,8 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                         )}
                     </div>
 
-                    <div className="flex gap-3 pt-4 border-t border-border dark:border-gray-700/50">
-                        <div className="flex gap-3 pt-4 border-t border-border dark:border-gray-700/50">
+                    <div className="flex gap-2 sm:gap-4 pt-4 border-t border-border dark:border-gray-700/50">
+                        <div className="flex gap-2 sm:gap-4 pt-4 border-t border-border dark:border-gray-700/50">
                             <Button
                                 variant="ghost"
                                 onClick={() => setShowUploadForm(false)}

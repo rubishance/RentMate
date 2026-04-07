@@ -78,12 +78,12 @@ export function ProspectiveTenantsWidget({ isExpanded: externalIsExpanded, onTog
     };
 
     return (
-        <div className="bg-card rounded-[2.5rem] p-0 shadow-sm border border-border relative overflow-hidden group h-full flex flex-col justify-start">
+        <div className="bg-card rounded-2xl p-0 shadow-sm border border-border relative overflow-hidden group h-full flex flex-col justify-start">
             <div 
-                className="flex items-center justify-between p-5 md:p-6 pb-2 cursor-pointer select-none group/header relative z-10"
+                className="flex items-center justify-between p-4 sm:p-6 md:p-6 pb-2 cursor-pointer select-none group/header relative z-10"
                 onClick={toggleExpand}
             >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <div className="p-2 bg-slate-100 dark:bg-neutral-800 rounded-xl shrink-0">
                         <Users className="w-5 h-5 text-cyan-500" />
                     </div>

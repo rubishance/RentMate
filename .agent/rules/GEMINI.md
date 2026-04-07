@@ -60,9 +60,13 @@ When user's prompt is NOT in English:
 2. **Respond in user's language** - match their communication
 3. **Code comments/variables** remain in English
 
-### 🇮🇱 Hebrew-First Verification Mandate (Global Mandatory)
-
 **MANDATORY:** Unless explicitly requested otherwise, RentMate is a Hebrew-first application. Before finalizing any feature, UI change, endpoint, or backend notification, the agent MUST explicitly verify that ALL user-facing text, strings, translation keys, and database generation functions are translated into Hebrew. Never leave fallback text in English.
+
+### 📱 Mobile App First Mandate (Global Mandatory)
+
+**MANDATORY:** From now on, ALL development work targets the Mobile App (App Store / Play Store version) ONLY. Do NOT develop, update, or modify the browser/web version unless the user EXPLICITLY requests a change for the web version. Assume all "add feature" or "fix bug" requests refer to the mobile application environment.
+
+**MANDATORY MOBILE REFRESH NOTIFICATION:** Every time an update is deployed or code is modified that requires the user to take a manual action to see the changes on their phone (e.g., refreshing the app, restarting the local dev server, clearing cache, or rebuilding the app), the agent MUST explicitly notify the user in Hebrew what exact steps they must take to see the update. ("תעדכן אותי מה לעשות").
 
 ### 🎨 UI Component Design Mandate (Global Mandatory)
 

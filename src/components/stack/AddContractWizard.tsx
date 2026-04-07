@@ -760,7 +760,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                 <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
                     {t('limitReachedDesc')}
                 </p>
-                <div className="flex gap-4 pt-4">
+                <div className="flex gap-4 pt-6">
                     <Button onClick={() => pop()} variant="secondary">
                         {t('goBack')}
                     </Button>
@@ -790,7 +790,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                         animate={{ opacity: 1, scale: 1, x: 0 }}
                         exit={{ opacity: 0, scale: 0.8, x: -20 }}
                         onClick={() => setIsContractViewerOpen(!isContractViewerOpen)}
-                        className="fixed top-24 left-6 z-50 glass-premium dark:bg-neutral-800/60 shadow-lg border border-[#CFD8DC] p-3 rounded-full flex items-center gap-3 hover:scale-105 transition-all text-[#0D47A1]"
+                        className="fixed top-24 left-6 z-50 glass-premium dark:bg-neutral-800/60 shadow-lg border border-[#CFD8DC] p-2 sm:p-6 rounded-full flex items-center gap-2 sm:gap-4 hover:scale-105 transition-all text-[#0D47A1]"
                     >
                         {isContractViewerOpen ? <ChevronDown className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
                         <span className="text-xs font-black uppercase tracking-widest pr-1 text-[#1A237E]">{t('hideContract')}</span>
@@ -814,47 +814,38 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                         flex: (isContractViewerOpen) ? 'none' : '1'
                     }}
                 >
-                    {/* Header */}
-                    <div className="h-16 flex items-center justify-between px-6 z-20 shrink-0 bg-[#F5F7FA]">
-                        <div className="flex-1"></div>
-                        <div className="flex-1 text-center">
-                            <h1 className="font-extrabold text-xl text-[#0D47A1]">הוספת חוזה חדש</h1>
-                        </div>
-                        <div className="flex-1 flex justify-end">
-                            <button
-                                onClick={() => pop()}
-                                className="text-[#0D47A1] p-2 rounded-full hover:bg-black/5 transition-all"
-                            >
-                                <ArrowRight className={cn("w-6 h-6", lang === 'en' ? 'rotate-180' : '')} />
-                            </button>
+                    {/* PROGRESS TRACKER */}
+                    <div className="absolute top-0 inset-x-0 h-1.5 bg-black/5 dark:bg-white/5 z-[100]">
+                        <motion.div
+                            className="h-full bg-primary shadow-lg shadow-primary/20"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${((step) / STEPS.length) * 100}%` }}
+                            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                        />
+                    </div>
+
+                    {/* STEPPER HEADER (No Close Button) */}
+                    <div className="flex items-center px-6 py-6 border-b border-border/40 z-10 bg-background/80 backdrop-blur-md">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-sm border border-primary/20">
+                                {(() => {
+                                    const Icon = STEPS[step - 1].icon;
+                                    return <Icon className="w-5 h-5" />;
+                                })()}
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground leading-none mb-1">
+                                    {t('step')} {step} / {STEPS.length}
+                                </span>
+                                <span className="font-bold text-lg tracking-tight text-foreground leading-none">
+                                    <bdi>{t(STEPS[step - 1].labelKey as any)}</bdi>
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto no-scrollbar pt-6 pb-32 px-4 sm:px-6">
+                    <div className="flex-1 overflow-y-auto no-scrollbar pt-6 pb-32 px-6 sm:px-6">
                         <div className="max-w-2xl mx-auto space-y-6">
-                            
-                            {/* Progress Card */}
-                            {!isScanning && (
-                                <div className="bg-white rounded-[16px] p-6 shadow-[0px_4px_12px_rgba(13,71,161,0.04)] border border-[#CFD8DC]/30" dir="rtl">
-                                    <div className="flex justify-between items-end mb-4">
-                                        <span className="text-[#37474F] text-sm font-medium">{t(STEPS[step - 1].labelKey)}</span>
-                                        <span className="text-[#0D47A1] font-bold text-lg">שלב {step} מתוך {STEPS.length}</span>
-                                    </div>
-                                    <div className="w-full bg-[#E3F2FD] h-2 rounded-full mb-4 overflow-hidden" dir="ltr">
-                                        <div 
-                                            className="bg-[#0D47A1] h-full rounded-full transition-all duration-500" 
-                                            style={{ width: `${(step / STEPS.length) * 100}%` }} 
-                                        />
-                                    </div>
-                                    <div className="flex justify-between items-center text-xs sm:text-sm font-medium">
-                                        {STEPS.slice().reverse().map(s => (
-                                            <span key={s.id} className={s.id === step ? "text-[#0D47A1] font-bold" : "text-[#CFD8DC]"}>
-                                                {t(s.labelKey)}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
 
                             {/* Content Card */}
                             <div className="bg-white rounded-[16px] shadow-[0px_4px_12px_rgba(13,71,161,0.04)] border border-[#CFD8DC]/30 p-6 sm:p-8 min-h-[400px]" dir="rtl">
@@ -879,7 +870,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                         >
                                             {/* Step specific content here */}
                                             {step === 1 && (
-                                                <div className="space-y-8 pb-4">
+                                                <div className="space-y-8 pb-6">
                                                     {!contractFile && (
                                                         <div className="bg-[#0D47A1] rounded-2xl p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-md gap-4">
                                                             <div>
@@ -896,7 +887,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                     )}
 
                                                     {contractFile && (
-                                                        <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 flex items-center gap-3 text-green-600">
+                                                        <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6 flex items-center gap-2 sm:gap-4 text-green-600">
                                                             <CheckCircle className="w-5 h-5" />
                                                             <span className="font-bold text-sm">{t('contractScannedSuccess')}</span>
                                                         </div>
@@ -912,7 +903,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                             {!isPropertyLocked && (
                                                                 <button
                                                                     onClick={handleAddNewProperty}
-                                                                    className="p-6 rounded-2xl border-2 border-dashed border-[#CFD8DC] hover:border-[#0D47A1]/50 hover:bg-[#F5F7FA] transition-all group flex flex-col items-center justify-center gap-3 min-h-[140px] bg-white"
+                                                                    className="p-6 rounded-2xl border-2 border-dashed border-[#CFD8DC] hover:border-[#0D47A1]/50 hover:bg-[#F5F7FA] transition-all group flex flex-col items-center justify-center gap-2 sm:gap-4 min-h-[140px] bg-white"
                                                                 >
                                                                     <div className="w-12 h-12 rounded-full bg-[#E3F2FD] flex items-center justify-center text-[#0D47A1] group-hover:scale-110 transition-transform">
                                                                         <Plus className="w-6 h-6" />
@@ -955,7 +946,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                             )}
 
                                             {step === 2 && (
-                                                <div className="space-y-8 pb-4">
+                                                <div className="space-y-8 pb-6">
                                                     <div className="border-r-4 border-[#0D47A1] pr-4 mb-8 text-right">
                                                         <h3 className="font-extrabold text-2xl text-[#0D47A1] mb-2">פרטי הדייר</h3>
                                                         <p className="text-[#37474F] text-sm leading-relaxed max-w-sm">אנא הזן את פרטי השוכר כפי שהם מופיעים בתעודת הזהות.</p>
@@ -977,7 +968,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                                 </button>
                                                             )}
 
-                                                            <div className="space-y-2 text-right">
+                                                            <div className="space-y-4 text-right">
                                                                 <label className="text-sm font-semibold flex items-center justify-end gap-2 text-[#1A237E]">
                                                                     <span>{t('fullName')}</span>
                                                                     <User className="w-4 h-4 text-[#0D47A1]" />
@@ -991,11 +982,11 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                                         setValue('tenants', newTenants);
                                                                     }}
                                                                     placeholder="ישראל ישראלי"
-                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-4 py-3 text-right focus:outline-none focus:border-[#0D47A1] transition-all"
+                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-6 py-2 sm:py-6 text-right focus:outline-none focus:border-[#0D47A1] transition-all"
                                                                 />
                                                             </div>
 
-                                                            <div className="space-y-2 text-right">
+                                                            <div className="space-y-4 text-right">
                                                                 <label className="text-sm font-semibold flex items-center justify-end gap-2 text-[#1A237E]">
                                                                     <span>{t('idNumber')}</span>
                                                                     <IdCard className="w-4 h-4 text-[#0D47A1]" />
@@ -1009,11 +1000,11 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                                         setValue('tenants', newTenants);
                                                                     }}
                                                                     placeholder="000000000"
-                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-4 py-3 text-right font-mono focus:outline-none focus:border-[#0D47A1] transition-all"
+                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-6 py-2 sm:py-6 text-right font-mono focus:outline-none focus:border-[#0D47A1] transition-all"
                                                                 />
                                                             </div>
 
-                                                            <div className="space-y-2 text-right">
+                                                            <div className="space-y-4 text-right">
                                                                 <label className="text-sm font-semibold flex items-center justify-end gap-2 text-[#1A237E]">
                                                                     <span>{t('phone')}</span>
                                                                     <Phone className="w-4 h-4 text-[#0D47A1]" />
@@ -1027,12 +1018,12 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                                         setValue('tenants', newTenants);
                                                                     }}
                                                                     placeholder="050-0000000"
-                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-4 py-3 text-right font-mono focus:outline-none focus:border-[#0D47A1] transition-all"
+                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-6 py-2 sm:py-6 text-right font-mono focus:outline-none focus:border-[#0D47A1] transition-all"
                                                                     dir="ltr"
                                                                 />
                                                             </div>
 
-                                                            <div className="space-y-2 text-right">
+                                                            <div className="space-y-4 text-right">
                                                                 <label className="text-sm font-semibold flex items-center justify-end gap-2 text-[#1A237E]">
                                                                     <span>{t('email')}</span>
                                                                     <Mail className="w-4 h-4 text-[#0D47A1]" />
@@ -1046,7 +1037,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                                         setValue('tenants', newTenants);
                                                                     }}
                                                                     placeholder="example@domain.com"
-                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-4 py-3 text-right focus:outline-none focus:border-[#0D47A1] transition-all"
+                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-6 py-2 sm:py-6 text-right focus:outline-none focus:border-[#0D47A1] transition-all"
                                                                     dir="ltr"
                                                                 />
                                                             </div>
@@ -1060,13 +1051,13 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                             newTenants.push({ name: '', id_number: '', email: '', phone: '' });
                                                             setValue('tenants', newTenants);
                                                         }}
-                                                        className="w-full mt-4 p-4 border-2 border-dashed border-[#0D47A1]/30 rounded-xl text-[#0D47A1] font-bold hover:bg-[#E3F2FD]/50 transition-colors flex justify-center items-center gap-2"
+                                                        className="w-full mt-4 p-6 border-2 border-dashed border-[#0D47A1]/30 rounded-xl text-[#0D47A1] font-bold hover:bg-[#E3F2FD]/50 transition-colors flex justify-center items-center gap-2"
                                                     >
                                                         <Plus className="w-5 h-5" />
                                                         {t('addTenant') || "הוסף שוכר נוסף"}
                                                     </button>
 
-                                                    <div className="mt-8 bg-[#F5F7FA] rounded-xl p-5 flex items-start gap-4 justify-end">
+                                                    <div className="mt-8 bg-[#F5F7FA] rounded-xl p-6 sm:p-6 flex items-start gap-4 justify-end">
                                                         <div className="text-right flex-1 pt-1">
                                                             <h4 className="font-bold text-[#0D47A1] text-sm mb-1">שותפים לחוזה</h4>
                                                             <p className="text-sm text-[#37474F]">כל השוכרים המופיעים בחוזה צריכים להיות רשומים עם פרטיהם המלאים להבטחת כיסוי משפטי מעולה.</p>
@@ -1079,7 +1070,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                             )}
 
                                             {step === 3 && (
-                                                <div className="space-y-8 pb-4">
+                                                <div className="space-y-8 pb-6">
                                                     <div className="border-r-4 border-[#0D47A1] pr-4 mb-8 text-right">
                                                         <h3 className="font-extrabold text-2xl text-[#0D47A1] mb-2">{t('leaseTerms')}</h3>
                                                         <p className="text-[#37474F] text-sm leading-relaxed max-w-sm">הגדרת תקופות השכירות ותחנות יציאה.</p>
@@ -1115,7 +1106,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                             </div>
                                                         )}
                                                         {formData.optionPeriods.map((period, idx) => (
-                                                            <div key={idx} className="flex flex-col gap-4 bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl mb-4 relative">
+                                                            <div key={idx} className="flex flex-col gap-4 bg-[#F5F7FA] border border-[#CFD8DC] p-6 sm:p-6 rounded-2xl mb-4 relative">
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
@@ -1199,7 +1190,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                             )}
 
                                             {step === 4 && (
-                                                <div className="space-y-8 pb-4">
+                                                <div className="space-y-8 pb-6">
                                                     <div className="border-r-4 border-[#0D47A1] pr-4 mb-8 text-right">
                                                         <h3 className="font-extrabold text-2xl text-[#0D47A1] mb-2">{t('paymentDetails')}</h3>
                                                         <p className="text-[#37474F] text-sm leading-relaxed max-w-sm">הגדרת סכום השכירות החודשי ואופן התשלום.</p>
@@ -1256,7 +1247,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                             }}
                                                         />
                                                         {formData.hasLinkage && (
-                                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 pt-4 border-t border-[#CFD8DC]">
+                                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 pt-6 border-t border-[#CFD8DC]">
                                                                 <Select
                                                                     label={<span>{t('indexOption')} <span className="text-red-500">*</span></span>}
                                                                     value={formData.linkageType}
@@ -1268,7 +1259,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                                     }))}
                                                                 />
 
-                                                                <div className="space-y-2">
+                                                                <div className="space-y-4">
                                                                     <label className="text-sm font-medium text-[#37474F]">{t('linkageMethod')}</label>
                                                                     <SegmentedControl
                                                                         size="sm"
@@ -1293,7 +1284,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                             )}
 
                                             {step === 5 && (
-                                                <div className="space-y-8 pb-4">
+                                                <div className="space-y-8 pb-6">
                                                     <div className="border-r-4 border-[#0D47A1] pr-4 mb-8 text-right">
                                                         <h3 className="font-extrabold text-2xl text-[#0D47A1] mb-2">{t('securityAndAppendices')}</h3>
                                                         <p className="text-[#37474F] text-sm leading-relaxed max-w-sm">הגדרת בטחונות וסעיפים נוספים לחוזה.</p>
@@ -1348,8 +1339,8 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
 
                                                     <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar pb-6">
                                                         {/* Property & Infrastructure */}
-                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
-                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-6 sm:p-6 rounded-2xl space-y-4">
+                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-2 sm:mb-4 uppercase tracking-wider text-xs">
                                                                 <Building className="w-4 h-4" /> {t('infrastructure')}
                                                             </h4>
                                                             <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
@@ -1382,8 +1373,8 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                         </div>
 
                                                         {/* Parties Involed */}
-                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
-                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-6 sm:p-6 rounded-2xl space-y-4">
+                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-2 sm:mb-4 uppercase tracking-wider text-xs">
                                                                 <User className="w-4 h-4" /> {t('parties')}
                                                             </h4>
                                                             <div className="space-y-4">
@@ -1416,8 +1407,8 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                         </div>
 
                                                         {/* Timeline */}
-                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
-                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-6 sm:p-6 rounded-2xl space-y-4">
+                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-2 sm:mb-4 uppercase tracking-wider text-xs">
                                                                 <Calendar className="w-4 h-4" /> {t('timeline')}
                                                             </h4>
                                                             <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
@@ -1454,8 +1445,8 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                         </div>
 
                                                         {/* Financials & Linkage */}
-                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
-                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-6 sm:p-6 rounded-2xl space-y-4">
+                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-2 sm:mb-4 uppercase tracking-wider text-xs">
                                                                 <SettingsIcon className="w-4 h-4" /> {t('financials')}
                                                             </h4>
                                                             <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
@@ -1509,8 +1500,8 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
 
                                                         {/* Security */}
                                                         {(formData.securityDeposit || formData.guarantees || formData.guarantorsInfo) && (
-                                                            <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
-                                                                <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                            <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-6 sm:p-6 rounded-2xl space-y-4">
+                                                                <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-2 sm:mb-4 uppercase tracking-wider text-xs">
                                                                     <Shield className="w-4 h-4" /> {t('securityAndAppendices')}
                                                                 </h4>
                                                                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
@@ -1540,8 +1531,8 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
 
                                                         {/* Additional Details */}
                                                         {(formData.specialClauses || formData.needsPainting) && (
-                                                            <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
-                                                                <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                            <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-6 sm:p-6 rounded-2xl space-y-4">
+                                                                <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-2 sm:mb-4 uppercase tracking-wider text-xs">
                                                                     <FileText className="w-4 h-4" /> {t('additionalDetails')}
                                                                 </h4>
                                                                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
@@ -1555,7 +1546,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                                                     {formData.specialClauses && (
                                                                         <>
                                                                             <span className="text-[#37474F] col-span-2">{t('specialClauses')}</span>
-                                                                            <div className="text-left font-normal italic col-span-2 bg-white/70 p-3 rounded-xl border border-[#CFD8DC] text-xs leading-relaxed text-[#1A237E]">
+                                                                            <div className="text-left font-normal italic col-span-2 bg-white/70 p-2 sm:p-6 rounded-xl border border-[#CFD8DC] text-xs leading-relaxed text-[#1A237E]">
                                                                                 {formData.specialClauses}
                                                                             </div>
                                                                         </>
@@ -1606,7 +1597,7 @@ export function AddContractWizard({ initialData, propertyId, onSuccess }: AddCon
                                     width: windowWidth >= 1024 ? `${100 - splitRatio}%` : '100%'
                                 }}
                             >
-                                <div className="flex items-center justify-between px-6 py-3 bg-white dark:bg-neutral-800 border-b border-border shrink-0">
+                                <div className="flex items-center justify-between px-6 py-2 sm:py-6 bg-white dark:bg-neutral-800 border-b border-border shrink-0">
                                     <span className="text-xs font-black text-muted-foreground flex items-center gap-2">
                                         <FileText className="w-4 h-4" /> {t('originalContract')}
                                     </span>

@@ -41,11 +41,11 @@ export function ActionCard({ title, description, options, onSelect }: ActionCard
                         key={opt.value}
                         onClick={() => onSelect(opt.value)}
                         className={cn(
-                            "w-full flex items-center justify-between p-3 bg-white/50 dark:bg-neutral-900/50 hover:bg-white dark:hover:bg-neutral-800 shadow-sm border border-border/50 dark:border-white/10 rounded-xl transition-all text-sm font-medium text-foreground",
+                            "w-full flex items-center justify-between p-2 sm:p-4 bg-white/50 dark:bg-neutral-900/50 hover:bg-white dark:hover:bg-neutral-800 shadow-sm border border-border/50 dark:border-white/10 rounded-xl transition-all text-sm font-medium text-foreground",
                             opt.variant === 'destructive' && "text-rose-600 hover:text-rose-700 bg-rose-50/50 hover:bg-rose-50 border-rose-100"
                         )}
                     >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             {opt.value === 'approve' && <Check className="w-4 h-4 text-emerald-500" />}
                             {opt.value === 'reject' && <X className="w-4 h-4 text-rose-500" />}
                             {opt.value === 'edit' && <Edit3 className="w-4 h-4 text-blue-500" />}

@@ -481,7 +481,7 @@ export function ChatWidget() {
                                         className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}
                                     >
                                         <div
-                                            className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${isUser
+                                            className={`max-w-[80%] p-2 sm:p-4 rounded-2xl text-sm shadow-sm ${isUser
                                                 ? "bg-black dark:bg-white text-white dark:text-black rounded-br-none border border-gray-700 dark:border-white/10"
                                                 : "bg-white dark:bg-neutral-800 text-black dark:text-white rounded-bl-none border border-border dark:border-white/20"
                                                 }`}
@@ -503,7 +503,7 @@ export function ChatWidget() {
                             })}
                             {isListening && (
                                 <div className="flex justify-start">
-                                    <div className="bg-white dark:bg-white/10 border border-border dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
+                                    <div className="bg-white dark:bg-white/10 border border-border dark:border-white/5 p-2 sm:p-4 rounded-2xl rounded-bl-none">
                                         <div className="flex items-center space-x-2 text-foreground dark:text-white">
                                             <Mic className="w-4 h-4 animate-pulse text-brand-500" />
                                             <span className="text-sm">מקשיב...</span>
@@ -513,7 +513,7 @@ export function ChatWidget() {
                             )}
                             {isLoading && (
                                 <div className="flex justify-start">
-                                    <div className="bg-white dark:bg-white/10 border border-border dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
+                                    <div className="bg-white dark:bg-white/10 border border-border dark:border-white/5 p-2 sm:p-4 rounded-2xl rounded-bl-none">
                                         <div className="flex space-x-2">
                                             <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce" />
                                             <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce delay-100" />
@@ -526,7 +526,7 @@ export function ChatWidget() {
                             {/* Analyzing Bill State */}
                             {analyzingBill && (
                                 <div className="flex justify-start">
-                                    <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-500/30 p-4 rounded-2xl w-full flex flex-col items-center gap-3">
+                                    <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-500/30 p-4 rounded-2xl w-full flex flex-col items-center gap-2 sm:gap-4">
                                         <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
                                         <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
                                             {isRtl ? 'מנתח פרטי חשבון...' : 'Analyzing Bill Details...'}
@@ -539,7 +539,7 @@ export function ChatWidget() {
                             {scannedBill && (
                                 <div className="flex justify-start">
                                     <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 p-4 rounded-2xl w-full space-y-4">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2 sm:gap-4">
                                             <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-800 rounded-full flex items-center justify-center">
                                                 <Paperclip className="w-5 h-5 text-secondary" />
                                             </div>
@@ -550,7 +550,7 @@ export function ChatWidget() {
                                         </div>
 
                                         {(scannedBill.propertyId && selectedPropertyId === scannedBill.propertyId && (scannedBill.confidence ?? 1) > 0.8) ? (
-                                            <div className="bg-emerald-100/50 dark:bg-emerald-900/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-500/30 mb-2">
+                                            <div className="bg-emerald-100/50 dark:bg-emerald-900/30 p-2 sm:p-4 rounded-xl border border-emerald-200 dark:border-emerald-500/30 mb-2">
                                                 <div className="flex justify-between items-start">
                                                     <div>
                                                         <p className="text-xs font-bold uppercase tracking-widest text-secondary mb-1">
@@ -579,7 +579,7 @@ export function ChatWidget() {
                                                 <select
                                                     value={selectedPropertyId}
                                                     onChange={(e) => setSelectedPropertyId(e.target.value)}
-                                                    className="w-full bg-white dark:bg-neutral-800 border-2 border-emerald-100 dark:border-emerald-500/30 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 transition-all"
+                                                    className="w-full bg-white dark:bg-neutral-800 border-2 border-emerald-100 dark:border-emerald-500/30 rounded-xl px-2 sm:px-4 py-2 text-sm outline-none focus:border-emerald-500 transition-all"
                                                 >
                                                     <option value="">{t('selectProperty')}</option>
                                                     {properties.map(p => (
@@ -612,7 +612,7 @@ export function ChatWidget() {
                         </div>
 
                         {/* Input */}
-                        <form onSubmit={handleSubmit} className="px-5 py-4 bg-white dark:bg-black border-t border-border dark:border-white/10 flex flex-col gap-3">
+                        <form onSubmit={handleSubmit} className="px-4 sm:px-6 py-4 bg-white dark:bg-black border-t border-border dark:border-white/10 flex flex-col gap-2 sm:gap-4">
                             <div className="flex items-center gap-2">
                                 <button
                                     type="button"
@@ -661,7 +661,7 @@ export function ChatWidget() {
                                     <Menu className="w-5 h-5" />
                                 </button>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-4">
                                 <button
                                     type="submit"
                                     disabled={isLoading}
@@ -683,7 +683,7 @@ export function ChatWidget() {
                                                 : (isRtl ? "שאל שאלה או דבר..." : "Ask or tell me something...")
                                         }
                                         dir="auto"
-                                        className="w-full bg-white dark:bg-white/10 border border-border dark:border-white/20 rounded-xl px-3 py-2 text-foreground dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:focus:ring-white/30 text-sm"
+                                        className="w-full bg-white dark:bg-white/10 border border-border dark:border-white/20 rounded-xl px-2 sm:px-4 py-2 text-foreground dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:focus:ring-white/30 text-sm"
                                     />
                                 </div>
                             </div>

@@ -44,7 +44,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                             {/* Parking */}
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('parking')}</div>
-                                <label className="flex items-center gap-3 cursor-pointer group">
+                                <label className="flex items-center gap-2 sm:gap-4 cursor-pointer group">
                                     <input
                                         type="checkbox"
                                         checked={!!property.has_parking}
@@ -58,7 +58,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                             {/* Balcony */}
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('balcony')}</div>
-                                <label className="flex items-center gap-3 cursor-pointer group">
+                                <label className="flex items-center gap-2 sm:gap-4 cursor-pointer group">
                                     <input
                                         type="checkbox"
                                         checked={!!property.has_balcony}
@@ -72,7 +72,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                             {/* Safe Room (Mamad) */}
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('safeRoom')}</div>
-                                <label className="flex items-center gap-3 cursor-pointer group">
+                                <label className="flex items-center gap-2 sm:gap-4 cursor-pointer group">
                                     <input
                                         type="checkbox"
                                         checked={!!property.has_safe_room}
@@ -86,7 +86,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                             {/* Storage */}
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('storage')}</div>
-                                <label className="flex items-center gap-3 cursor-pointer group">
+                                <label className="flex items-center gap-2 sm:gap-4 cursor-pointer group">
                                     <input
                                         type="checkbox"
                                         checked={!!property.has_storage}
@@ -101,7 +101,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                 ) : (
                     <div className="flex items-center gap-2.5 w-full">
                         {property.size_sqm ? (
-                            <div className="flex items-center justify-center flex-1 gap-2 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm h-16 sm:h-14">
+                            <div className="flex items-center justify-center flex-1 gap-2 bg-background dark:bg-neutral-900 py-2 sm:py-2 rounded-2xl shadow-sm h-16 sm:h-14">
                                 <span className="text-xl font-black text-foreground leading-none tracking-tight">
                                     {property.size_sqm}
                                 </span>
@@ -109,23 +109,23 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                             </div>
                         ) : null}
                         {property.rooms ? (
-                            <div className="flex items-center justify-center flex-1 gap-2 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm h-16 sm:h-14">
+                            <div className="flex items-center justify-center flex-1 gap-2 bg-background dark:bg-neutral-900 py-2 sm:py-2 rounded-2xl shadow-sm h-16 sm:h-14">
                                 <span className="text-xl font-black text-foreground leading-none tracking-tight">
                                     {property.rooms}
                                 </span>
                                 <BedIcon className="w-7 h-7 text-muted-foreground shrink-0" />
                             </div>
                         ) : null}
-                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
+                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-2 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
                             <StorageIcon className={cn("w-7 h-7", !property.has_storage && "opacity-20")} />
                         </div>
-                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
+                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-2 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
                             <SafeRoomIcon className={cn("w-7 h-7", !property.has_safe_room && "opacity-20")} />
                         </div>
-                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
+                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-2 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
                             <CarIcon className={cn("w-7 h-7", !property.has_parking && "opacity-20")} />
                         </div>
-                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
+                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-2 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
                             <BalconyIcon className={cn("w-7 h-7", !property.has_balcony && "opacity-20")} />
                         </div>
                     </div>

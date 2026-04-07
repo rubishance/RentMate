@@ -30,7 +30,7 @@ export function CookieConsent() {
                     transition={{ type: 'spring', damping: 20, stiffness: 300 }}
                     className="fixed bottom-4 left-4 right-4 z-[100] md:left-auto md:right-4 md:max-w-md"
                 >
-                    <div className="bg-slate-900/95 text-white/90 backdrop-blur-md p-5 rounded-2xl shadow-2xl border border-white/10 flex flex-col gap-4">
+                    <div className="bg-slate-900/95 text-white/90 backdrop-blur-md p-4 sm:p-6 rounded-2xl shadow-2xl border border-white/10 flex flex-col gap-4">
                         <div className="flex items-start gap-4">
                             <div className="p-2 bg-primary/20 rounded-xl text-primary mt-1">
                                 <Cookie className="w-6 h-6" />
@@ -45,16 +45,16 @@ export function CookieConsent() {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex justify-end gap-3 pt-2">
+                        <div className="flex justify-end gap-2 sm:gap-4 pt-2">
                             <button
                                 onClick={handleAccept}
-                                className="px-3 py-1.5 text-xs font-medium text-white border border-white/20 rounded-xl hover:bg-white/10 transition-colors"
+                                className="px-2 sm:px-4 py-2 text-xs font-medium text-white border border-white/20 rounded-xl hover:bg-white/10 transition-colors"
                             >
                                 {t('close')}
                             </button>
                             <button
                                 onClick={handleAccept}
-                                className="px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-blue-500/20"
+                                className="px-2 sm:px-4 py-2 text-xs font-medium text-white bg-primary rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-blue-500/20"
                             >
                                 {t('cookieConsentAccept')}
                             </button>

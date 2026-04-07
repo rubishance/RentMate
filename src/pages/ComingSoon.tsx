@@ -257,7 +257,7 @@ export function ComingSoon() {
                         viewport={{ once: true, amount: 0.1 }}
                         transition={{ duration: 0.6 }}
                     >
-                        <div className="flex items-center gap-2 lg:gap-3 mb-1">
+                        <div className="flex items-center gap-2 lg:gap-2 sm:gap-4 mb-1">
                             <h1 className="text-4xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-foreground to-muted-foreground tracking-tight leading-tight" style={{ textWrap: 'balance' }}>
                                 {t('coming_soon_title')}
                             </h1>
@@ -267,7 +267,7 @@ export function ComingSoon() {
                                 transition={{ duration: 0.6, type: "spring" }}
                                 className="inline-block"
                             >
-                                <div className="flex flex-col items-center justify-center font-black leading-none drop-shadow-sm select-none bg-primary/10 px-3 py-1 md:px-3 md:py-1.5 rounded-xl border border-primary/20 -rotate-6 shadow-sm">
+                                <div className="flex flex-col items-center justify-center font-black leading-none drop-shadow-sm select-none bg-primary/10 px-2 sm:px-4 py-1 md:px-2 sm:px-4 md:py-2 rounded-xl border border-primary/20 -rotate-6 shadow-sm">
                                     <span className="text-xl md:text-2xl text-primary">
                                         {isRtl ? 'בקרוב!' : 'Coming Soon!'}
                                     </span>
@@ -279,7 +279,7 @@ export function ComingSoon() {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.1, duration: 0.5 }}
-                            className="text-lg md:text-xl text-muted-foreground mb-3 leading-relaxed font-semibold max-w-lg mx-auto md:mx-0"
+                            className="text-lg md:text-xl text-muted-foreground mb-2 sm:mb-4 leading-relaxed font-semibold max-w-lg mx-auto md:mx-0"
                         >
                             {t('coming_soon_subtitle')}
                         </motion.p>
@@ -305,7 +305,7 @@ export function ComingSoon() {
                                         hidden: { opacity: 0, x: -50 },
                                         visible: { opacity: 1, x: 0 }
                                     }}
-                                    className="flex items-center gap-3 group transition-all duration-300 hover:translate-x-1 cursor-default"
+                                    className="flex items-center gap-2 sm:gap-4 group transition-all duration-300 hover:translate-x-1 cursor-default"
                                 >
                                     <div className="flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-xl bg-card shadow-sm border border-border flex items-center justify-center text-primary group-hover:bg-primary-50 group-hover:border-primary-200 group-hover:text-primary dark:group-hover:bg-primary-900/40 group-hover:shadow-md group-hover:shadow-primary-500/10 transition-all duration-300">
                                         <feature.icon className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform duration-300" />
@@ -316,7 +316,7 @@ export function ComingSoon() {
                         </motion.ul>
 
                         {/* Form Section */}
-                        <div className="bg-card/80 backdrop-blur-xl rounded-3xl p-3 md:p-3.5 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-border ring-1 ring-border/50">
+                        <div className="bg-card/80 backdrop-blur-xl rounded-2xl p-2 sm:p-4 md:p-2 sm:p-4.5 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-border ring-1 ring-border/50">
                             <AnimatePresence mode="wait">
                                 {status === 'success' ? (
                                     <motion.div
@@ -370,7 +370,7 @@ export function ComingSoon() {
                                                     required
                                                     value={formData.fullName}
                                                     onChange={handleChange}
-                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-11' : 'pl-10 md:pl-11'} py-1.5 md:py-2 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-lg transition-all`}
+                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-11' : 'pl-10 md:pl-11'} py-2 md:py-2 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-lg transition-all`}
                                                     aria-label={t('coming_soon_name_label')}
                                                 />
                                             </div>
@@ -390,7 +390,7 @@ export function ComingSoon() {
                                                     required
                                                     value={formData.email}
                                                     onChange={handleChange}
-                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-11' : 'pl-10 md:pl-11'} py-1.5 md:py-2 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-lg transition-all`}
+                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-11' : 'pl-10 md:pl-11'} py-2 md:py-2 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-lg transition-all`}
                                                     aria-label={t('coming_soon_email_label')}
                                                     dir="ltr"
                                                 />
@@ -410,7 +410,7 @@ export function ComingSoon() {
                                                     name="phone"
                                                     value={formData.phone}
                                                     onChange={handleChange}
-                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-11' : 'pl-10 md:pl-11'} py-1.5 md:py-2 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-lg transition-all`}
+                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-11' : 'pl-10 md:pl-11'} py-2 md:py-2 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-lg transition-all`}
                                                     aria-label={t('coming_soon_phone_label')}
                                                     dir="ltr"
                                                 />
@@ -486,7 +486,7 @@ export function ComingSoon() {
                                             </div>
                                         </button>
 
-                                        <div className="flex items-center justify-center gap-1.5 mt-1 text-xs md:text-sm font-semibold text-muted-foreground">
+                                        <div className="flex items-center justify-center gap-2 mt-1 text-xs md:text-sm font-semibold text-muted-foreground">
                                             <ShieldCheck className="w-3.5 h-3.5 text-primary" />
                                             <span>{isRtl ? 'רישום ומנוי ללא עלות ו/או הזנת פרטי אשראי' : 'Free registration and subscription, no credit card required'}</span>
                                         </div>
@@ -596,14 +596,14 @@ export function ComingSoon() {
                                 <div className="absolute bottom-4 right-4 flex items-center justify-center gap-2 z-20 pointer-events-auto">
                                     <button
                                         onClick={toggleMute}
-                                        className="p-2 md:p-3 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/10 hover:scale-105 active:scale-95"
+                                        className="p-2 md:p-2 sm:p-4 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/10 hover:scale-105 active:scale-95"
                                         aria-label={isMuted ? "Unmute" : "Mute"}
                                     >
                                         {isMuted ? <VolumeX className="w-4 h-4 md:w-5 md:h-5 text-white/90" /> : <Volume2 className="w-4 h-4 md:w-5 md:h-5 text-white" />}
                                     </button>
                                     <button
                                         onClick={toggleFullscreen}
-                                        className="p-2 md:p-3 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/10 hover:scale-105 active:scale-95"
+                                        className="p-2 md:p-2 sm:p-4 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/10 hover:scale-105 active:scale-95"
                                         aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
                                     >
                                         {isFullscreen ? <Minimize className="w-4 h-4 md:w-5 md:h-5 text-white" /> : <Maximize className="w-4 h-4 md:w-5 md:h-5 text-white/90" />}
@@ -649,7 +649,7 @@ export function ComingSoon() {
                                 transition={{ duration: 0.4 }}
                             >
                                 <GlassCard className="w-[300px] sm:w-[380px] h-auto min-h-[120px] md:h-[140px] flex flex-col justify-center p-4 md:p-6 border-white/20 bg-card/70 backdrop-blur-2xl text-foreground shadow-xl pointer-events-auto">
-                                    <div className={`flex items-center gap-2 md:gap-3 mb-2 ${isRtl ? 'flex-row' : 'flex-row'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                                    <div className={`flex items-center gap-2 md:gap-2 sm:gap-4 mb-2 ${isRtl ? 'flex-row' : 'flex-row'}`} dir={isRtl ? 'rtl' : 'ltr'}>
                                         <div className="p-1.5 md:p-2 bg-primary rounded-xl text-white">
                                             {(() => {
                                                 const Icon = SLIDE_CONTENT[currentImageIndex].icon;
@@ -676,13 +676,13 @@ export function ComingSoon() {
                 transition={{ duration: 0.6 }}
                 className="md:hidden w-full bg-white/50 bg-background/50 backdrop-blur-md border-t border-border/50 pt-8 pb-8 flex flex-col items-center justify-center z-50">
                 <div className="flex items-center justify-center gap-6 mb-4 text-muted-foreground">
-                    <a href="https://instagram.com/RentMate_IL" target="_blank" rel="noopener noreferrer" className="p-3 bg-background/50 hover:bg-accent rounded-full hover:text-foreground shadow-sm border border-border/50 transition-all" aria-label="Instagram">
+                    <a href="https://instagram.com/RentMate_IL" target="_blank" rel="noopener noreferrer" className="p-2 sm:p-4 bg-background/50 hover:bg-accent rounded-full hover:text-foreground shadow-sm border border-border/50 transition-all" aria-label="Instagram">
                         <Instagram className="w-6 h-6" />
                     </a>
-                    <a href="https://facebook.com/RentMate.co.il" target="_blank" rel="noopener noreferrer" className="p-3 bg-background/50 hover:bg-accent rounded-full hover:text-foreground shadow-sm border border-border/50 transition-all" aria-label="Facebook">
+                    <a href="https://facebook.com/RentMate.co.il" target="_blank" rel="noopener noreferrer" className="p-2 sm:p-4 bg-background/50 hover:bg-accent rounded-full hover:text-foreground shadow-sm border border-border/50 transition-all" aria-label="Facebook">
                         <Facebook className="w-6 h-6" />
                     </a>
-                    <a href="https://twitter.com/RentMate_IL" target="_blank" rel="noopener noreferrer" className="p-3 bg-background/50 hover:bg-accent rounded-full hover:text-foreground shadow-sm border border-border/50 transition-all" aria-label="X (Twitter)">
+                    <a href="https://twitter.com/RentMate_IL" target="_blank" rel="noopener noreferrer" className="p-2 sm:p-4 bg-background/50 hover:bg-accent rounded-full hover:text-foreground shadow-sm border border-border/50 transition-all" aria-label="X (Twitter)">
                         <Twitter className="w-6 h-6" />
                     </a>
                 </div>
@@ -707,13 +707,13 @@ export function ComingSoon() {
                 <div className="flex items-center bg-card/80 backdrop-blur-xl border border-border rounded-full shadow-lg font-extrabold text-sm overflow-hidden p-[3px]">
                     <button
                         onClick={() => setLanguage('en')}
-                        className={`px-4 py-1.5 rounded-full transition-all duration-300 ${!isRtl ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'} focus:outline-none`}
+                        className={`px-4 py-2 rounded-full transition-all duration-300 ${!isRtl ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'} focus:outline-none`}
                     >
                         EN
                     </button>
                     <button
                         onClick={() => setLanguage('he')}
-                        className={`px-4 py-1.5 rounded-full transition-all duration-300 ${isRtl ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'} focus:outline-none`}
+                        className={`px-4 py-2 rounded-full transition-all duration-300 ${isRtl ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'} focus:outline-none`}
                     >
                         HE
                     </button>

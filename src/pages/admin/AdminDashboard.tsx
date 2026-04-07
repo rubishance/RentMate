@@ -29,6 +29,7 @@ import {
 import { ActiveChatsWidget } from '../../components/crm/ActiveChatsWidget';
 import { ActionInbox } from '../../components/crm/ActionInbox';
 import { AutomationAnalytics } from '../../components/crm/AutomationAnalytics';
+import { SystemObservabilityWidget } from '../../components/admin/SystemObservabilityWidget';
 
 interface DashboardStats {
     totalUsers: number;
@@ -99,7 +100,10 @@ const AdminDashboard = () => {
     const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
     const [newUsers, setNewUsers] = useState<NewUser[]>([]);
     const [recentAiConvs, setRecentAiConvs] = useState<AiConversation[]>([]);
-
+    
+    // Gemini Tracking
+    const [dailyGeminiCost, setDailyGeminiCost] = useState<number | null>(null);
+    const [monthlyGeminiCost, setMonthlyGeminiCost] = useState<number | null>(null);
 
     useEffect(() => {
         fetchDashboardData();
@@ -111,13 +115,38 @@ const AdminDashboard = () => {
 
             // Fetch Real AI usage simultaneously
             supabase.functions.invoke('admin-openai-usage').then(({ data, error }) => {
-                if (!error && data) {
+                if (error || !data) {
+                    console.error("Error fetching OpenAI usage:", error?.message || error);
+                    // Set to negative or fallback so UI stops saying "Loading..."
+                    setDailyAiCost(-1);
+                    setMonthlyAiCost(-1);
+                    setAvailableAiCredits(null);
+                } else {
                     setDailyAiCost(data.dailyCost || 0);
                     setMonthlyAiCost(data.monthlyCost || 0);
                     setAvailableAiCredits(data.availableCredits ?? null);
-                } else {
-                    console.error("Error fetching OpenAI usage:", error);
                 }
+            }).catch(err => {
+                console.error("Caught error invoking usage function:", err);
+                setDailyAiCost(-1);
+                setMonthlyAiCost(-1);
+                setAvailableAiCredits(null);
+            });
+
+            // Fetch Real Gemini usage simultaneously
+            supabase.functions.invoke('admin-gemini-usage').then(({ data, error }) => {
+                if (error || !data) {
+                    console.error("Error fetching Gemini usage:", error?.message || error);
+                    setDailyGeminiCost(-1);
+                    setMonthlyGeminiCost(-1);
+                } else {
+                    setDailyGeminiCost(data.dailyCost || 0);
+                    setMonthlyGeminiCost(data.monthlyCost || 0);
+                }
+            }).catch(err => {
+                console.error("Caught error invoking Gemini usage function:", err);
+                setDailyGeminiCost(-1);
+                setMonthlyGeminiCost(-1);
             });
 
             // Use the admin stats function to bypass RLS
@@ -168,9 +197,9 @@ const AdminDashboard = () => {
         { name: 'Total Contracts', value: stats.totalContracts, icon: FileText, color: 'text-primary', bg: 'bg-primary-50' },
         { name: 'Total Revenue', value: stats.totalRevenue ? `₪${stats.totalRevenue.toLocaleString()}` : '₪0', icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
         { name: 'Active Users', value: stats.activeUsers, icon: Activity, color: 'text-orange-600', bg: 'bg-orange-50' },
-        { name: 'Today\'s AI Cost', value: dailyAiCost !== null ? `$${dailyAiCost.toFixed(2)}` : 'Loading...', icon: Cpu, color: 'text-primary', bg: 'bg-primary/10' },
-        { name: 'Monthly AI Cost', value: monthlyAiCost !== null ? `$${monthlyAiCost.toFixed(2)}` : 'Loading...', icon: Activity, color: 'text-purple-600', bg: 'bg-purple-50' },
-        { name: 'AI Credits Left', value: availableAiCredits !== null ? `$${availableAiCredits.toFixed(2)}` : 'Tracking Only', icon: Wallet, color: 'text-green-600', bg: 'bg-green-50' },
+        { name: 'Today\'s OpenAI Cost', value: dailyAiCost === -1 ? 'API Error' : dailyAiCost !== null ? `$${dailyAiCost.toFixed(2)}` : '...Loading', icon: Cpu, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+        { name: 'Today\'s Gemini Cost', value: dailyGeminiCost === -1 ? 'Setup Required' : dailyGeminiCost !== null ? `$${dailyGeminiCost.toFixed(2)}` : '...Loading', icon: Cpu, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { name: 'OpenAI Credits Left', value: availableAiCredits !== null ? `$${availableAiCredits.toFixed(2)}` : 'Tracking Only', icon: Wallet, color: 'text-green-600', bg: 'bg-green-50' },
         { name: 'Autopilot Decisions', value: stats.totalAutomatedActions, icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
     ];
 
@@ -196,11 +225,11 @@ const AdminDashboard = () => {
         <div className="space-y-8 pb-10">
             {/* Header omitted for brevity in replace call, but keeping logic */}
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
                 {statCards.map((item) => (
                     <div key={item.name} className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-border dark:border-gray-700 hover:shadow-lg transition-all transform hover:-translate-y-1">
                         <div className="flex items-center">
-                            <div className={`rounded-xl p-3 ${item.bg} border border-primary-100 dark:border-primary-800`}>
+                            <div className={`rounded-xl p-2 sm:p-4 ${item.bg} border border-primary-100 dark:border-primary-800`}>
                                 <item.icon className={`h-6 w-6 ${item.color}`} />
                             </div>
                             <div className="ml-5 w-0 flex-1">
@@ -213,6 +242,9 @@ const AdminDashboard = () => {
                     </div>
                 ))}
             </div>
+
+            {/* System Observability Nerve Center (New) */}
+            <SystemObservabilityWidget />
 
             {/* Automation Intelligence (New) */}
             <AutomationAnalytics stats={stats} />
@@ -265,7 +297,7 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Recent Activity */}
                 <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-border dark:border-gray-700 overflow-hidden">
-                    <div className="px-6 py-5 border-b border-border dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+                    <div className="px-6 py-4 sm:py-6 border-b border-border dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
                         <h3 className="text-base font-semibold leading-6 text-foreground dark:text-white flex items-center gap-2">
                             <Activity className="w-4 h-4 text-muted-foreground" />
                             Recent Activity
@@ -286,7 +318,7 @@ const AdminDashboard = () => {
                             recentActivity.map((log) => (
                                 <li key={log.id} className="px-6 py-4 hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
                                     <div className="flex justify-between items-start">
-                                        <div className="flex gap-3">
+                                        <div className="flex gap-2 sm:gap-4">
                                             <div className="mt-1 p-1.5 rounded-full bg-muted dark:bg-gray-700 text-muted-foreground">
                                                 <Shield className="w-3 h-3" />
                                             </div>
@@ -309,7 +341,7 @@ const AdminDashboard = () => {
 
                 {/* New Users */}
                 <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-border dark:border-gray-700 overflow-hidden">
-                    <div className="px-6 py-5 border-b border-border dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+                    <div className="px-6 py-4 sm:py-6 border-b border-border dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
                         <h3 className="text-base font-semibold leading-6 text-foreground dark:text-white flex items-center gap-2">
                             <UserPlus className="w-4 h-4 text-muted-foreground" />
                             Newest Users
@@ -354,7 +386,7 @@ const AdminDashboard = () => {
 
             {/* AI Conversations */}
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-border dark:border-gray-700 overflow-hidden">
-                <div className="px-6 py-5 border-b border-border dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="px-6 py-4 sm:py-6 border-b border-border dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
                     <h3 className="text-base font-semibold leading-6 text-foreground dark:text-white flex items-center gap-2">
                         <MessageSquare className="w-4 h-4 text-muted-foreground" />
                         Latest AI Conversations
@@ -372,10 +404,10 @@ const AdminDashboard = () => {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-blue-50 dark:bg-foreground/50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">User</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Message</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Cost</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Sync</th>
+                                <th className="px-6 py-2 sm:py-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">User</th>
+                                <th className="px-6 py-2 sm:py-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Message</th>
+                                <th className="px-6 py-2 sm:py-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Cost</th>
+                                <th className="px-6 py-2 sm:py-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Sync</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -426,7 +458,7 @@ const AdminDashboard = () => {
                             key={link.name}
                             onClick={() => navigate(link.path)}
                             variant="ghost"
-                            className="relative flex items-center space-x-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm focus-visible:ring-2 focus-visible:ring-primary-500 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-all text-left h-auto w-full justify-start"
+                            className="relative flex items-center space-x-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-4 sm:py-6 shadow-sm focus-visible:ring-2 focus-visible:ring-primary-500 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-all text-left h-auto w-full justify-start"
                         >
                             <div className="flex-shrink-0">
                                 <div className="h-10 w-10 rounded-xl bg-muted dark:bg-gray-700 flex items-center justify-center text-muted-foreground dark:text-gray-300">

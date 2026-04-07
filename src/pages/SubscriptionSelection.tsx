@@ -14,6 +14,7 @@ import { supabase } from "../lib/supabase";
 import { Button } from "../components/ui/Button";
 import { isNativePlatform } from "../utils/platform";
 import { toast } from "sonner";
+import { RevenueCatService } from "../services/revenuecat.service";
 
 interface Plan {
   id: string;
@@ -134,13 +135,13 @@ function PlanCard({
         <div className="relative z-10 flex flex-col flex-1 p-8">
           {plan.popular ? (
             <div className="flex justify-center mb-6">
-              <span className="bg-primary text-primary-foreground text-sm font-black px-4 py-1.5 rounded-full shadow-sm uppercase tracking-widest border border-primary/20">
+              <span className="bg-primary text-primary-foreground text-sm font-black px-4 py-2 rounded-full shadow-sm uppercase tracking-widest border border-primary/20">
                 {isRtl ? "מומלץ" : "RECOMMENDED"}
               </span>
             </div>
           ) : (
             <div className="flex justify-center mb-6">
-              <span className="text-sm px-4 py-1.5 invisible border border-transparent">
+              <span className="text-sm px-4 py-2 invisible border border-transparent">
                 spacer
               </span>
             </div>
@@ -191,7 +192,7 @@ function PlanCard({
               {isRtl ? "כולל:" : "INCLUDES:"}
             </p>
             {plan.features.map((feature, fIdx) => (
-              <div key={fIdx} className="flex items-start gap-3">
+              <div key={fIdx} className="flex items-start gap-2 sm:gap-4">
                 <div
                   className={`p-1 rounded-full shrink-0 mt-0.5 ${plan.id === "investor" ? "bg-[#D4AF37]/20 text-[#D4AF37]" : plan.popular ? "bg-primary/20 text-primary" : "bg-muted-foreground/20 text-muted-foreground"}`}
                 >
@@ -441,17 +442,51 @@ export function SubscriptionSelection() {
   ];
 
   const handleSelectPlan = async (planId: string) => {
-    if (isNativePlatform() && planId !== 'free') {
-      toast.info(isRtl ? "רכישות באפליקציה (IAP) לפרימיום יתווספו בקרוב!" : "Premium In-App Purchases are coming soon! (Capacitor IAP Stub)");
-      return;
-    }
-
     setSelectedPlanId(planId);
     setLoading(true);
 
     try {
+      if (isNativePlatform() && planId !== 'free') {
+        // Attempt Native Purchase via RevenueCat
+        const offerings = await RevenueCatService.getOfferings();
+        if (!offerings || !offerings.current) {
+            toast.error(isRtl ? "לא נמצאו חבילות לרכישה בשלב זה." : "No purchase packages found at this time.");
+            setLoading(false);
+            setSelectedPlanId(null);
+            return;
+        }
+
+        // Map planId to a RevenueCat package (assuming we have monthly/yearly packages)
+        // Ideally, in RC, we have 'pro_monthly', 'pro_yearly', 'investor_monthly', 'investor_yearly'
+        // For simplicity, let's try to find an offering that has the plan ID, or just present the current packages.
+        const packageToBuy = offerings.current.availablePackages.find(
+          p => p.identifier.toLowerCase().includes(planId.toLowerCase()) && 
+               p.identifier.toLowerCase().includes(billingCycle.toLowerCase())
+        ) || offerings.current.availablePackages[0]; // fallback to first package if exact match not found
+
+        if (!packageToBuy) {
+            toast.error(isRtl ? "החבילה המבוקשת לא נמצאה בחנות." : "Requested package not found in store.");
+            setLoading(false);
+            setSelectedPlanId(null);
+            return;
+        }
+
+        const customerInfo = await RevenueCatService.startPurchase(packageToBuy);
+        
+        if (!customerInfo) {
+           // Purchase cancelled or failed
+           setLoading(false);
+           setSelectedPlanId(null);
+           return;
+        }
+
+        // The webhook should handle the actual Supabase DB upgrade asynchronously. 
+        // We will optimistically update the UI to avoid waiting.
+        toast.success(isRtl ? "הרכישה בוצעה בהצלחה!" : "Purchase successful!");
+      }
+
       if (user) {
-        // Update user metadata in Supabase Auth
+        // Update user metadata in Supabase Auth (Local Optimistic Update / Web Stub)
         const { error: updateError } = await supabase.auth.updateUser({
           data: { plan_id: planId },
         });
@@ -468,12 +503,10 @@ export function SubscriptionSelection() {
         refreshProfile();
       }
 
-      // In the future this might redirect to a Payment Gateway if it's a paid plan.
-      // For now, we head to the dashboard.
       navigate("/dashboard");
     } catch (error) {
       console.error("Error selecting plan:", error);
-      // Revert state on error
+      toast.error(isRtl ? "שגיאה בתהליך השדרוג." : "Error during upgrade process.");
       setSelectedPlanId(null);
     } finally {
       setLoading(false);
@@ -598,7 +631,7 @@ export function SubscriptionSelection() {
                   {plan.features.map((feature, fIdx) => (
                     <div
                       key={`base-${fIdx}`}
-                      className="flex items-start gap-3 text-sm"
+                      className="flex items-start gap-2 sm:gap-4 text-sm"
                     >
                       <div className="p-1 rounded-full bg-secondary/10 text-green-600 shrink-0 mt-0.5">
                         <Check className="w-3 h-3" strokeWidth={3} />
@@ -617,7 +650,7 @@ export function SubscriptionSelection() {
                         {plan.extendedFeatures.map((extFeature, efIdx) => (
                           <div
                             key={`ext-${efIdx}`}
-                            className="flex items-start gap-3 text-sm"
+                            className="flex items-start gap-2 sm:gap-4 text-sm"
                           >
                             <div className="p-1 rounded-full bg-primary/10 text-primary shrink-0 mt-0.5">
                               <Check className="w-3 h-3" strokeWidth={3} />

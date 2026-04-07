@@ -98,7 +98,7 @@ export default function AutomationTracking() {
             </div>
 
             {/* Filter Ribbons */}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-4">
                 {(['all', 'success', 'failed'] as const).map((f) => (
                     <button
                         key={f}
@@ -150,7 +150,7 @@ export default function AutomationTracking() {
                             ) : (
                                 filteredLogs.map((log) => (
                                     <tr key={log.id} className="hover:bg-background/50 dark:hover:bg-slate-900/40 transition-colors group">
-                                        <td className="px-6 py-5">
+                                        <td className="px-6 py-4 sm:py-6">
                                             <div className="flex flex-col gap-1">
                                                 <span className="font-bold text-foreground dark:text-white text-sm">
                                                     {log.action_taken}
@@ -160,8 +160,8 @@ export default function AutomationTracking() {
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center gap-3">
+                                        <td className="px-6 py-4 sm:py-6">
+                                            <div className="flex items-center gap-2 sm:gap-4">
                                                 <div className="w-8 h-8 rounded-full bg-muted/50 dark:bg-slate-700 flex items-center justify-center">
                                                     <User className="w-4 h-4 text-slate-400" />
                                                 </div>
@@ -175,8 +175,8 @@ export default function AutomationTracking() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest ${log.status === 'success'
+                                        <td className="px-6 py-4 sm:py-6">
+                                            <div className={`inline-flex items-center gap-2 px-2 sm:px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest ${log.status === 'success'
                                                 ? 'bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800'
                                                 : log.status === 'failed'
                                                     ? 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-900/20 dark:border-rose-800'
@@ -186,9 +186,9 @@ export default function AutomationTracking() {
                                                 {log.status}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5 text-right">
+                                        <td className="px-6 py-4 sm:py-6 text-right">
                                             <div className="flex flex-col items-end gap-1">
-                                                <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground dark:text-muted-foreground">
+                                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground dark:text-muted-foreground">
                                                     <Calendar className="w-3 h-3" />
                                                     {new Date(log.created_at).toLocaleDateString()}
                                                 </div>

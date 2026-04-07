@@ -42,8 +42,8 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
                         disabled={disabled}
                         className={cn(
                             "relative flex-1 flex items-center justify-center gap-2 z-10 transition-colors duration-200",
-                            size === 'sm' ? "px-3 py-1.5 text-xs" : "px-4 py-2.5 text-xs",
-                            "font-bold uppercase tracking-wide whitespace-nowrap",
+                            size === 'sm' ? "px-2 py-2 text-xs text-center leading-tight" : "px-2 sm:px-4 py-2.5 text-xs text-center leading-[1.1]",
+                            "font-bold uppercase tracking-wide",
                             isActive ? "text-white" : "text-muted-foreground hover:text-foreground/80",
                             disabled && "opacity-50 pointer-events-none cursor-not-allowed"
                         )}

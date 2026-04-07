@@ -65,7 +65,7 @@ export function LegalDisclaimerModal({ onAccept, onDecline }: Props) {
                     </label>
                 </div>
 
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-2 sm:gap-4 mt-6">
                     <button
                         onClick={onDecline}
                         className="flex-1 px-4 py-2 border border-gray-300 rounded-xl hover:bg-secondary"

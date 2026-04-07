@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { withEdgeMiddleware } from '../_shared/middleware.ts';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -7,7 +8,7 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
 };
 
-serve(async (req) => {
+serve(withEdgeMiddleware('google-drive-proxy', async (req, logger) => {
     // 1. Handle CORS
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders });
@@ -281,7 +282,7 @@ async function createFolder(userId: string, name: string, parentId: string, supa
             mimeType: 'application/vnd.google-apps.folder',
             parents: [parentId],
         }),
-    });
+    }));
 
     const folder = await response.json();
 

@@ -43,8 +43,8 @@ export const Modal: React.FC<ModalProps> = ({
         <AnimatePresence>
             {isOpen && (
                 <div className={cn(
-                    "fixed inset-0 z-[100] flex items-start justify-center",
-                    "p-0 sm:p-6 pt-0 sm:pt-24",
+                    "fixed inset-0 z-[100] flex justify-center",
+                    "items-end sm:items-center p-0 sm:p-6",
                     modeless && "pointer-events-none"
                 )}>
                     {/* Backdrop */}
@@ -70,15 +70,20 @@ export const Modal: React.FC<ModalProps> = ({
                         exit={{ opacity: 0, scale: 0.95, y: 10, transition: { duration: 0.2 } }}
                         className={cn(
                             "relative w-full bg-window flex flex-col overflow-hidden",
-                            "h-[100dvh] max-h-[100dvh] rounded-none border-0", // Mobile: Full screen
-                            "sm:h-auto sm:max-h-[85vh] sm:rounded-2xl sm:border sm:border-border/50 sm:shadow-premium", // Desktop: Standard modal
+                            "h-auto max-h-[90dvh] rounded-t-3xl border-0 mt-auto pb-[env(safe-area-inset-bottom)]", // Mobile: Bottom sheet
+                            "sm:max-h-[85vh] sm:rounded-2xl sm:border sm:border-border/50 sm:shadow-premium sm:mt-0 sm:pb-0", // Desktop: Standard modal
                             sizes[size],
                             modeless && "pointer-events-auto",
                             className
                         )}
                     >
+                        {/* Mobile Drawer Handle */}
+                        <div className="w-full flex justify-center pt-3 pb-1 sm:hidden shrink-0 absolute top-0 left-0 right-0 z-50">
+                            <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-600 rounded-full" />
+                        </div>
+
                         {/* Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-border shrink-0 bg-window z-10">
+                        <div className="flex items-center justify-between p-6 sm:px-6 pt-8 sm:pt-6 border-b border-border shrink-0 bg-window z-10">
                             <div>
                                 <h2 className="text-xl font-black tracking-tight text-foreground">{title}</h2>
                                 {description && (
@@ -89,7 +94,7 @@ export const Modal: React.FC<ModalProps> = ({
                                 variant="ghost"
                                 size="icon"
                                 onClick={onClose}
-                                className="rounded-full -mr-2"
+                                className="rounded-full -mx-2"
                             >
                                 <X className="w-5 h-5 text-muted-foreground" />
                             </Button>

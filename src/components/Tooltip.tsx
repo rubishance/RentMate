@@ -29,7 +29,7 @@ export function Tooltip({ quote, className }: TooltipProps) {
             </button>
 
             {isVisible && (
-                <div className="absolute z-50 w-64 p-3 bg-white border-2 border-blue-200 rounded-xl shadow-xl left-6 top-0 animate-in fade-in slide-in-from-left-2 duration-200">
+                <div className="absolute z-50 w-64 p-2 sm:p-4 bg-white border-2 border-blue-200 rounded-xl shadow-xl left-6 top-0 animate-in fade-in slide-in-from-left-2 duration-200">
                     <div className="flex items-start gap-2 mb-2">
                         <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                         <span className="text-xs font-semibold text-blue-900">From Contract:</span>

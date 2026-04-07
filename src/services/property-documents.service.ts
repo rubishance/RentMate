@@ -136,7 +136,7 @@ class PropertyDocumentsService {
             if (category === 'photo' || category === 'video') {
                 limitMB = plan.max_media_mb ?? -1;
                 currentCatBytes = usage?.media_bytes || 0;
-            } else if (category.startsWith('utility_')) {
+            } else if (category.startsWith('utility_') || category === 'insurance') {
                 limitMB = plan.max_utilities_mb ?? -1;
                 currentCatBytes = usage?.utilities_bytes || 0;
             } else if (category === 'maintenance') {
@@ -174,6 +174,8 @@ class PropertyDocumentsService {
             checks: number;
             documents: number;
             receipts: number;
+            protocols: number;
+            tenantForm: number;
         };
     }> {
         const { data: { user } } = await supabase.auth.getUser();
@@ -194,37 +196,94 @@ class PropertyDocumentsService {
         const quotaMB = (profile as any)?.subscription_plans?.max_storage_mb || 100;
         const quotaBytes = (quotaMB === -1 || quotaMB === null) ? Infinity : quotaMB * 1024 * 1024;
 
-        const { data: checksAndReceiptsDocs } = await supabase
+        const { data: subCategoryDocs } = await supabase
             .from('property_documents')
             .select('category, file_size')
             .eq('user_id', user.id)
-            .in('category', ['receipt', 'checks', 'check']);
+            .in('category', ['receipt', 'checks', 'check', 'protocols', 'tenant_form']);
 
         let receipts = 0;
         let checks = 0;
+        let protocols = 0;
+        let tenantForm = 0;
 
-        checksAndReceiptsDocs?.forEach(doc => {
+        subCategoryDocs?.forEach(doc => {
             if (doc.category === 'receipt') receipts += (doc.file_size || 0);
-            if (doc.category === 'checks' || doc.category === 'check') checks += (doc.file_size || 0);
+            else if (doc.category === 'checks' || doc.category === 'check') checks += (doc.file_size || 0);
+            else if (doc.category === 'protocols') protocols += (doc.file_size || 0);
+            else if (doc.category === 'tenant_form') tenantForm += (doc.file_size || 0);
         });
 
+        // Calculate sizes of actual attached files (images/PDFs) by listing bucket folders
+        try {
+            const [ { data: protocolsData }, { data: tenantCandidatesData } ] = await Promise.all([
+                supabase.from('protocols').select('property_id'),
+                supabase.from('tenant_candidates').select('property_id')
+            ]);
+            
+            const protocolPropIds = [...new Set(protocolsData?.map(p => p.property_id) || [])];
+            const tenantPropIds = [...new Set(tenantCandidatesData?.map(t => t.property_id) || [])];
+            
+            // Protocols attachment size (stored in property-images bucket)
+            await Promise.all(protocolPropIds.map(async (pid) => {
+                const { data } = await supabase.storage.from('property-images').list(`protocols/${pid}`);
+                if (data) {
+                    protocols += data.reduce((acc, f) => acc + (f.metadata?.size || 0), 0);
+                }
+            }));
+
+            // Tenant Forms attachment size (stored in tenant_documents or property_documents fallback)
+            await Promise.all(tenantPropIds.map(async (pid) => {
+                const [ { data: ids }, { data: payslips }, { data: fallbackIds }, { data: fallbackPayslips } ] = await Promise.all([
+                    supabase.storage.from('tenant_documents').list(`${pid}/ids`),
+                    supabase.storage.from('tenant_documents').list(`${pid}/payslips`),
+                    supabase.storage.from('property_documents').list(`applications/${pid}/ids`),
+                    supabase.storage.from('property_documents').list(`applications/${pid}/payslips`)
+                ]);
+
+                tenantForm += (ids || []).reduce((acc, f) => acc + (f.metadata?.size || 0), 0);
+                tenantForm += (payslips || []).reduce((acc, f) => acc + (f.metadata?.size || 0), 0);
+                tenantForm += (fallbackIds || []).reduce((acc, f) => acc + (f.metadata?.size || 0), 0);
+                tenantForm += (fallbackPayslips || []).reduce((acc, f) => acc + (f.metadata?.size || 0), 0);
+            }));
+        } catch (e) {
+            console.warn('Could not calculate physical sizes for attached protocol/tenant forms:', e);
+        }
+
         const rawDocs = usage?.documents_bytes || 0;
+        const rawMedia = usage?.media_bytes || 0;
         const maintenanceBytes = usage?.maintenance_bytes || 0;
-        const documents = Math.max(0, rawDocs + maintenanceBytes - receipts - checks);
+        const utilities = usage?.utilities_bytes || 0;
+
+        const physicalProtocols = subCategoryDocs?.filter(d => d.category === 'protocols').reduce((acc, d) => acc + (d.file_size || 0), 0) || 0;
+        const physicalTenantForms = subCategoryDocs?.filter(d => d.category === 'tenant_form').reduce((acc, d) => acc + (d.file_size || 0), 0) || 0;
+        
+        // Subtract to prevent double-counting if they were recorded in documents
+        const documents = Math.max(0, rawDocs + maintenanceBytes - receipts - checks - physicalProtocols - physicalTenantForms);
+        
+        // Protocols are usually in property-images, so they might inflate media_bytes. Let's deduct the bucket amount if reasonable.
+        const bucketProtocolSize = protocols - physicalProtocols;
+        const media = Math.max(0, rawMedia - bucketProtocolSize);
+
+        // Calculate a safe total that accounts for bucket additions that might not be in the usage view yet
+        // If the view already includes them, we just ensure they're categorized. If not, this adds them to total.
+        const adjustedTotalBytes = Math.max(usage?.total_bytes || 0, media + documents + utilities + checks + receipts + protocols + tenantForm);
 
         return {
-            totalBytes: usage?.total_bytes || 0,
+            totalBytes: adjustedTotalBytes,
             fileCount: usage?.file_count || 0,
             quotaBytes,
             percentUsed: quotaBytes === Infinity
                 ? 0
-                : ((usage?.total_bytes || 0) / quotaBytes) * 100,
+                : (adjustedTotalBytes / quotaBytes) * 100,
             breakdown: {
-                media: usage?.media_bytes || 0,
-                utilities: usage?.utilities_bytes || 0,
+                media,
+                utilities,
                 checks,
                 documents,
-                receipts
+                receipts,
+                protocols,
+                tenantForm
             }
         };
     }
@@ -238,14 +297,22 @@ class PropertyDocumentsService {
         checks: number;
         documents: number;
         receipts: number;
+        protocols: number;
+        tenantForm: number;
     }> {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
 
         try {
-            const { data, error } = await supabase.rpc('get_property_document_counts', {
-                p_user_id: user.id
-            });
+            const [
+                { data, error },
+                { count: protocolsCount },
+                { count: candidatesCount }
+            ] = await Promise.all([
+                supabase.rpc('get_property_document_counts', { p_user_id: user.id }),
+                supabase.from('protocols').select('*', { count: 'exact', head: true }),
+                supabase.from('tenant_candidates').select('*', { count: 'exact', head: true })
+            ]);
 
             if (error) throw error;
             const { data: checksAndReceiptsDocs } = await supabase
@@ -268,23 +335,28 @@ class PropertyDocumentsService {
                 ...data,
                 checks,
                 documents,
-                receipts
+                receipts,
+                protocols: protocolsCount || 0,
+                tenantForm: candidatesCount || 0
             };
         } catch (err) {
             console.warn('RPC get_property_document_counts failed, using fallback', err);
 
             // Legacy Fallback: client-side aggregation (for environments without the migration yet)
-            const { data, error } = await supabase
-                .from('property_documents')
-                .select('category')
-                .eq('user_id', user.id);
+            const [
+                { data },
+                { count: protocolsCount },
+                { count: candidatesCount }
+            ] = await Promise.all([
+                supabase.from('property_documents').select('category').eq('user_id', user.id),
+                supabase.from('protocols').select('*', { count: 'exact', head: true }),
+                supabase.from('tenant_candidates').select('*', { count: 'exact', head: true })
+            ]);
 
-            if (error) throw error;
-
-            const counts = { media: 0, utilities: 0, checks: 0, documents: 0, receipts: 0 };
+            const counts = { media: 0, utilities: 0, checks: 0, documents: 0, receipts: 0, protocols: protocolsCount || 0, tenantForm: candidatesCount || 0 };
             data?.forEach((doc: any) => {
                 if (doc.category === 'photo' || doc.category === 'video') counts.media++;
-                else if (doc.category.startsWith('utility_')) counts.utilities++;
+                else if (doc.category.startsWith('utility_') || doc.category === 'insurance') counts.utilities++;
                 else if (doc.category === 'checks' || doc.category === 'check') counts.checks++;
                 else if (doc.category === 'receipt') counts.receipts++;
                 else counts.documents++; // maintenance defaults to documents here
@@ -626,7 +698,7 @@ class PropertyDocumentsService {
 
         if (filters?.category && filters.category !== 'all') {
             if (filters.category === 'utilities') {
-                query = query.like('category', 'utility_%');
+                query = query.or('category.like.utility_%,category.eq.insurance');
             } else if (filters.category === 'media') {
                 query = query.in('category', ['photo', 'video']);
             } else if (filters.category === 'receipts') {

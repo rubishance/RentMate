@@ -220,7 +220,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings, isExpanded: exter
                             onClick={toggleExpand}
                         >
                             <CardHeader className="flex flex-row items-center justify-between p-4 md:p-6 pb-2 space-y-0">
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 sm:gap-4">
                                     <div className="p-2 bg-slate-100 dark:bg-neutral-800 rounded-xl shrink-0">
                                         <Activity className="w-5 h-5 text-emerald-500" />
                                     </div>
@@ -229,14 +229,13 @@ export function IndexPulseWidget({ settings, onUpdateSettings, isExpanded: exter
                                     </CardTitle>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
+                                    <div
+                                        onPointerDown={(e) => { e.stopPropagation(); setIsSettingsOpen(true); }}
                                         onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(true); }}
-                                        className="h-8 w-8 p-0 group-hover/header:text-foreground text-muted-foreground/50 hover:bg-transparent transition-colors"
+                                        className="h-8 w-8 p-0 flex items-center justify-center rounded-lg cursor-pointer group-hover/header:text-foreground text-muted-foreground/50 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors z-[100] relative pointer-events-auto"
                                     >
-                                        <Settings2 className="w-4 h-4 text-muted-foreground" />
-                                    </Button>
+                                        <Settings2 className="w-4 h-4 text-muted-foreground pointer-events-none" />
+                                    </div>
                                     <div className="text-muted-foreground/50 group-hover/header:text-foreground transition-colors p-1">
                                         <ChevronDown className={cn("w-5 h-5 transition-transform duration-300", isExpanded && "rotate-180")} />
                                     </div>
@@ -253,54 +252,64 @@ export function IndexPulseWidget({ settings, onUpdateSettings, isExpanded: exter
                                     className="overflow-hidden"
                                 >
                                     <CardContent className="space-y-4 flex-1 pt-4 pb-6">
-                            {groupedPulses.map((group) => (
+                            {pulses.map((pulse) => (
                                 <motion.div
-                                    key={group.type}
-                                    layoutId={`group-${group.type}`}
-                                    className="bg-background dark:bg-neutral-900/50 p-4 rounded-xl border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-all group/item"
+                                    key={pulse.id}
+                                    layoutId={`pulse-${pulse.id}`}
+                                    className="bg-background dark:bg-neutral-900/50 p-4 md:p-4 sm:p-6 rounded-xl border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-all flex flex-col gap-2 sm:gap-4 relative overflow-hidden group/item"
                                 >
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-lg font-bold text-foreground">{t(group.type as any) || group.type.toUpperCase()}</span>
-                                            <span className="text-base text-muted-foreground flex items-center gap-1.5 font-mono">
-                                                <Clock className="w-3.5 h-3.5" />
-                                                {group.latestDate}
+                                    {/* 1. Title: Index type in full string */}
+                                    <div className="flex items-center border-b border-slate-100 dark:border-white/5 pb-2">
+                                        <span className="text-lg font-bold text-foreground">
+                                            {t(pulse.type as any) || pulse.type.toUpperCase()},{' '}
+                                            <span className="text-muted-foreground font-medium">
+                                                {pulse.method === 'known' ? t('knownIndex') : t('determiningIndex')}
                                             </span>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-lg font-black text-foreground leading-tight">
-                                                {group.latestValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
-                                            </p>
-                                        </div>
+                                        </span>
                                     </div>
-                                    <div className="space-y-3 mt-4 pt-4 border-t border-slate-200 dark:border-white/5 opacity-95 transition-opacity">
-                                        {group.trackers.map(tracker => (
-                                            <div key={tracker.id} className="flex items-center justify-between bg-white dark:bg-neutral-800/50 p-3 rounded-xl border border-slate-100 dark:border-white/5">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-                                                        <span className="text-foreground font-bold">
-                                                            {format(new Date(tracker.configDate), 'dd/MM/yyyy')}
-                                                        </span>
-                                                        <span className="text-foreground font-normal text-xs opacity-80">({tracker.method === 'known' ? t('knownIndex') : t('determiningIndex')})</span>
-                                                    </div>
-                                                    {tracker.baseValue > 0 && (
-                                                        <span className="font-mono text-sm text-muted-foreground">
-                                                            {t('baseIndex')}: {tracker.baseValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
-                                                        </span>
-                                                    )}
-                                                </div>
 
-                                                <div className={cn(
-                                                    "flex items-center justify-end gap-1.5 text-base font-black px-2 py-1 rounded-lg min-w-[80px]",
-                                                    tracker.change > 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : tracker.change < 0 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" : "bg-slate-100 dark:bg-neutral-800 text-muted-foreground"
-                                                )}>
-                                                    <div className={cn(lang === 'he' && "-scale-x-100", "flex items-center justify-center")}>
-                                                        {tracker.change > 0 ? <TrendingUp className="w-4 h-4" /> : tracker.change < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
-                                                    </div>
-                                                    <span dir="ltr">{tracker.change > 0 ? '+' : ''}{tracker.change.toFixed(2)}%</span>
-                                                </div>
+                                    <div className="flex flex-row justify-between items-start px-2 py-2 gap-4">
+                                         {/* Base Index Column */}
+                                         <div className="flex flex-col flex-1 items-start">
+                                            <span className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">{lang === 'he' ? 'מדד בסיס' : 'Base Index'}</span>
+                                            <span className="text-xl font-bold text-foreground opacity-90 mt-1">
+                                                {pulse.baseValue > 0 ? pulse.baseValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '---'}
+                                            </span>
+                                            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1 font-mono mt-1">
+                                                <Clock className="w-3 h-3 opacity-70" />
+                                                {format(new Date(pulse.configDate), 'dd/MM/yyyy')}
+                                            </span>
+                                         </div>
+
+                                         {/* Divider */}
+                                         <div className="w-px h-12 bg-slate-200 dark:bg-white/10 self-center" />
+
+                                         {/* Current Index Column */}
+                                         <div className="flex flex-col flex-1 items-end text-right">
+                                            <span className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">{lang === 'he' ? 'מדד נוכחי' : 'Current Index'}</span>
+                                            <span className="text-xl font-black text-foreground mt-1">
+                                                {pulse.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                                            </span>
+                                            <span className="text-xs font-medium text-muted-foreground flex items-center justify-end gap-1 font-mono mt-1 w-full flex-row-reverse">
+                                                {pulse.date}
+                                                <Clock className="w-3 h-3 opacity-70" />
+                                            </span>
+                                         </div>
+                                    </div>
+
+                                    {/* 3. Percentage Change Block */}
+                                    <div className="pt-3 mt-1 border-t border-slate-100 dark:border-white/5">
+                                        <div className={cn(
+                                            "flex items-center justify-center gap-2 text-base font-black px-4 py-3 rounded-lg w-full",
+                                            pulse.change > 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : 
+                                            pulse.change < 0 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" : 
+                                            "bg-slate-100 dark:bg-neutral-800 text-muted-foreground"
+                                        )}>
+                                            <div className={cn(lang === 'he' && "-scale-x-100", "flex items-center justify-center")}>
+                                                {pulse.change > 0 ? <TrendingUp className="w-5 h-5" /> : pulse.change < 0 ? <TrendingDown className="w-5 h-5" /> : <Minus className="w-5 h-5" />}
                                             </div>
-                                        ))}
+                                            <span dir="ltr" className="text-lg">{pulse.change > 0 ? '+' : ''}{pulse.change.toFixed(2)}%</span>
+                                        </div>
                                     </div>
                                 </motion.div>
                             ))}
@@ -367,7 +376,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings, isExpanded: exter
                                                         <select
                                                             value={tracked.type}
                                                             onChange={(e) => updateIndex(tracked.id, { type: e.target.value as any })}
-                                                            className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-bold outline-none"
+                                                            className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 rounded-xl px-2 sm:px-4 py-2 text-xs font-bold outline-none"
                                                         >
                                                             {ALL_TYPES.map(tOption => (
                                                                 <option key={tOption} value={tOption}>{t(tOption) || tOption.toUpperCase()}</option>

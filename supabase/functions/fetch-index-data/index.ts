@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { withEdgeMiddleware } from '../_shared/middleware.ts';
 
 
 // SECURITY: Restrict CORS to allowed origins only
@@ -12,10 +13,10 @@ const corsHeaders = {
 };
 
 interface IndexData {
-    index_type: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur';
+    index_type: 'cpi' | 'housing';
     date: string; // 'YYYY-MM'
     value: number;
-    source: 'cbs' | 'exchange-api';
+    source: 'cbs';
 }
 
 // Retry helper function with exponential backoff
@@ -50,7 +51,7 @@ async function fetchWithRetry(
     throw lastError || new Error('Fetch failed after retries');
 }
 
-serve(async (req) => {
+serve(withEdgeMiddleware('fetch-index-data', async (req, logger) => {
     // Handle CORS
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders });
@@ -114,14 +115,6 @@ serve(async (req) => {
             errors.push(`CBS Housing Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
         }
 
-        // 4. Fetch Exchange Rates from Bank of Israel (XML API)
-        try {
-            console.log('Fetching Exchange Rates from BOI (XML)...');
-            await fetchExchangeRatesXml(adminSupabase, results, errors);
-        } catch (e) {
-            console.error('Error fetching Exchange Rates:', e);
-            errors.push(`BOI Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
-        }
 
         // 3. Upsert into DB
         if (results.length > 0) {
@@ -272,11 +265,7 @@ async function populateIndexBases(supabase: any) {
     const bases = [
         // CPI Bases
         { index_type: 'cpi', base_period_start: '2025-01-01', base_value: 100, chain_factor: 1.074 },
-        { index_type: 'cpi', base_period_start: '2023-01-01', base_value: 100, chain_factor: 1.026 },
-
-        // Construction Bases
-        { index_type: 'construction', base_period_start: '2025-07-01', base_value: 100, chain_factor: 1.387 },
-        { index_type: 'construction', base_period_start: '2011-08-01', base_value: 100, chain_factor: 1.0 }
+        { index_type: 'cpi', base_period_start: '2023-01-01', base_value: 100, chain_factor: 1.026 }
     ];
 
     console.log('Upserting index_bases...');
@@ -290,61 +279,6 @@ async function populateIndexBases(supabase: any) {
     }
 }
 
-async function fetchExchangeRatesXml(
-    supabase: any,
-    results: IndexData[],
-    errors: string[]
-) {
-    const url = 'https://boi.org.il/PublicApi/GetExchangeRates?asXml=true';
-
-    try {
-        console.log(`Fetching XML from ${url}...`);
-        const resp = await fetchWithRetry(url, 3, 2000);
-        const text = await resp.text();
-
-        // Simple Regex Parsing for <ExchangeRateResponseDTO> blocks
-        // Structure: <Key>USD</Key>...<CurrentExchangeRate>3.65</CurrentExchangeRate>...<LastUpdate>2026-01-28T...</LastUpdate>
-        const blocks = text.match(/<ExchangeRateResponseDTO>(.*?)<\/ExchangeRateResponseDTO>/g);
-
-        if (!blocks) {
-            errors.push('BOI XML Error: No exchange rate blocks found');
-            return;
-        }
-
-        console.log(`Found ${blocks.length} currency blocks`);
-
-        for (const block of blocks) {
-            const keyMatch = block.match(/<Key>(.*?)<\/Key>/);
-            const rateMatch = block.match(/<CurrentExchangeRate>(.*?)<\/CurrentExchangeRate>/);
-            const dateMatch = block.match(/<LastUpdate>(.*?)<\/LastUpdate>/);
-
-            if (keyMatch && rateMatch && dateMatch) {
-                const currency = keyMatch[1].toUpperCase();
-                const rate = parseFloat(rateMatch[1]);
-                const dateStr = dateMatch[1].split('T')[0]; // Extract YYYY-MM-DD
-
-                // Only interest in USD and EUR
-                if (currency === 'USD' || currency === 'EUR') {
-                    const dbType = currency.toLowerCase() as 'usd' | 'eur';
-
-                    const record = {
-                        index_type: dbType,
-                        date: dateStr,
-                        value: rate,
-                        source: 'exchange-api'
-                    };
-
-                    console.log(`Parsed ${currency}: ${rate} for ${dateStr}`);
-                    results.push(record as any);
-                }
-            }
-        }
-
-    } catch (e) {
-        console.error('Failed to parse BOI XML:', e);
-        errors.push(`BOI XML Parse Error: ${e instanceof Error ? e.message : String(e)}`);
-    }
-}
 
 async function fetchCbsSelectedXml(
     url: string,
@@ -375,10 +309,9 @@ async function fetchCbsSelectedXml(
             return;
         }
 
-        const typeMap: Record<string, 'cpi' | 'housing' | 'construction'> = {
+        const typeMap: Record<string, 'cpi' | 'housing'> = {
             '120010': 'cpi',
-            '120490': 'housing',
-            '200010': 'construction'
+            '120490': 'housing'
         };
 
         for (const block of indBlocks) {
@@ -396,7 +329,7 @@ async function fetchCbsSelectedXml(
                         date: lastUpdateDate,
                         value: value,
                         source: 'cbs'
-                    });
+                    }));
                     console.log(`Parsed ${type}: ${value} for ${lastUpdateDate}`);
                 }
             }

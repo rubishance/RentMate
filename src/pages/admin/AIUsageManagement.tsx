@@ -195,7 +195,7 @@ export default function AIUsageManagement() {
                         Monitor and control AI chatbot resource consumption across subscription tiers.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <button
                         onClick={fetchData}
                         className="p-2.5 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm"
@@ -216,7 +216,7 @@ export default function AIUsageManagement() {
             </div>
 
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-3 text-red-700 dark:text-red-400 font-bold text-sm">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-2 sm:gap-4 text-red-700 dark:text-red-400 font-bold text-sm">
                     <AlertCircle className="w-6 h-6 flex-shrink-0" />
                     {error}
                 </div>
@@ -226,7 +226,7 @@ export default function AIUsageManagement() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary/5 rounded-xl border border-blue-100 dark:border-blue-800">
+                        <div className="p-2 sm:p-4 bg-primary/5 rounded-xl border border-blue-100 dark:border-blue-800">
                             <MessageSquare className="w-6 h-6 text-primary" />
                         </div>
                         <div>
@@ -238,7 +238,7 @@ export default function AIUsageManagement() {
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                        <div className="p-2 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
                             <TrendingUp className="w-6 h-6 text-blue-600" />
                         </div>
                         <div>
@@ -250,7 +250,7 @@ export default function AIUsageManagement() {
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary/5 rounded-xl border border-primary-100 dark:border-primary-800">
+                        <div className="p-2 sm:p-4 bg-primary/5 rounded-xl border border-primary-100 dark:border-primary-800">
                             <Users className="w-6 h-6 text-primary" />
                         </div>
                         <div>
@@ -262,7 +262,7 @@ export default function AIUsageManagement() {
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm transition-all hover:shadow-md">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
+                        <div className="p-2 sm:p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
                             <ArrowPathIcon className="w-6 h-6 text-amber-600" />
                         </div>
                         <div>
@@ -275,7 +275,7 @@ export default function AIUsageManagement() {
 
             {/* Tier Configuration Table */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="p-4 sm:p-6 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                     <h2 className="text-base font-black text-foreground dark:text-white uppercase tracking-tight">Subscription Tier Quotas</h2>
                     <p className="text-xs font-medium text-muted-foreground mt-1">Adjust limits per user tier. Use -1 for unlimited access.</p>
                 </div>
@@ -300,36 +300,36 @@ export default function AIUsageManagement() {
 
                                 return (
                                     <tr key={limit.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
-                                        <td className="px-6 py-5">
+                                        <td className="px-6 py-4 sm:py-6">
                                             <span className={`px-2.5 py-1 text-xs font-black uppercase tracking-widest rounded-xl border ${getTierColor(limit.tier_name)}`}>
                                                 {limit.tier_name}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-center">
+                                        <td className="px-6 py-4 sm:py-6 text-center">
                                             <input
                                                 type="number"
                                                 value={edited.monthly_message_limit}
                                                 onChange={(e) => handleLimitChange(limit.id, 'monthly_message_limit', e.target.value)}
-                                                className="w-24 px-3 py-2 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-primary-500/20"
+                                                className="w-24 px-2 sm:px-4 py-2 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-primary-500/20"
                                             />
                                         </td>
-                                        <td className="px-6 py-5 text-center">
+                                        <td className="px-6 py-4 sm:py-6 text-center">
                                             <input
                                                 type="number"
                                                 value={edited.monthly_token_limit}
                                                 onChange={(e) => handleLimitChange(limit.id, 'monthly_token_limit', e.target.value)}
-                                                className="w-24 px-3 py-2 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-primary-500/20"
+                                                className="w-24 px-2 sm:px-4 py-2 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-primary-500/20"
                                             />
                                         </td>
-                                        <td className="px-6 py-5 text-center">
+                                        <td className="px-6 py-4 sm:py-6 text-center">
                                             <input
                                                 type="number"
                                                 value={edited.monthly_whatsapp_limit}
                                                 onChange={(e) => handleLimitChange(limit.id, 'monthly_whatsapp_limit', e.target.value)}
-                                                className="w-24 px-3 py-2 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-primary-500/20"
+                                                className="w-24 px-2 sm:px-4 py-2 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-primary-500/20"
                                             />
                                         </td>
-                                        <td className="px-6 py-5 text-sm font-bold text-muted-foreground dark:text-muted-foreground">
+                                        <td className="px-6 py-4 sm:py-6 text-sm font-bold text-muted-foreground dark:text-muted-foreground">
                                             {estimatedCost}
                                         </td>
                                     </tr>
@@ -342,7 +342,7 @@ export default function AIUsageManagement() {
 
             {/* Individual User Usage */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="p-4 sm:p-6 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                     <h2 className="text-base font-black text-foreground dark:text-white uppercase tracking-tight">Active Usage Tracking</h2>
                     <p className="text-xs font-medium text-muted-foreground mt-1">Real-time statistics for the top 50 active AI chatters.</p>
                 </div>
@@ -371,26 +371,26 @@ export default function AIUsageManagement() {
 
                                     return (
                                         <tr key={u.user_id} className="hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
-                                            <td className="px-6 py-5">
+                                            <td className="px-6 py-4 sm:py-6">
                                                 <div className="font-bold text-foreground dark:text-white text-sm">{u.user_email || 'Unknown User'}</div>
                                                 <div className="text-xs text-muted-foreground font-mono tracking-tighter">{u.user_id.split('-')[0]}...</div>
                                             </td>
-                                            <td className="px-6 py-5">
+                                            <td className="px-6 py-4 sm:py-6">
                                                 <span className={`px-2 py-1 text-xs font-black uppercase tracking-widest rounded-xl border ${getTierColor(u.subscription_tier || 'free')}`}>
                                                     {u.subscription_tier || 'free'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-5 text-center">
+                                            <td className="px-6 py-4 sm:py-6 text-center">
                                                 <div className="font-black text-foreground dark:text-white text-sm">{u.message_count} msgs</div>
                                                 <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{u.tokens_used.toLocaleString()} tokens</div>
                                             </td>
-                                            <td className="px-6 py-5 text-center">
+                                            <td className="px-6 py-4 sm:py-6 text-center">
                                                 <div className="font-black text-primary-600 dark:text-primary-400 text-sm">{u.whatsapp_messages || 0}</div>
                                                 <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">sent msgs</div>
                                             </td>
-                                            <td className="px-6 py-5 w-48">
+                                            <td className="px-6 py-4 sm:py-6 w-48">
                                                 <div className="space-y-1.5">
-                                                    <div className="flex items-center justify-between gap-3">
+                                                    <div className="flex items-center justify-between gap-2 sm:gap-4">
                                                         <div className="flex-1 h-2.5 bg-muted dark:bg-foreground rounded-full overflow-hidden border border-border dark:border-gray-700">
                                                             <div
                                                                 className={`h-full rounded-full transition-all duration-500 ${messagePercent > 90 ? 'bg-destructive' : messagePercent > 70 ? 'bg-orange-500' : 'bg-primary-600'}`}
@@ -401,7 +401,7 @@ export default function AIUsageManagement() {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-5 text-left text-xs font-bold text-muted-foreground whitespace-nowrap">
+                                            <td className="px-6 py-4 sm:py-6 text-left text-xs font-bold text-muted-foreground whitespace-nowrap">
                                                 {new Date(u.last_reset_at).toLocaleDateString()}
                                             </td>
                                         </tr>

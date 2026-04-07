@@ -155,7 +155,7 @@ export function BulkCheckModal({ isOpen, onClose, onSuccess }: BulkCheckModalPro
                                         <select
                                             value={formData.contractId}
                                             onChange={(e) => setFormData({ ...formData, contractId: e.target.value })}
-                                            className="w-full pl-12 pr-4 py-4 bg-secondary dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all"
+                                            className="w-full pl-12 pr-4 py-6 bg-secondary dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all"
                                         >
                                             <option value="">{t('selectContract')}</option>
                                             {contracts.map(c => (
@@ -176,7 +176,7 @@ export function BulkCheckModal({ isOpen, onClose, onSuccess }: BulkCheckModalPro
                                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                                     placeholder="0.00"
                                 />
-                                <div className="space-y-2">
+                                <div className="space-y-4">
                                     <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">
                                         {t('firstDueDate')}
                                     </label>
@@ -215,18 +215,18 @@ export function BulkCheckModal({ isOpen, onClose, onSuccess }: BulkCheckModalPro
                             exit={{ opacity: 0, x: -20 }}
                             className="space-y-6"
                         >
-                            <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl flex items-center gap-3">
+                            <div className="p-6 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl flex items-center gap-2 sm:gap-4">
                                 <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
                                 <p className="text-xs font-bold text-amber-700 dark:text-amber-400">
                                     {t('bulkCheckReviewDesc')}
                                 </p>
                             </div>
 
-                            <div className="max-h-[40vh] overflow-y-auto space-y-2 pr-2 scrollbar-hide">
+                            <div className="max-h-[40vh] overflow-y-auto space-y-4 pr-2 scrollbar-hide">
                                 {generatedChecks.map((check, idx) => (
                                     <div
                                         key={idx}
-                                        className="p-4 bg-secondary dark:bg-neutral-800 rounded-2xl border border-border dark:border-neutral-700 flex items-center justify-between group"
+                                        className="p-6 bg-secondary dark:bg-neutral-800 rounded-2xl border border-border dark:border-neutral-700 flex items-center justify-between group"
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-xl bg-white dark:bg-neutral-700 flex items-center justify-center font-black text-xs">

@@ -65,7 +65,7 @@ export function ActiveChatsWidget() {
                     </div>
                 ) : (
                     chats.map(chat => (
-                        <div key={chat.id} className="group p-3 bg-secondary dark:bg-foreground/50 rounded-xl border border-border dark:border-gray-800 hover:border-brand-300 transition-all">
+                        <div key={chat.id} className="group p-2 sm:p-4 bg-secondary dark:bg-foreground/50 rounded-xl border border-border dark:border-gray-800 hover:border-brand-300 transition-all">
                             <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center gap-2">
                                     <User className="w-3 h-3 text-muted-foreground" />

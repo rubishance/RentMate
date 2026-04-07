@@ -103,11 +103,11 @@ export function AutomationAnalytics({ stats }: { stats: AutomationStats }) {
                         <div className="h-full bg-brand-600 rounded-full w-[84%] shadow-[0_0_10px_rgba(var(--brand-primary),0.5)]"></div>
                     </div>
                     <div className="mt-4 flex gap-4">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-brand-600"></div>
                             <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Auto-Resolved</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600"></div>
                             <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Manual Triage</span>
                         </div>

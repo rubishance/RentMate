@@ -60,7 +60,7 @@ export function QuickActionFAB() {
                 {/* Action Buttons */}
                 <AnimatePresence>
                     {isOpen && (
-                        <div className="flex flex-col-reverse items-center gap-3 mb-4">
+                        <div className="flex flex-col-reverse items-center gap-2 sm:gap-4 mb-4">
                             {actions.map((action, idx) => (
                                 <motion.button
                                     key={action.id}
@@ -69,10 +69,10 @@ export function QuickActionFAB() {
                                     exit={{ opacity: 0, scale: 0.5, y: 20 }}
                                     transition={{ delay: idx * 0.05 }}
                                     onClick={action.onClick}
-                                    className="group flex items-center gap-3"
+                                    className="group flex items-center gap-2 sm:gap-4"
                                 >
                                     <span className={cn(
-                                        "px-3 py-1.5 rounded-xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-slate-200 dark:border-neutral-800 text-xs font-bold shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+                                        "px-2 sm:px-4 py-2 rounded-xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-slate-200 dark:border-neutral-800 text-xs font-bold shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200",
                                         lang === 'he' ? "order-last" : "order-first"
                                     )}>
                                         {action.label}

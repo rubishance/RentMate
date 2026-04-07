@@ -103,7 +103,7 @@ export function FeedbackWidget() {
             {!isOpen ? (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="bg-black hover:bg-gray-800 text-white p-3 rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 flex items-center gap-2 group"
+                    className="bg-black hover:bg-gray-800 text-white p-2 sm:p-4 rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 flex items-center gap-2 group"
                 >
                     <MessageSquare className="w-5 h-5" />
                     <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap opacity-0 group-hover:opacity-100 pr-1">
@@ -136,7 +136,7 @@ export function FeedbackWidget() {
                                     key={t}
                                     type="button"
                                     onClick={() => setType(t)}
-                                    className={`flex-1 py-1.5 text-xs font-medium rounded-lg capitalize transition-all ${type === t
+                                    className={`flex-1 py-2 text-xs font-medium rounded-lg capitalize transition-all ${type === t
                                         ? 'bg-white dark:bg-gray-600 shadow text-black dark:text-white'
                                         : 'text-muted-foreground hover:text-gray-700 dark:text-muted-foreground'
                                         }`}
@@ -152,7 +152,7 @@ export function FeedbackWidget() {
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             placeholder="Describe the issue or idea..."
-                            className="w-full h-24 resize-none p-3 text-sm rounded-xl border border-border dark:border-gray-700 bg-secondary dark:bg-foreground focus:ring-2 focus:ring-black/10 outline-none transition-all text-foreground"
+                            className="w-full h-24 resize-none p-2 sm:p-4 text-sm rounded-xl border border-border dark:border-gray-700 bg-secondary dark:bg-foreground focus:ring-2 focus:ring-black/10 outline-none transition-all text-foreground"
                         />
 
                         {/* Manual File Upload */}

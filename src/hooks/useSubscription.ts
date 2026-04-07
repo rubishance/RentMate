@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { SubscriptionPlanDef } from '../types/database';
+import { RevenueCatService } from '../services/revenuecat.service';
+import { Capacitor } from '@capacitor/core';
 
 export function useSubscription() {
     const [plan, setPlan] = useState<SubscriptionPlanDef | null>(null);
@@ -37,8 +39,23 @@ export function useSubscription() {
                 .eq('id', planId)
                 .single();
 
+            // Native Mobile Logic: Sync with RevenueCat
+            let finalPlanId = planId;
+            if (Capacitor.isNativePlatform()) {
+                await RevenueCatService.initialize(user.id);
+                const rcCustomerInfo = await RevenueCatService.getCustomerInfo();
+                const rcTier = RevenueCatService.getHighestEntitlement(rcCustomerInfo);
+
+                // If RC sees a higher active tier than Supabase, honor it locally to prevent blocking. 
+                // The webhook will eventually fix Supabase.
+                const tierWeights: Record<string, number> = { 'solo': 0, 'mate': 1, 'master': 2, 'unlimited': 99 };
+                if (tierWeights[rcTier] > tierWeights[planId]) {
+                    finalPlanId = rcTier;
+                }
+            }
+
             // Mock Unlimited Plan for 'unlimited' ID
-            if (planId === 'unlimited') {
+            if (finalPlanId === 'unlimited') {
                 setPlan({
                     id: 'unlimited',
                     name: 'UNLIMITED',
@@ -60,6 +77,14 @@ export function useSubscription() {
                     },
                     created_at: new Date().toISOString()
                 });
+            } else if (finalPlanId !== planId && finalPlanId !== 'free') {
+                // Fetch the upgraded plan details if RC detected a higher tier
+                const { data: upgradedPlanData } = await supabase
+                    .from('subscription_plans')
+                    .select('*')
+                    .eq('id', finalPlanId)
+                    .single();
+                 setPlan(upgradedPlanData || planData);
             } else {
                 setPlan(planData);
             }

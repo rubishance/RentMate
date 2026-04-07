@@ -351,7 +351,7 @@ export default function SupportTickets() {
                                     key={ticket.id}
                                     onClick={() => setSelectedTicket(ticket)}
                                     className={cn(
-                                        "bg-white dark:bg-gray-800 p-5 rounded-3xl border cursor-pointer transition-all hover:shadow-xl group relative overflow-hidden",
+                                        "bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl border cursor-pointer transition-all hover:shadow-xl group relative overflow-hidden",
                                         selectedTicket?.id === ticket.id
                                             ? 'border-primary-600 shadow-xl ring-1 ring-primary-600/20'
                                             : 'border-slate-100 dark:border-neutral-800 shadow-minimal'
@@ -361,7 +361,7 @@ export default function SupportTickets() {
                                         <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary to-primary-500 opacity-60" />
                                     )}
 
-                                    <div className="flex items-start justify-between gap-2 mb-3">
+                                    <div className="flex items-start justify-between gap-2 mb-2 sm:mb-4">
                                         <div className="flex gap-2 items-start">
                                             <span className="text-lg">{sentimentEmoji}</span>
                                             <h3 className="font-bold text-sm text-foreground dark:text-white line-clamp-2 leading-tight group-hover:text-primary-600 transition-colors">{ticket.title}</h3>
@@ -394,16 +394,16 @@ export default function SupportTickets() {
                 {/* Ticket Detail */}
                 <div className="lg:col-span-2">
                     {!selectedTicket ? (
-                        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-slate-100 dark:border-neutral-800 p-20 text-center h-[800px] flex items-center justify-center shadow-minimal">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-neutral-800 p-20 text-center h-[800px] flex items-center justify-center shadow-minimal">
                             <div className="space-y-4">
-                                <div className="w-24 h-24 bg-background dark:bg-neutral-900 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-minimal border border-slate-100 dark:border-neutral-800">
+                                <div className="w-24 h-24 bg-background dark:bg-neutral-900 rounded-2xl flex items-center justify-center mx-auto shadow-minimal border border-slate-100 dark:border-neutral-800">
                                     <MessageSquare className="w-10 h-10 text-slate-200" />
                                 </div>
                                 <p className="font-black text-muted-foreground uppercase tracking-[0.3em] text-xs">Select a ticket to reveal intelligence</p>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-slate-100 dark:border-neutral-800 overflow-hidden flex flex-col h-[800px] shadow-premium relative">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-neutral-800 overflow-hidden flex flex-col h-[800px] shadow-premium relative">
                             {/* AI Background Accent */}
                             {selectedTicket.ticket_analysis?.[0] && (
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 blur-[120px] rounded-full -mr-32 -mt-32 pointer-events-none" />
@@ -413,20 +413,20 @@ export default function SupportTickets() {
                             <div className="p-8 border-b border-slate-100 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/50 backdrop-blur-3xl relative z-10">
                                 <div className="flex items-start justify-between gap-6 mb-6">
                                     <div className="flex-1 space-y-3">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2 sm:gap-4">
                                             <h2 className="text-2xl font-black text-foreground dark:text-white tracking-tighter leading-none">{selectedTicket.title}</h2>
                                             {selectedTicket.ticket_analysis?.[0] && (
-                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-primary-50 text-primary-600 rounded-full border border-primary-100 text-xs font-black uppercase tracking-widest">
+                                                <div className="flex items-center gap-2 px-2 sm:px-4 py-1 bg-primary-50 text-primary-600 rounded-full border border-primary-100 text-xs font-black uppercase tracking-widest">
                                                     <Sparkles className="w-3 h-3" />
                                                     AI Analyzed
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="flex flex-wrap items-center gap-3">
-                                            <span className={cn("px-3 py-1 rounded-xl text-xs font-black uppercase tracking-widest border", getPriorityColor(selectedTicket.priority))}>
+                                        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                                            <span className={cn("px-2 sm:px-4 py-1 rounded-xl text-xs font-black uppercase tracking-widest border", getPriorityColor(selectedTicket.priority))}>
                                                 {selectedTicket.priority}
                                             </span>
-                                            <span className={cn("px-3 py-1 rounded-xl text-xs font-black uppercase tracking-widest border", getStatusColor(selectedTicket.status))}>
+                                            <span className={cn("px-2 sm:px-4 py-1 rounded-xl text-xs font-black uppercase tracking-widest border", getStatusColor(selectedTicket.status))}>
                                                 {selectedTicket.status.replace('_', ' ')}
                                             </span>
                                         </div>
@@ -454,7 +454,7 @@ export default function SupportTickets() {
                                     </div>
                                 </div>
 
-                                <blockquote className="p-5 bg-background dark:bg-neutral-900/50 rounded-2xl border border-slate-100 dark:border-neutral-800 text-sm font-medium text-muted-foreground dark:text-muted-foreground italic mb-6 leading-relaxed">
+                                <blockquote className="p-4 sm:p-6 bg-background dark:bg-neutral-900/50 rounded-2xl border border-slate-100 dark:border-neutral-800 text-sm font-medium text-muted-foreground dark:text-muted-foreground italic mb-6 leading-relaxed">
                                     "{selectedTicket.description}"
                                 </blockquote>
 
@@ -479,7 +479,7 @@ export default function SupportTickets() {
                                 {/* AI Intelligence Panel */}
                                 {selectedTicket.ticket_analysis?.[0] && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="p-6 bg-white dark:bg-neutral-900 rounded-[2rem] border border-slate-100 dark:border-neutral-800 shadow-minimal space-y-3">
+                                        <div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-slate-100 dark:border-neutral-800 shadow-minimal space-y-3">
                                             <h4 className="text-xs font-black uppercase tracking-[0.25em] text-primary-600 flex items-center gap-2">
                                                 <Sparkles className="w-3.5 h-3.5" />
                                                 Insight Details
@@ -495,7 +495,7 @@ export default function SupportTickets() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="p-6 bg-white dark:bg-neutral-900 rounded-[2rem] border border-slate-100 dark:border-neutral-800 shadow-minimal space-y-3">
+                                        <div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-slate-100 dark:border-neutral-800 shadow-minimal space-y-3">
                                             <h4 className="text-xs font-black uppercase tracking-[0.25em] text-primary-600 flex items-center gap-2">
                                                 <Activity className="w-3.5 h-3.5" />
                                                 Intelligence Loop
@@ -509,7 +509,7 @@ export default function SupportTickets() {
 
                                 {/* Auto Reply Section */}
                                 {selectedTicket.auto_reply_draft && (
-                                    <div className="p-8 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/10 dark:to-primary-900/10 rounded-[2.5rem] border border-primary-100/50 dark:border-primary-500/10 shadow-premium-dark relative overflow-hidden group">
+                                    <div className="p-8 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/10 dark:to-primary-900/10 rounded-2xl border border-primary-100/50 dark:border-primary-500/10 shadow-premium-dark relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
                                             <Sparkles className="w-16 h-16 text-primary-600" />
                                         </div>
@@ -535,7 +535,7 @@ export default function SupportTickets() {
                                             <button
                                                 onClick={handleApproveDraft}
                                                 disabled={submitting}
-                                                className="w-full h-14 bg-foreground text-background rounded-full font-black text-xs uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-premium-dark"
+                                                className="w-full h-14 bg-foreground text-background rounded-full font-black text-xs uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 sm:gap-4 shadow-premium-dark"
                                             >
                                                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-5 h-5" />}
                                                 Approve & Send Intelligent Reply
@@ -552,12 +552,12 @@ export default function SupportTickets() {
                                         <div className="h-px flex-1 bg-muted/50 dark:border-neutral-800" />
                                     </div>
                                     {comments.map((comment) => (
-                                        <div key={comment.id} className={cn("p-6 rounded-[2rem] shadow-minimal relative group",
+                                        <div key={comment.id} className={cn("p-6 rounded-2xl shadow-minimal relative group",
                                             comment.is_admin
                                                 ? 'bg-white dark:bg-neutral-900 ml-12 border border-slate-100 dark:border-neutral-800'
                                                 : 'bg-background dark:bg-neutral-800/50 mr-12 border-transparent'
                                         )}>
-                                            <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center justify-between mb-2 sm:mb-4">
                                                 <span className="text-xs font-black text-foreground dark:text-white uppercase tracking-widest flex items-center gap-2">
                                                     <div className={cn("w-1.5 h-1.5 rounded-full", comment.is_admin ? "bg-primary-500" : "bg-slate-400")} />
                                                     {comment.is_admin ? 'RentMate Team' : comment.user?.full_name || 'Client'}

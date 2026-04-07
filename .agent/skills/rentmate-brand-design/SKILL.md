@@ -55,3 +55,9 @@ When iterating on RentMate designs or crafting prompts for new components, autom
 *   **Incremental Changes (No Layout Jumps):** Never mix structural layout overhauls with micro-UI surface tweaks in a single step. Focus iterations tightly (e.g., update *only* the spacing, then *only* the button shadow).
 *   **Precise Targeting:** Reference specific semantic elements clearly (e.g., "the primary call-to-action button in the property modal") to avoid collateral damage during generative updates.
 *   **Imagery Control:** Any structural imagery or assets developed during the design phase must align with the RentMate aesthetic: *"Clean, minimalist, real estate focused, leveraging neutral backgrounds with the Sage Green/Navy brand accents."*
+
+## 7. Layout & Spacing Stability
+To prevent UI hallucinations, layout collapsing, and erratic spacing, follow these strict directives:
+*   **8pt Spacing System:** You MUST use multiples of 4 for all spacing values (Padding, Margin, Gap). Stick to even Tailwind spacing increments (e.g., `p-2`, `p-4`, `m-6`, `gap-8` which equal 8px, 16px, 24px, 32px respectively). Absolutely no arbitrary spacing values like `p-[17px]` or odd standard values like `p-3` unless strictly required for a micro-alignment of a specific icon.
+*   **Flex/Grid Over Margins:** Always prefer using `gap` inside `Flex` or `Grid` containers over using `margin` on individual children elements. This guarantees layout stability across both RTL (Hebrew) and LTR (English) alignments.
+*   **Anti-Overlap Rule:** Avoid using `position: absolute` within flowing content blocks. Any `fixed` or `sticky` structural elements (like floating action buttons or sticky headers) MUST have a corresponding Safe Area Padding inside their parent wrapping container to prevent hiding or clipping scrollable content underneath.

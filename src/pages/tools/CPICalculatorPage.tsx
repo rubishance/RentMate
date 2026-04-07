@@ -1,4 +1,4 @@
-import { IndexCalculator } from '../../components/IndexCalculator';
+import { Calculator } from '../Calculator';
 import { Button } from '../../components/ui/Button';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -54,8 +54,8 @@ export function CPICalculatorPage() {
                 </div>
 
                 {/* Calculator Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-border dark:border-gray-700 p-1 sm:p-2 mb-16">
-                    <IndexCalculator />
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-border dark:border-gray-700 p-2 sm:p-4 mb-16 overflow-hidden relative">
+                    <Calculator embedMode={true} />
                 </div>
 
                 {/* Value Props / SEO Content */}
@@ -121,7 +121,7 @@ export function CPICalculatorPage() {
                 </div>
 
                 {/* Final CTA */}
-                <div className="bg-brand-600 rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
+                <div className="bg-brand-600 rounded-2xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-full bg-indigo-500/10 opacity-20"></div>
                     <div className="relative z-10 space-y-6">
                         <h2 className="text-3xl font-black">רוצים לנהל את הנכסים שלכם בראש שקט?</h2>

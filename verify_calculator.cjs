@@ -1,0 +1,22 @@
+const { chromium } = require('playwright');
+(async () => {
+    const b = await chromium.launch();
+    const c = await b.newContext();
+    const p = await c.newPage();
+    console.log("Navigating to login...");
+    await p.goto('http://localhost:5173/login');
+    await p.evaluate(() => window.localStorage.setItem('cookie_consent', 'true'));
+    await p.fill('input[type="email"]', 'test@rentmate.co.il');
+    await p.fill('input[type="password"]', 'Test!123');
+    await p.click('button[type="submit"]');
+    await p.waitForURL('**/dashboard', {timeout: 30000});
+    console.log("Navigating to calculator...");
+    await p.goto('http://localhost:5173/calculator');
+    console.log("Waiting 5 seconds...");
+    await p.waitForTimeout(5000);
+    const text = await p.evaluate(() => document.body.innerText);
+    console.log("BODY START");
+    console.log(text);
+    console.log("BODY END");
+    await b.close();
+})();

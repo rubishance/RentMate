@@ -24,8 +24,9 @@ import { SelectPropertyModal } from '../components/modals/SelectPropertyModal';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { SecureImage } from '../components/common/SecureImage';
+import { EmptyState } from '../components/common/EmptyState';
 
-import { Plus } from 'lucide-react';
+import { Plus, Wallet, Folder, FileText } from 'lucide-react';
 
 import { cn } from '../lib/utils';
 import { useStack } from '../contexts/StackContext';
@@ -174,11 +175,11 @@ export function Properties() {
                         <Skeleton className="h-16 w-64 rounded-xl" />
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 px-0">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div key={i} className="h-[500px] rounded-[3rem] overflow-hidden border border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                <div className="flex overflow-hidden gap-4 sm:gap-6 -mx-4 px-4 sm:-mx-6 sm:px-6">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="w-[88vw] sm:w-[400px] shrink-0 h-[500px] rounded-2xl overflow-hidden border border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
                             <Skeleton className="h-72 w-full" />
-                            <div className="p-10 space-y-8">
+                            <div className="p-8 space-y-8">
                                 <Skeleton className="h-8 w-3/4" />
                                 <div className="grid grid-cols-3 gap-4">
                                     <Skeleton className="h-12 w-full rounded-2xl" />
@@ -195,7 +196,7 @@ export function Properties() {
     }
 
     return (
-        <div className="pb-4 pt-2 md:pt-8 px-5 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
+        <div className="pb-4 pt-2 md:pt-8 px-4 sm:px-6 space-y-4 md:space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
             {/* Header Action Button - FIXED so it never moves */}
             <div className={cn(
                 "fixed z-[60]",
@@ -217,37 +218,33 @@ export function Properties() {
 
             {/* Empty State */}
             {properties.length === 0 ? (
-                <div className="px-0 flex flex-col items-center justify-center py-40 rounded-[3rem] border border-slate-100 dark:border-neutral-800 bg-background/50 dark:bg-neutral-900/50 mx-0">
-                    <div className="w-32 h-32 bg-white dark:bg-neutral-900 rounded-[3rem] flex items-center justify-center mx-auto shadow-minimal mb-10">
-                        <Home className="w-12 h-12 text-slate-200" />
-                    </div>
-                    <div className="text-center space-y-4">
-                        <h3 className="text-3xl font-black tracking-tighter text-foreground lowercase opacity-70">{t('noAssetsFound')}</h3>
-                        <p className="text-muted-foreground font-medium text-center max-w-sm px-10 leading-relaxed mx-auto">
-                            {t('addFirstPropertyDesc')}
-                        </p>
-                    </div>
-                    <Button
-                        onClick={handleAdd}
-                        className="mt-12 h-auto px-10 py-5 bg-foreground text-background rounded-full font-black uppercase text-xs tracking-widest hover:scale-105 active:scale-95 transition-all shadow-premium-dark hover:bg-foreground/90"
-                    >
-                        {t('createFirstAsset')}
-                    </Button>
-                </div>
+                <EmptyState
+                    icon={Home}
+                    title={t('noAssetsFound')}
+                    description={t('addFirstPropertyDesc')}
+                    actionLabel={t('createFirstAsset')}
+                    onAction={handleAdd}
+                    className="mt-4 sm:mt-12"
+                />
             ) : (
                 /* Properties Grid */
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-0">
+                    <style>{`
+                        .no-scrollbar::-webkit-scrollbar {
+                            display: none;
+                        }
+                    `}</style>
+                    <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 sm:gap-6 pb-8 -mx-4 px-4 sm:-mx-6 sm:px-6 no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                         {properties.map((property) => {
                             const today = format(new Date(), 'yyyy-MM-dd');
                             const activeContract = property.contracts?.find(c => c.status === 'active');
                             return (
-                                <Card
-                                    key={property.id}
-                                    onClick={() => handleView(property)}
-                                    className="group flex flex-col h-full border-none shadow-low hover:shadow-high transition-all duration-500 cursor-pointer p-0 gap-0 bg-card dark:bg-card mask-clip-card"
-                                    hoverEffect
-                                >
+                                <div key={property.id} className="w-[88vw] sm:w-[400px] shrink-0 snap-start flex">
+                                    <Card
+                                        onClick={() => handleView(property)}
+                                        className="group flex flex-col w-full border-none shadow-low hover:shadow-high transition-all duration-500 cursor-pointer p-0 gap-0 bg-card dark:bg-card mask-clip-card"
+                                        hoverEffect
+                                    >
                                     {/* Image Section */}
                                     <div className="relative h-64 bg-muted/50 dark:bg-neutral-800 overflow-hidden rounded-t-2xl">
                                         <SecureImage
@@ -260,14 +257,14 @@ export function Properties() {
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
                                         {/* Status Badge */}
-                                        <div className={`absolute top-4 ${lang === 'he' ? 'left-4' : 'right-4'} flex gap-3`}>
+                                        <div className={`absolute top-4 ${lang === 'he' ? 'left-4' : 'right-4'} flex gap-2 sm:gap-4`}>
                                             {(() => {
                                                 const config = getPropertyStateConfig(activeContract ? 'occupied' : 'vacant');
                                                 // Create a slightly more prominent white background overlay version of the config 
                                                 // to ensure it pops over the image
                                                 return (
                                                     <span className={cn(
-                                                        "px-4 py-1.5 rounded-lg text-sm font-bold shadow-md transition-all duration-300",
+                                                        "px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-all duration-300",
                                                         "bg-white/95 backdrop-blur-sm", 
                                                         config.color
                                                     )}>
@@ -347,8 +344,51 @@ export function Properties() {
                                                 </div>
                                             )}
                                         </div>
+
+                                        {/* Quick Actions (Requested via Nav Buttons) */}
+                                        <div className="grid grid-cols-3 w-full border-t border-slate-100 dark:border-neutral-800 pt-3 mt-3 gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="flex flex-col items-center justify-center gap-1.5 h-auto py-2 text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all rounded-xl"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/properties/${property.id}`, { state: { tab: 'files' } });
+                                                }}
+                                            >
+                                                <Folder className="w-4 h-4" />
+                                                <span className="text-[0.65rem] md:text-xs font-bold leading-none">{lang === 'he' ? 'מסמכים' : 'Documents'}</span>
+                                            </Button>
+
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="flex flex-col items-center justify-center gap-1.5 h-auto py-2 text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all border-x border-slate-100 dark:border-neutral-800 rounded-none"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/properties/${property.id}`, { state: { tab: 'wallet' } });
+                                                }}
+                                            >
+                                                <Wallet className="w-4 h-4" />
+                                                <span className="text-[0.65rem] md:text-xs font-bold leading-none">{lang === 'he' ? 'תשלומים' : 'Payments'}</span>
+                                            </Button>
+
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="flex flex-col items-center justify-center gap-1.5 h-auto py-2 text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all rounded-xl"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/properties/${property.id}`, { state: { tab: 'contracts' } });
+                                                }}
+                                            >
+                                                <FileText className="w-4 h-4" />
+                                                <span className="text-[0.65rem] md:text-xs font-bold leading-none">{lang === 'he' ? 'פרטי חוזה' : 'Contracts'}</span>
+                                            </Button>
+                                        </div>
                                     </CardContent>
                                 </Card>
+                                </div>
                             );
                         })}
                     </div>

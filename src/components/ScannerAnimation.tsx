@@ -19,7 +19,7 @@ export const ScannerAnimation = () => {
 
             {/* Document Container */}
             <motion.div
-                className="relative h-full bg-white rounded-xl shadow-xl overflow-hidden border border-slate-100 p-4 flex flex-col gap-3"
+                className="relative h-full bg-white rounded-xl shadow-xl overflow-hidden border border-slate-100 p-4 flex flex-col gap-2 sm:gap-4"
                 initial={{ rotateX: 20, y: 0 }}
                 animate={{
                     y: [0, -5, 0],

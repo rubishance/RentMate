@@ -30,9 +30,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
             {label && (
                 <FormLabel label={label} required={required} />
             )}
-            <div className="relative group">
+            <div className="relative group flex w-full" dir={props.dir}>
                 {leftIcon && (
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none">
+                    <div className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none z-10">
                         {leftIcon}
                     </div>
                 )}
@@ -40,8 +40,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
                     type={inputType}
                     className={cn(
                         "flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-base file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-80 transition-all shadow-sm",
-                        leftIcon && "pl-11",
-                        (rightIcon || isPassword) && "pr-11",
+                        leftIcon && "ps-11",
+                        (rightIcon || isPassword) && "pe-11",
                         error && "border-destructive focus-visible:ring-destructive",
                         className
                     )}
@@ -50,7 +50,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
                 />
                 {(rightIcon || isPassword) && (
                     <div className={cn(
-                        "absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors",
+                        "absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors z-10",
                          !isPassword && "pointer-events-none group-focus-within:text-primary"
                     )}>
                         {isPassword ? (
@@ -58,7 +58,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
                                 type="button"
                                 aria-label={showPassword ? "Hide password" : "Show password"}
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="focus:outline-none hover:text-foreground text-muted-foreground/80 hover:bg-muted/50 p-1.5 rounded-md -mr-1.5 transition-colors flex items-center justify-center h-full"
+                                className="focus:outline-none hover:text-foreground text-muted-foreground/80 hover:bg-muted/50 p-1.5 rounded-md -me-1.5 transition-colors flex items-center justify-center h-full"
                             >
                                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
@@ -69,7 +69,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
                 )}
             </div>
             {error && (
-                <p className="text-[0.8rem] font-medium text-destructive mt-1.5">{error}</p>
+                <p className="text-[0.8rem] font-medium text-destructive mt-1.5 text-start w-full">{error}</p>
             )}
         </div>
     );

@@ -1,0 +1,26 @@
+=== HAPPY PATH E2E TEST: START ===
+1. Provisioning Legitimate User & Data...
+✅ Landlord created: 6e4edf1e-460a-405b-a72e-1728bdea1254
+✅ Property created: 9ab46c1c-a59b-47c6-a0fd-5279eb3f4ecf
+✅ Protocol created: e15fb4ca-34a3-415c-811f-7b23ac637dd1
+✅ WhatsApp Conversation created: d5a4af6e-ff43-4c12-ae53-3196b71e7951
+
+2. Acquiring Legit User JWT...
+✅ Token successfully obtained.
+
+Waiting 2 seconds for read-replicas to sync...
+
+=== EXECUTING FUNCTIONS (IDOR & LATENCY CHECK) ===
+
+-> Invoking /generate-protocol-pdf for Protocol: e15fb4ca-34a3-415c-811f-7b23ac637dd1
+[PDF Result]: Status: 500 (Latency: 2353.49 ms)
+✅ PDF Generator permitted access correctly (Passed Auth Guard).
+   Internal Function Output: {"error":"(protocol.inventory || []).filter is not a function"}
+
+-> Invoking /send-whatsapp-outbound for Conversation: d5a4af6e-ff43-4c12-ae53-3196b71e7951
+[WhatsApp Result]: Status: 400 (Latency: 963.68 ms)
+✅ WhatsApp Outbound permitted access correctly (Passed Auth Guard).
+   Internal Function Output: {"error":"DEBUG: convError=null, convData={\"id\":\"d5a4af6e-ff43-4c12-ae53-3196b71e7951\",\"user_id\":\"6e4edf1e-460a-405b-a72e-1728bdea1254\"}, user.id=6e4edf1e-460a-405b-a72e-1728bdea1254"}
+
+=== CLEANUP ===
+✅ Cleanup complete. E2E Test Finished.

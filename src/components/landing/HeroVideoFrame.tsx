@@ -16,7 +16,7 @@ export function HeroMediaFrame({ type = 'desktop', className, children }: HeroMe
         <div className={cn("relative group h-full w-full", className)}>
             <div className={cn(
                 "w-full h-full bg-card backdrop-blur-3xl border border-border/50 overflow-hidden relative flex flex-col transition-all duration-500",
-                isDesktop ? "rounded-t-2xl lg:rounded-2xl" : "rounded-3xl lg:rounded-[2.5rem]"
+                isDesktop ? "rounded-t-2xl lg:rounded-2xl" : "rounded-2xl lg:rounded-2xl"
             )}>
                 
                 {/* Header Strip */}

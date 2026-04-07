@@ -27,7 +27,7 @@ export default function MaintenancePage() {
                     className="flex justify-center"
                 >
                     <div className="relative">
-                        <WrenchScrewdriverIcon className="w-24 h-24 text-brand-600 animate-pulse" />
+                        <WrenchScrewdriverIcon className="w-24 h-24 text-primary animate-pulse" />
                         <div className="absolute -top-2 -right-2 bg-emerald-500 rounded-full p-1.5 border-4 border-white dark:border-[#0a0a0a]">
                             <ShieldCheckIcon className="w-6 h-6 text-white" />
                         </div>
@@ -36,7 +36,7 @@ export default function MaintenancePage() {
 
                 <div className="space-y-4">
                     <h1 className="text-4xl font-black text-foreground dark:text-white tracking-tighter uppercase">
-                        Scheduled <span className="text-brand-600">Maintenance</span>
+                        Scheduled <span className="text-primary">Maintenance</span>
                     </h1>
                     <p className="text-muted-foreground dark:text-muted-foreground font-medium leading-relaxed">
                         {message}

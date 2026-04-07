@@ -79,19 +79,19 @@ export function SystemBroadcast() {
                     colors[current.type as keyof typeof colors]
                 )}
             >
-                <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
+                <div className="max-w-7xl mx-auto px-4 py-2 sm:py-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4">
                         {icons[current.type as keyof typeof icons]}
                         <p className="text-sm font-bold tracking-tight">
                             {current.message}
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-4">
                         {current.target_link && (
                             <button
                                 onClick={() => navigate(current.target_link)}
-                                className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest hover:underline"
+                                className="flex items-center gap-2 text-xs font-black uppercase tracking-widest hover:underline"
                             >
                                 Learn More
                                 <ArrowRightIcon className="w-3.5 h-3.5" />

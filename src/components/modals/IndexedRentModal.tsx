@@ -76,22 +76,26 @@ export function IndexedRentModal({ isOpen, onClose, contract }: IndexedRentModal
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 mt-auto">
+            <div 
+                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+                onClick={onClose}
+            />
+            <div className="relative w-full max-w-md bg-white dark:bg-gray-800 rounded-t-3xl sm:rounded-2xl shadow-xl overflow-hidden mt-auto sm:mt-0 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-border dark:border-gray-700">
-                    <h3 className="text-lg font-bold flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-primary" />
-                        Indexed Rent Calculator
-                    </h3>
-                    <button onClick={onClose} className="p-1 hover:bg-muted dark:hover:bg-gray-700 rounded-full transition-colors">
+                <div className="flex items-center justify-between p-6 border-b border-border dark:border-gray-700 shrink-0">
+                    <button onClick={onClose} className="p-2 hover:bg-muted dark:hover:bg-gray-700 rounded-xl transition-colors">
                         <X className="w-5 h-5 text-muted-foreground" />
                     </button>
+                    <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
+                        Indexed Rent Calculator
+                        <TrendingUp className="w-5 h-5 text-primary" />
+                    </h3>
                 </div>
 
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1 pb-10 sm:pb-6">
                     {/* Base Details */}
-                    <div className="flex items-center justify-between p-4 bg-secondary dark:bg-foreground/50 rounded-xl border border-border dark:border-gray-700">
+                    <div className="flex items-center justify-between p-6 bg-secondary dark:bg-foreground/50 rounded-xl border border-border dark:border-gray-700">
                         <div>
                             <p className="text-xs text-muted-foreground uppercase font-medium mb-1">Base Rent</p>
                             <p className="text-xl font-mono font-bold">₪{contract?.base_rent.toLocaleString()}</p>
@@ -120,7 +124,7 @@ export function IndexedRentModal({ isOpen, onClose, contract }: IndexedRentModal
                                 <div className="text-4xl font-bold font-mono tracking-tight mb-2">
                                     ₪{calculation.newRent.toLocaleString()}
                                 </div>
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-xs font-medium">
+                                <div className="inline-flex items-center gap-2 px-2 sm:px-6 py-1 bg-white/20 rounded-full text-xs font-medium">
                                     <TrendingUp className="w-3 h-3" />
                                     {calculation.percentageChange > 0 ? '+' : ''}{calculation.percentageChange.toFixed(2)}%
                                     from start
@@ -128,7 +132,7 @@ export function IndexedRentModal({ isOpen, onClose, contract }: IndexedRentModal
                             </div>
 
                             {/* Calculation Breakdown */}
-                            <div className="space-y-2">
+                            <div className="space-y-4">
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-muted-foreground flex items-center gap-2">
                                         <Calendar className="w-4 h-4" />

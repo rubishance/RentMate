@@ -42,7 +42,7 @@ export function HeaderActionMenu() {
                                     setIsOpen(false);
                                     navigate('/payments', { state: { action: 'payment' } });
                                 }}
-                                className="flex items-center gap-3 p-3 rounded-xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
+                                className="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                             >
                                 <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform shadow-sm">
                                     <PaymentIcon className="w-4 h-4" />
@@ -58,7 +58,7 @@ export function HeaderActionMenu() {
                                         onSuccess: () => navigate('/properties')
                                     }, { isExpanded: true, title: t('addContract') });
                                 }}
-                                className="flex items-center gap-3 p-3 rounded-xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
+                                className="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                             >
                                 <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-sm">
                                     <ContractIcon className="w-4 h-4" />
@@ -72,7 +72,7 @@ export function HeaderActionMenu() {
                                     setIsOpen(false);
                                     navigate('/properties', { state: { action: 'add' } });
                                 }}
-                                className="flex items-center gap-3 p-3 rounded-xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
+                                className="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                             >
                                 <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform shadow-sm">
                                     <AssetIcon className="w-4 h-4" />
@@ -86,7 +86,7 @@ export function HeaderActionMenu() {
                                     setIsOpen(false);
                                     navigate('/properties', { state: { action: 'upload' } });
                                 }}
-                                className="flex items-center gap-3 p-3 rounded-xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
+                                className="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                             >
                                 <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-sm">
                                     <UploadIcon className="w-4 h-4" />

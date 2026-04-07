@@ -14,7 +14,7 @@ export function KnowledgeBaseWidget() {
     };
 
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-border dark:border-neutral-800 text-black dark:text-white relative overflow-hidden flex flex-col justify-between h-full group">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 shadow-sm border border-border dark:border-neutral-800 text-black dark:text-white relative overflow-hidden flex flex-col justify-between h-full group">
             {/* Background Icon */}
             <div className="absolute -bottom-8 -right-8 text-black/5 dark:text-white/5 transform rotate-[-15deg] group-hover:scale-110 transition-transform">
                 <BookOpen className="w-48 h-48" />
@@ -26,7 +26,7 @@ export function KnowledgeBaseWidget() {
                     {t('knowledgeBase')}
                 </div>
 
-                <h3 className="text-xl font-black mb-3 text-primary leading-tight tracking-tight">
+                <h3 className="text-xl font-black mb-2 sm:mb-4 text-primary leading-tight tracking-tight">
                     {featuredArticle.title}
                 </h3>
                 <p className="text-muted-foreground dark:text-muted-foreground text-sm line-clamp-3 font-medium leading-relaxed">

@@ -36,7 +36,7 @@ export function MaintenanceTracker() {
     const recentActivity = documents.slice(0, 5);
 
     return (
-        <div className="pt-2 md:pt-8 px-5 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
+        <div className="pt-2 md:pt-8 px-4 sm:px-6 space-y-4 md:space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
             {/* Floating Action Button - FIXED so it never moves */}
             <div className={cn(
                 "fixed z-[60]",
@@ -59,7 +59,7 @@ export function MaintenanceTracker() {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <GlassCard variant="deep" className="p-8 rounded-[3rem] flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
+                <GlassCard variant="deep" className="p-8 rounded-2xl flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <div className="flex items-center justify-between relative z-10">
                         <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70 lowercase">{t('totalYTD') || 'Total Spend (YTD)'}</span>
@@ -74,7 +74,7 @@ export function MaintenanceTracker() {
                     </div>
                 </GlassCard>
 
-                <GlassCard variant="deep" className="p-8 rounded-[3rem] flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
+                <GlassCard variant="deep" className="p-8 rounded-2xl flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <div className="flex items-center justify-between relative z-10">
                         <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70 lowercase">{t('totalTickets') || 'Total Tickets'}</span>
@@ -89,7 +89,7 @@ export function MaintenanceTracker() {
                     </div>
                 </GlassCard>
 
-                <GlassCard variant="deep" className="p-8 rounded-[3rem] flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
+                <GlassCard variant="deep" className="p-8 rounded-2xl flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <div className="flex items-center justify-between relative z-10">
                         <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70 lowercase">{t('avgCost') || 'Avg. Ticket Cost'}</span>
@@ -111,14 +111,14 @@ export function MaintenanceTracker() {
                     <h3 className="text-xs font-black uppercase tracking-[0.4em] text-muted-foreground opacity-70 lowercase">{t('recentActivity') || 'Recent Activity'}</h3>
                 </div>
 
-                <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] shadow-minimal overflow-hidden">
+                <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-2xl shadow-minimal overflow-hidden">
                     {loading ? (
                         <div className="p-20 text-center">
                             <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
                         </div>
                     ) : documents.length === 0 ? (
                         <div className="py-24 text-center space-y-8">
-                            <div className="w-24 h-24 glass-premium rounded-[2.5rem] flex items-center justify-center mx-auto shadow-minimal border border-white/5">
+                            <div className="w-24 h-24 glass-premium rounded-2xl flex items-center justify-center mx-auto shadow-minimal border border-white/5">
                                 <Wrench className="w-10 h-10 text-muted-foreground opacity-20" />
                             </div>
                             <div>
@@ -138,8 +138,8 @@ export function MaintenanceTracker() {
                                         </div>
                                         <div className="flex-1 min-w-0 space-y-1">
                                             <h4 className="text-base sm:text-lg font-black tracking-tight text-foreground lowercase truncate"><bdi>{doc.title || doc.description || 'Maintenance'}</bdi></h4>
-                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70">
-                                                <span className="flex items-center gap-1.5 shrink-0 truncate max-w-full">
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 sm:gap-4 text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70">
+                                                <span className="flex items-center gap-2 shrink-0 truncate max-w-full">
                                                     <Building className="w-3 h-3" />
                                                     <bdi>{(doc as any).properties?.address || 'Unknown Property'}</bdi>
                                                 </span>
@@ -150,11 +150,11 @@ export function MaintenanceTracker() {
                                     </div>
 
                                     <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 relative z-10 w-full sm:w-auto pl-[4rem] sm:pl-0">
-                                        <div className="flex items-baseline gap-1.5 font-black text-foreground">
+                                        <div className="flex items-baseline gap-2 font-black text-foreground">
                                             <span className="text-xs opacity-40">₪</span>
                                             <span className="text-xl sm:text-2xl tracking-tighter">{(doc.amount || 0).toLocaleString()}</span>
                                         </div>
-                                        <span className="text-xs font-black uppercase tracking-[2px] px-3 py-1 rounded-full glass-premium border-white/5 text-muted-foreground opacity-90">
+                                        <span className="text-xs font-black uppercase tracking-[2px] px-2 sm:px-4 py-1 rounded-full glass-premium border-white/5 text-muted-foreground opacity-90">
                                             {doc.issue_type || 'General'}
                                         </span>
                                     </div>

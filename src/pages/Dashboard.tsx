@@ -236,9 +236,9 @@ export function Dashboard() {
 
     if (loading && !feedItems.length) {
         return (
-            <div className="px-3 py-20 max-w-5xl mx-auto space-y-12">
+            <div className="px-2 sm:px-4 py-20 max-w-5xl mx-auto space-y-12">
                 <div className="h-8 w-48 bg-muted/50 animate-pulse rounded-2xl" />
-                <div className="h-96 w-full bg-muted/50 animate-pulse rounded-[3rem]" />
+                <div className="h-96 w-full bg-muted/50 animate-pulse rounded-2xl" />
             </div>
         );
     }
@@ -248,14 +248,14 @@ export function Dashboard() {
             {/* Mobile: Top Bar Background Extension */}
             <div className="fixed top-0 left-0 right-0 h-32 bg-gradient-to-b from-canvas to-transparent z-0 pointer-events-none md:hidden" />
 
-            <div className="pb-4 pt-2 md:pt-8 px-5 relative z-10 w-full overflow-x-hidden">
+            <div className="pb-4 pt-2 md:pt-8 px-4 sm:px-6 relative z-10 w-full overflow-x-hidden">
 
                 {/* Header Area: Hero + Actions aligned with other pages */}
                 <div className="flex flex-col gap-6 mb-6">
-                    <div className="flex items-center justify-between w-full gap-3 sm:gap-4">
-                        <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between w-full gap-2 sm:gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             {/* Edit Mode Toggle & Status */}
-                            <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
+                            <div className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-full border border-primary/10">
                                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                                 <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                                     {t('online')}
@@ -281,7 +281,7 @@ export function Dashboard() {
                 {/* Floating Action Button - FIXED so it never moves */}
                 <div className={cn(
                     "fixed z-[60]",
-                    lang === 'he' ? 'left-5' : 'right-5',
+                    lang === 'he' ? 'left-4 sm:left-6' : 'right-4 sm:right-6',
                     "top-[88px] md:top-[144px]"
                 )}>
                     <Button
@@ -294,13 +294,13 @@ export function Dashboard() {
                 </div>
 
                 {/* Always display Usage Overview at the very top if relevant */}
-                <div className="w-full mb-5 md:mb-8 empty:hidden">
+                <div className="w-full mb-4 sm:mb-6 md:mb-8 empty:hidden">
                     <UsageOverviewWidget />
                 </div>
 
                 {/* Alerts / Insights Carousel below header */}
                 {feedItemsWithActions.filter(item => item.id !== 'welcome').length > 0 && (
-                    <div className="w-full mb-5 md:mb-8">
+                    <div className="w-full mb-4 sm:mb-6 md:mb-8">
                         <DashboardHero
                             firstName={firstName}
                             feedItems={feedItemsWithActions}
@@ -310,7 +310,7 @@ export function Dashboard() {
                 )}
 
                 {/* Bento Stack / Grid Layout */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-8 auto-rows-min">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 md:gap-8 auto-rows-min">
 
                     {layout
                         .filter(w => w.visible)

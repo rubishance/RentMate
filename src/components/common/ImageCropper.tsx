@@ -107,12 +107,12 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel, aspect = 4 / 
                         </div>
                     </div>
 
-                    <div className="flex gap-3 justify-center">
+                    <div className="flex gap-2 sm:gap-4 justify-center">
                         <button
                             onClick={onCancel}
                             disabled={loading}
                             className={cn(
-                                "flex items-center gap-2 px-6 py-3 rounded-xl",
+                                "flex items-center gap-2 px-6 py-2 sm:py-4 rounded-xl",
                                 "bg-slate-800 text-white font-medium hover:bg-slate-700 transition-colors",
                                 "border border-white/5"
                             )}
@@ -124,7 +124,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel, aspect = 4 / 
                             onClick={handleSave}
                             disabled={loading}
                             className={cn(
-                                "flex items-center gap-2 px-8 py-3 rounded-xl",
+                                "flex items-center gap-2 px-8 py-2 sm:py-4 rounded-xl",
                                 "bg-primary text-primary-foreground font-medium",
                                 "hover:brightness-110 transition-all shadow-jewel",
                                 "disabled:opacity-50 disabled:cursor-not-allowed"

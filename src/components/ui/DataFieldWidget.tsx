@@ -30,28 +30,21 @@ export function DataFieldWidget({
     <div
       onClick={onClick}
       className={cn(
-        "flex flex-col p-4 md:p-5 rounded-[1.25rem] bg-secondary/5 dark:bg-secondary/10 transition-all text-start",
+        "bg-slate-50 dark:bg-neutral-800/50 rounded-2xl p-4 flex flex-col items-start text-start w-full gap-0.5 transition-all",
         isClickable &&
-          "cursor-pointer hover:bg-secondary/10 dark:hover:bg-secondary/20 active:scale-[0.98]",
+          "cursor-pointer hover:bg-slate-100 dark:hover:bg-neutral-800 active:scale-[0.98]",
         className
       )}
     >
-      {/* Label and Icon Row */}
-      <div className="flex items-center justify-start gap-1.5 text-muted-foreground mb-1.5">
-        {icon && (
-          <span className="w-4 h-4 flex items-center justify-center opacity-80 text-muted-foreground">
-            {icon}
-          </span>
-        )}
-        <span className="text-[13px] font-medium text-muted-foreground">
-          {label}
-        </span>
+      {/* Label Row */}
+      <div className="text-xs text-muted-foreground w-full font-medium ml-1 mb-1 flex items-center gap-2 justify-start">
+        {label}
       </div>
 
       {/* Value Row */}
       <div
         className={cn(
-          "text-[16px] md:text-[17px] font-bold text-foreground leading-tight text-start",
+          "text-base !font-black !text-brand-900 dark:!text-brand-100 pr-0.5 w-full leading-tight break-words text-start",
           valueClassName
         )}
         dir="rtl"

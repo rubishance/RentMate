@@ -465,7 +465,7 @@ const UserManagement = () => {
                         View and manage system users, their subscription plans, and resource limits.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <Button
                         variant="outline"
                         onClick={fetchData}
@@ -478,7 +478,7 @@ const UserManagement = () => {
             </div>
 
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-3 text-red-700 dark:text-red-400 font-bold text-sm">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-2 sm:gap-4 text-red-700 dark:text-red-400 font-bold text-sm">
                     <ExclamationTriangleIcon className="w-6 h-6 flex-shrink-0" />
                     <div>
                         <p>Database Connectivity Issue</p>
@@ -537,15 +537,15 @@ const UserManagement = () => {
                                     </div>
                                 </th>
                                 <th scope="col" className="py-4 pl-4 pr-3 text-right text-xs font-black text-muted-foreground uppercase tracking-widest">Name / Contact</th>
-                                <th scope="col" className="px-3 py-4 text-right text-xs font-black text-muted-foreground uppercase tracking-widest">Role / Plan</th>
-                                <th scope="col" className="px-3 py-4 text-right text-xs font-black text-muted-foreground uppercase tracking-widest">Assets Stats</th>
-                                <th scope="col" className="px-3 py-4 text-right text-xs font-black text-muted-foreground uppercase tracking-widest">Platform Usage</th>
-                                <th scope="col" className="px-3 py-4 text-right text-xs font-black text-muted-foreground uppercase tracking-widest">Last Activity</th>
-                                <th scope="col" className="px-3 py-4 text-right text-xs font-black text-muted-foreground uppercase tracking-widest">Status</th>
+                                <th scope="col" className="px-2 sm:px-4 py-4 text-right text-xs font-black text-muted-foreground uppercase tracking-widest">Role / Plan</th>
+                                <th scope="col" className="px-2 sm:px-4 py-4 text-right text-xs font-black text-muted-foreground uppercase tracking-widest">Assets Stats</th>
+                                <th scope="col" className="px-2 sm:px-4 py-4 text-right text-xs font-black text-muted-foreground uppercase tracking-widest">Platform Usage</th>
+                                <th scope="col" className="px-2 sm:px-4 py-4 text-right text-xs font-black text-muted-foreground uppercase tracking-widest">Last Activity</th>
+                                <th scope="col" className="px-2 sm:px-4 py-4 text-right text-xs font-black text-muted-foreground uppercase tracking-widest">Status</th>
                                 <th scope="col" className="relative py-4 pr-3 pl-6"><span className="sr-only">Actions</span></th>
                             </tr>
                             <tr className="bg-white dark:bg-gray-800 border-t border-border dark:border-gray-700">
-                                <th className="py-2 px-3"></th>
+                                <th className="py-2 px-2 sm:px-4"></th>
                                 <th className="py-2 pr-4 pl-3">
                                     <Input
                                         placeholder="Filter Name..."
@@ -554,7 +554,7 @@ const UserManagement = () => {
                                         onChange={(e) => setColumnFilters({ ...columnFilters, name: e.target.value })}
                                     />
                                 </th>
-                                <th className="px-3 py-2">
+                                <th className="px-2 sm:px-4 py-2">
                                     <div className="flex items-center gap-2">
                                         <Select
                                             className="h-7 text-xs min-w-[100px]"
@@ -578,12 +578,12 @@ const UserManagement = () => {
                                         />
                                     </div>
                                 </th>
-                                <th className="px-3 py-2 opacity-30 select-none">
+                                <th className="px-2 sm:px-4 py-2 opacity-30 select-none">
                                     {/* Stats filters usually need ranges or > X, keeping simple for now */}
                                 </th>
-                                <th className="px-3 py-2 opacity-30 select-none"></th>
-                                <th className="px-3 py-2 opacity-30 select-none"></th>
-                                <th className="px-3 py-2">
+                                <th className="px-2 sm:px-4 py-2 opacity-30 select-none"></th>
+                                <th className="px-2 sm:px-4 py-2 opacity-30 select-none"></th>
+                                <th className="px-2 sm:px-4 py-2">
                                     <Select
                                         className="h-8 text-xs"
                                         value={columnFilters.status}
@@ -595,7 +595,7 @@ const UserManagement = () => {
                                         ]}
                                     />
                                 </th>
-                                <th className="px-3 py-2"></th>
+                                <th className="px-2 sm:px-4 py-2"></th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -606,7 +606,7 @@ const UserManagement = () => {
                             ) : (
                                 filteredUsers.map((user) => (
                                     <tr key={user.id} className={`transition-colors ${selectedUserIds.includes(user.id) ? 'bg-primary-50/50 dark:bg-primary-900/10' : 'hover:bg-blue-50 dark:hover:bg-gray-700/50'}`}>
-                                        <td className="whitespace-nowrap py-5 pl-3 pr-4 sm:pr-6">
+                                        <td className="whitespace-nowrap py-4 sm:py-6 pl-3 pr-4 sm:pr-6">
                                             <div className="flex items-center">
                                                 <input
                                                     type="checkbox"
@@ -616,7 +616,7 @@ const UserManagement = () => {
                                                 />
                                             </div>
                                         </td>
-                                        <td className="whitespace-nowrap py-5 pr-3 pl-3 text-sm">
+                                        <td className="whitespace-nowrap py-4 sm:py-6 pr-3 pl-3 text-sm">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 flex items-center justify-center text-primary-600 dark:text-primary-400 font-black relative">
                                                     {user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
@@ -636,7 +636,7 @@ const UserManagement = () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="whitespace-nowrap px-3 py-5">
+                                        <td className="whitespace-nowrap px-2 sm:px-4 py-4 sm:py-6">
                                             <div className="flex flex-col gap-1">
                                                 <span className={`inline-flex w-fit rounded-xl px-2 py-0.5 text-xs font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-primary-50 text-primary-700 border border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' : 'bg-muted text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
                                                     {user.role}
@@ -646,20 +646,20 @@ const UserManagement = () => {
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="whitespace-nowrap px-3 py-5 text-right">
+                                        <td className="whitespace-nowrap px-2 sm:px-4 py-4 sm:py-6 text-right">
                                             <div className="flex flex-col gap-1 text-xs font-black uppercase">
                                                 <div className="text-muted-foreground flex justify-between gap-4">ASSETS: <span className="text-foreground dark:text-white">{user.properties_count}</span></div>
                                                 <div className="text-muted-foreground flex justify-between gap-4">LEASES: <span className="text-foreground dark:text-white">{user.contracts_count}</span></div>
                                                 <div className="text-muted-foreground flex justify-between gap-4">TENANTS: <span className="text-foreground dark:text-white">{user.tenants_count}</span></div>
                                             </div>
                                         </td>
-                                        <td className="whitespace-nowrap px-3 py-5 text-right">
+                                        <td className="whitespace-nowrap px-2 sm:px-4 py-4 sm:py-6 text-right">
                                             <div className="flex flex-col gap-1 text-xs font-black uppercase">
                                                 <div className="text-muted-foreground flex justify-between gap-4">STORAGE: <span className="text-blue-600">{user.storage_usage_mb || 0} MB</span></div>
                                                 <div className="text-muted-foreground flex justify-between gap-4">AI SESS: <span className="text-primary">{user.ai_sessions_count || 0}</span></div>
                                             </div>
                                         </td>
-                                        <td className="whitespace-nowrap px-3 py-5">
+                                        <td className="whitespace-nowrap px-2 sm:px-4 py-4 sm:py-6">
                                             <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
                                                 {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
                                             </div>
@@ -669,14 +669,14 @@ const UserManagement = () => {
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="whitespace-nowrap px-3 py-5">
+                                        <td className="whitespace-nowrap px-2 sm:px-4 py-4 sm:py-6">
                                             {user.subscription_status === 'active' ? (
                                                 <span className="inline-flex rounded-xl bg-blue-50 px-2.5 py-0.5 text-xs font-black uppercase tracking-widest text-blue-700 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800">Active</span>
                                             ) : (
                                                 <span className="inline-flex rounded-xl bg-red-50 px-2.5 py-0.5 text-xs font-black uppercase tracking-widest text-red-700 border border-red-100 dark:bg-red-900/20 dark:border-red-800">{user.subscription_status || 'Suspended'}</span>
                                             )}
                                         </td>
-                                        <td className="whitespace-nowrap py-5 pl-6 pr-3 text-left">
+                                        <td className="whitespace-nowrap py-4 sm:py-6 pl-6 pr-3 text-left">
                                             <div className="flex items-center justify-end gap-1">
                                                 <Button
                                                     variant="ghost"
@@ -729,7 +729,7 @@ const UserManagement = () => {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
                     <div className="fixed inset-0 bg-foreground/80 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
 
-                    <div className="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-window p-8 shadow-2xl transition-all border border-border dark:border-gray-700" dir="ltr">
+                    <div className="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-window p-8 shadow-2xl transition-all border border-border dark:border-gray-700" dir="ltr">
                         <Button variant="ghost" size="sm" onClick={() => setIsEditModalOpen(false)} className="absolute top-6 right-6 text-muted-foreground hover:text-foreground dark:hover:text-white transition-colors h-auto p-1">
                             <XMarkIcon className="h-6 w-6" />
                         </Button>
@@ -838,7 +838,7 @@ const UserManagement = () => {
                                 </div>
                             </div>
 
-                            <div className="flex gap-3 mt-8">
+                            <div className="flex gap-2 sm:gap-4 mt-8">
                                 <Button
                                     onClick={handleSaveChanges}
                                     disabled={actionLoading}
@@ -857,13 +857,13 @@ const UserManagement = () => {
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 text-left" dir="ltr">
                     <div className="fixed inset-0 bg-foreground/80 backdrop-blur-sm transition-opacity" onClick={() => setIsSecurityLogsOpen(false)}></div>
 
-                    <div className="relative w-full max-w-2xl transform overflow-hidden rounded-3xl bg-window p-8 shadow-2xl transition-all border border-border dark:border-gray-700" dir="ltr">
+                    <div className="relative w-full max-w-2xl transform overflow-hidden rounded-2xl bg-window p-8 shadow-2xl transition-all border border-border dark:border-gray-700" dir="ltr">
                         <Button variant="ghost" size="sm" onClick={() => setIsSecurityLogsOpen(false)} className="absolute top-6 right-6 text-muted-foreground hover:text-foreground dark:hover:text-white transition-colors h-auto p-1">
                             <XMarkIcon className="h-6 w-6" />
                         </Button>
 
                         <div className="mb-6">
-                            <h3 className="text-2xl font-black text-foreground dark:text-white tracking-tight flex items-center gap-3">
+                            <h3 className="text-2xl font-black text-foreground dark:text-white tracking-tight flex items-center gap-2 sm:gap-4">
                                 <ShieldCheckIcon className="w-8 h-8 text-rose-600" />
                                 Security Audit Logs
                             </h3>
@@ -929,7 +929,7 @@ const UserManagement = () => {
                         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-4 bg-foreground dark:bg-gray-800 shadow-2xl rounded-2xl flex items-center gap-6 border border-gray-800 dark:border-gray-700"
                         dir="ltr"
                     >
-                        <div className="flex items-center gap-3 pr-6 border-r border-gray-700">
+                        <div className="flex items-center gap-2 sm:gap-4 pr-6 border-r border-gray-700">
                             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-600 text-white font-black text-sm">
                                 {selectedUserIds.length}
                             </span>
@@ -996,7 +996,7 @@ const UserManagement = () => {
             {isBulkStatusModalOpen && (
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 text-left" dir="ltr">
                     <div className="fixed inset-0 bg-foreground/80 backdrop-blur-sm transition-opacity" onClick={() => setIsBulkStatusModalOpen(false)}></div>
-                    <div className="relative w-full max-w-sm rounded-3xl bg-window p-8 shadow-2xl border border-border dark:border-gray-700">
+                    <div className="relative w-full max-w-sm rounded-2xl bg-window p-8 shadow-2xl border border-border dark:border-gray-700">
                         <Button variant="ghost" size="sm" onClick={() => setIsBulkStatusModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground dark:hover:text-white p-1 h-auto"><XMarkIcon className="h-5 w-5" /></Button>
                         <h3 className="text-xl font-black mb-4">Update Status ({selectedUserIds.length})</h3>
                         <div className="space-y-3">
@@ -1011,7 +1011,7 @@ const UserManagement = () => {
             {isBulkPlanModalOpen && (
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 text-left" dir="ltr">
                     <div className="fixed inset-0 bg-foreground/80 backdrop-blur-sm transition-opacity" onClick={() => setIsBulkPlanModalOpen(false)}></div>
-                    <div className="relative w-full max-w-sm rounded-3xl bg-window p-8 shadow-2xl border border-border dark:border-gray-700">
+                    <div className="relative w-full max-w-sm rounded-2xl bg-window p-8 shadow-2xl border border-border dark:border-gray-700">
                         <Button variant="ghost" size="sm" onClick={() => setIsBulkPlanModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 h-auto"><XMarkIcon className="h-5 w-5" /></Button>
                         <h3 className="text-xl font-black mb-4">Assign Plan ({selectedUserIds.length})</h3>
                         <Select
@@ -1029,19 +1029,19 @@ const UserManagement = () => {
             {isBulkDeleteModalOpen && (
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 text-left" dir="ltr">
                     <div className="fixed inset-0 bg-foreground/80 backdrop-blur-sm transition-opacity" onClick={() => setIsBulkDeleteModalOpen(false)}></div>
-                    <div className="relative w-full max-w-md rounded-3xl bg-window p-8 shadow-2xl border border-border dark:border-gray-700">
+                    <div className="relative w-full max-w-md rounded-2xl bg-window p-8 shadow-2xl border border-border dark:border-gray-700">
                         <Button variant="ghost" size="sm" onClick={() => setIsBulkDeleteModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 h-auto"><XMarkIcon className="h-5 w-5" /></Button>
                         <h3 className="text-xl font-black text-rose-600 mb-2 flex items-center gap-2"><ExclamationTriangleIcon className="w-6 h-6" /> Danger Zone</h3>
                         <p className="text-sm text-muted-foreground font-medium mb-6">You are modifying {selectedUserIds.length} users. Please choose how to proceed.</p>
                         <div className="space-y-4">
                             <div className="p-4 border border-orange-200 bg-orange-50 rounded-2xl dark:bg-orange-900/10 dark:border-orange-800">
                                 <h4 className="text-sm font-bold text-orange-800 dark:text-orange-400 mb-1">Soft Delete</h4>
-                                <p className="text-xs text-orange-700 dark:text-orange-500 mb-3 opacity-90">Suspends accounts and flags them. Data remains intact.</p>
+                                <p className="text-xs text-orange-700 dark:text-orange-500 mb-2 sm:mb-4 opacity-90">Suspends accounts and flags them. Data remains intact.</p>
                                 <Button onClick={() => handleBulkDelete(false)} disabled={actionLoading} className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-sm font-bold">Suspend All</Button>
                             </div>
                             <div className="p-4 border border-red-200 bg-red-50 rounded-2xl dark:bg-red-900/10 dark:border-red-800">
                                 <h4 className="text-sm font-bold text-red-800 dark:text-red-400 mb-1">Hard Delete</h4>
-                                <p className="text-xs text-red-700 dark:text-red-500 mb-3 opacity-90">Permanently wipes accounts and all associated data. CANNOT BE UNDONE.</p>
+                                <p className="text-xs text-red-700 dark:text-red-500 mb-2 sm:mb-4 opacity-90">Permanently wipes accounts and all associated data. CANNOT BE UNDONE.</p>
                                 <Button onClick={() => handleBulkDelete(true)} disabled={actionLoading} className="w-full bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold">Wipe Data Completely</Button>
                             </div>
                         </div>
@@ -1053,14 +1053,14 @@ const UserManagement = () => {
             {isBulkBroadcastModalOpen && (
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 text-left" dir="ltr">
                     <div className="fixed inset-0 bg-foreground/80 backdrop-blur-sm transition-opacity" onClick={() => setIsBulkBroadcastModalOpen(false)}></div>
-                    <div className="relative w-full max-w-md rounded-3xl bg-window p-8 shadow-2xl border border-border dark:border-gray-700">
+                    <div className="relative w-full max-w-md rounded-2xl bg-window p-8 shadow-2xl border border-border dark:border-gray-700">
                         <Button variant="ghost" size="sm" onClick={() => setIsBulkBroadcastModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 h-auto"><XMarkIcon className="h-5 w-5" /></Button>
                         <h3 className="text-xl font-black mb-4 flex items-center gap-2">Targeted CRM Message</h3>
                         <p className="text-sm text-muted-foreground font-medium mb-4">Send an internal CRM note or email broadcast trigger to {selectedUserIds.length} users.</p>
                         <textarea
                             value={bulkBroadcastMessage}
                             onChange={(e) => setBulkBroadcastMessage(e.target.value)}
-                            className="w-full h-32 rounded-xl border border-border dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-sm focus:ring-2 focus:ring-primary-600 mb-4 outline-none resize-none font-medium"
+                            className="w-full h-32 rounded-xl border border-border dark:border-gray-700 bg-white dark:bg-gray-800 p-2 sm:p-4 text-sm focus:ring-2 focus:ring-primary-600 mb-4 outline-none resize-none font-medium"
                             placeholder="Enter your message..."
                             dir="auto"
                         />

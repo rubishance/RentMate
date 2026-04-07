@@ -101,7 +101,7 @@ export function StackContainer() {
 
                 return (
                     <div key={layer.id} className={cn(
-                        "fixed top-16 left-0 right-0 bottom-0 z-[100] flex items-end justify-center",
+                        "fixed top-[4rem] sm:top-0 left-0 right-0 bottom-0 z-[100] flex items-end sm:items-center justify-center sm:p-4",
                         layer.modeless ? "pointer-events-none" : "pointer-events-auto"
                     )}>
                         {/* Backdrop - Skip if modeless */}
@@ -120,29 +120,35 @@ export function StackContainer() {
                         <motion.div
                             className={cn(
                                 "relative w-full bg-window shadow-2xl overflow-hidden pointer-events-auto flex flex-col transition-all duration-300",
-                                layer.isExpanded ? "h-full rounded-none" : "h-[90%] rounded-t-[2.5rem]"
+                                layer.isExpanded ? "h-full rounded-none sm:rounded-2xl" : "h-auto max-h-[90dvh] rounded-t-3xl sm:max-h-[85dvh] sm:max-w-3xl sm:rounded-3xl mt-auto sm:my-auto pb-[env(safe-area-inset-bottom)] sm:pb-0"
                             )}
                             initial="hidden"
                             animate="visible"
                             exit="exit"
                             variants={sheetVariants}
                         >
-                            {/* Drag Handle (Visual Only for now) & Header */}
-                            <div className="h-14 flex items-center justify-between px-6 border-b border-slate-100 dark:border-neutral-800 shrink-0">
+                            {/* Mobile Drawer Handle */}
+                            {!layer.isExpanded && (
+                                <div className="w-full flex justify-center pt-3 pb-1 sm:hidden shrink-0 absolute top-0 left-0 right-0 z-50">
+                                    <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-600 rounded-full" />
+                                </div>
+                            )}
+
+                            {/* Header */}
+                            <div className={`p-6 sm:px-6 flex items-center justify-between shrink-0 border-b ${layer.isExpanded ? '' : 'pt-10 sm:pt-6'}`}>
                                 <div className="flex-1" />
-                                <div className="w-12 h-1.5 bg-slate-200 dark:bg-neutral-800 rounded-full mx-auto" />
-                                <div className="flex-1 flex justify-end">
+                                <div className="flex flex-1 justify-end">
                                     <button
                                         onClick={() => pop()}
-                                        className="p-2 bg-muted/50 dark:bg-neutral-800 rounded-full hover:bg-slate-200 transition-colors"
+                                        className="p-2 hover:bg-muted rounded-full z-50"
                                     >
-                                        <CloseIcon className="w-4 h-4 text-muted-foreground" />
+                                        <CloseIcon className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
 
                             {/* Content */}
-                            <div className="flex-1 overflow-y-auto min-h-0 pb-20">
+                            <div className="flex-1 overflow-y-auto no-scrollbar min-h-0">
                                 <Component {...layer.props} onClose={() => pop()} />
                             </div>
                         </motion.div>

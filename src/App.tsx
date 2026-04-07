@@ -53,6 +53,7 @@ const DesignSystem = lazy(() => import('./pages/DesignSystem').then(module => ({
 // Lazy load Admin Pages & Less Critical (Default Exports)
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
+const UiAuditPage = lazy(() => import('./pages/UiAuditPage'));
 const OwnerDashboard = lazy(() => import('./pages/admin/OwnerDashboard'));
 const BroadcastManager = lazy(() => import('./pages/admin/BroadcastManager'));
 import { ShortLinkRedirect } from './pages/ShortLinkRedirect';
@@ -112,10 +113,11 @@ const RootLayout = () => {
     location.pathname.includes('/onboarding') ||
     activeLayer?.type === 'wizard';
 
-  const hideChatPaths = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/accessibility', '/legal/privacy', '/legal/terms'];
+  const hideChatPaths = ['/', '/welcome-new', '/pricing', '/login', '/signup', '/forgot-password', '/reset-password', '/accessibility', '/legal/privacy', '/legal/terms'];
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isPublicRoute = location.pathname.startsWith('/apply/') || location.pathname.startsWith('/sign/');
-  const shouldHideChat = hideChatPaths.includes(location.pathname) || isWizard || isAdminRoute || isPublicRoute;
+  const isKnowledgeBaseRoute = location.pathname.startsWith('/knowledge-base');
+  const shouldHideChat = hideChatPaths.includes(location.pathname) || isWizard || isAdminRoute || isPublicRoute || isKnowledgeBaseRoute;
 
   return (
     <>
@@ -148,6 +150,10 @@ const router = createBrowserRouter([
       {
         path: "/design-system",
         element: <DesignSystem />,
+      },
+      {
+        path: "/ui-audit",
+        element: <UiAuditPage />,
       },
       {
         path: "/pricing",
@@ -204,6 +210,10 @@ const router = createBrowserRouter([
       {
         path: "/calc/:id",
         element: <SharedCalculation />,
+      },
+      {
+        path: "/shared-calculator",
+        element: <SharedCalculation />
       },
       {
         path: "/accessibility",
@@ -292,7 +302,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "/tools",
-                element: <Tools />,
+                element: <Navigate to="/calculator" replace />,
               },
               {
                 path: "/payments",

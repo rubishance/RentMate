@@ -15,8 +15,9 @@ export function SignaturePad({
   width = '100%', 
   height = 150,
   label = 'Signature',
-  clearLabel = 'Clear'
-}: SignaturePadProps) {
+  clearLabel = 'Clear',
+  placeholder = 'X Signature'
+}: SignaturePadProps & { placeholder?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -95,9 +96,9 @@ export function SignaturePad({
   return (
     <div className="flex flex-col gap-2 w-full" ref={containerRef}>
       <div className="flex justify-between items-center px-1">
-        <label className="text-sm font-black text-muted-foreground uppercase">{label}</label>
+        <label className="text-sm font-black text-primary uppercase">{label}</label>
         {!isEmpty && (
-          <Button variant="ghost" size="sm" onClick={clear} className="h-6 text-xs text-muted-foreground">
+          <Button variant="ghost" size="sm" onClick={clear} className="h-6 text-xs text-muted-foreground hover:text-primary">
             <RefreshCcw className="w-3 h-3 mr-1" />
             {clearLabel}
           </Button>
@@ -119,7 +120,7 @@ export function SignaturePad({
         />
         {isEmpty && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-            <p className="text-xl font-black rotate-[-10deg] italic text-black font-serif border-b border-black w-2/3 text-center pb-2">X Signature</p>
+            <p className="text-xl font-black rotate-[-10deg] italic text-black font-serif border-b border-black w-2/3 text-center pb-2">X {placeholder}</p>
           </div>
         )}
       </div>

@@ -314,11 +314,11 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
 
                 {/* Manual Selection List Trigger (Always visible if payments exist) */}
                 {pendingPayments.length > 0 && !isMatchConfirmed && (
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                         <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">
                             {t('linkToExpectedPayment')}
                         </label>
-                        <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                        <div className="max-h-40 overflow-y-auto space-y-4 pr-1 custom-scrollbar">
                             {pendingPayments.map(p => {
                                 const isBestMatch = matchedPayment?.id === p.id;
                                 return (
@@ -327,7 +327,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                                         type="button"
                                         onClick={() => confirmMatch(p)}
                                         className={cn(
-                                            "w-full text-left p-3 rounded-xl border text-xs flex items-center justify-between transition-all",
+                                            "w-full text-left p-4 sm:p-6 rounded-xl border text-xs flex items-center justify-between transition-all",
                                             isBestMatch
                                                 ? "bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800 ring-1 ring-brand-500"
                                                 : "bg-window border-border dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700"
@@ -358,7 +358,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20 rounded-2xl flex items-center gap-3"
+                            className="p-6 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20 rounded-2xl flex items-center gap-2 sm:gap-4"
                         >
                             <div className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
                                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -395,7 +395,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                             error={errors.amount?.message ? t(errors.amount.message as any) : undefined}
                         />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                         <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">
                             {t('dueDate')}
                             {errors.due_date && <span className="text-destructive ml-2">*</span>}
@@ -422,7 +422,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                                 type="button"
                                 onClick={() => setValue('payment_method', pm.id)}
                                 className={cn(
-                                    "py-3 px-2 rounded-2xl text-xs font-black uppercase tracking-tighter transition-all border-2",
+                                    "py-2 sm:py-4 px-2 rounded-2xl text-xs font-black uppercase tracking-tighter transition-all border-2",
                                     watch('payment_method') === pm.id
                                         ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black shadow-lg'
                                         : 'bg-window border-black/5 dark:border-white/5 text-muted-foreground hover:border-black/20 dark:hover:border-white/20'
@@ -455,7 +455,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                 </div>
 
                 {sessionStats.count > 0 && (
-                    <div className="pt-4 text-xs font-black uppercase tracking-widest text-center text-primary animate-in fade-in slide-in-from-bottom-2">
+                    <div className="pt-6 text-xs font-black uppercase tracking-widest text-center text-primary animate-in fade-in slide-in-from-bottom-2">
                         {t('sessionAdded')}: {sessionStats.count} ({t('total')}: ₪{sessionStats.total.toLocaleString()})
                     </div>
                 )}

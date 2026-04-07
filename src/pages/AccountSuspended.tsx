@@ -15,8 +15,8 @@ export default function AccountSuspended() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background dark:bg-neutral-950 p-4">
-            <div className="max-w-md w-full glass-premium p-8 rounded-[2.5rem] shadow-premium text-center space-y-6 border border-red-500/20">
-                <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto">
+            <div className="max-w-md w-full glass-premium p-8 rounded-2xl shadow-premium text-center space-y-6 border border-red-500/20">
+                <div className="w-20 h-20 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto">
                     <ShieldAlert className="w-10 h-10 text-destructive" />
                 </div>
 

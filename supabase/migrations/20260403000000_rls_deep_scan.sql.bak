@@ -1,0 +1,15 @@
+-- Migration to enable RLS on deleted_users_log and enforce strict access
+-- This ensures no unauthenticated or typical authenticated user can read or write
+-- Operations are restricted only to security definer triggers or service role keys.
+
+ALTER TABLE public.deleted_users_log ENABLE ROW LEVEL SECURITY;
+
+-- If we want to be explicit, a policy that allows nothing for normal roles, 
+-- but we don't need to add anything because default-deny is applied automatically when RLS is enabled 
+-- without any policies for regular roles.
+-- However, just to be sure we don't accidentally leak it later:
+DROP POLICY IF EXISTS "Strict internal only access" ON public.deleted_users_log; 
+CREATE POLICY "Strict internal only access" ON public.deleted_users_log
+    FOR ALL
+    TO public
+    USING (false);

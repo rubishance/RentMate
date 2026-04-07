@@ -209,7 +209,7 @@ export default function ChatAnalytics() {
                         Insights into chatbot performance, common questions, and user behavior.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <div className="flex gap-1 p-1 bg-muted dark:bg-foreground rounded-xl border border-border dark:border-gray-700">
                         {(['7d', '30d', '90d'] as const).map((range) => (
                             <button
@@ -237,7 +237,7 @@ export default function ChatAnalytics() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary/5 rounded-xl border border-blue-100 dark:border-blue-800">
+                        <div className="p-2 sm:p-4 bg-primary/5 rounded-xl border border-blue-100 dark:border-blue-800">
                             <MessageSquare className="w-6 h-6 text-primary" />
                         </div>
                         <div>
@@ -249,7 +249,7 @@ export default function ChatAnalytics() {
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
+                        <div className="p-2 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
                             <TrendingUp className="w-6 h-6 text-green-600" />
                         </div>
                         <div>
@@ -261,7 +261,7 @@ export default function ChatAnalytics() {
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary/5 rounded-xl border border-primary-100 dark:border-primary-800">
+                        <div className="p-2 sm:p-4 bg-primary/5 rounded-xl border border-primary-100 dark:border-primary-800">
                             <Clock className="w-6 h-6 text-primary" />
                         </div>
                         <div>
@@ -273,7 +273,7 @@ export default function ChatAnalytics() {
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
+                        <div className="p-2 sm:p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
                             <Zap className="w-6 h-6 text-amber-600" />
                         </div>
                         <div>
@@ -348,7 +348,7 @@ export default function ChatAnalytics() {
                     <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-6">Top 10 Questions</h3>
                     <div className="space-y-3 max-h-[300px] overflow-y-auto">
                         {analytics.common_questions.map((q, i) => (
-                            <div key={i} className="flex items-center justify-between gap-4 p-3 bg-blue-50 dark:bg-foreground rounded-xl">
+                            <div key={i} className="flex items-center justify-between gap-4 p-2 sm:p-4 bg-blue-50 dark:bg-foreground rounded-xl">
                                 <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{q.question}</span>
                                 <span className="px-2 py-1 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 rounded-xl text-xs font-bold shrink-0">
                                     {q.count}x

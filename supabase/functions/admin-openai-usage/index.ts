@@ -1,3 +1,5 @@
+import { withEdgeMiddleware } from '../_shared/middleware.ts';
+import { validateAdmin } from '../_shared/auth.ts';
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
@@ -18,7 +20,7 @@ function formatDate(date: Date) {
     return `${year}-${month}-${day}`;
 }
 
-serve(async (req) => {
+serve(withEdgeMiddleware('admin-openai-usage', async (req, logger) => {
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
@@ -88,7 +90,7 @@ serve(async (req) => {
             try {
                 const response = await fetch(`https://api.openai.com/v1/dashboard/billing/credit_grants`, {
                     headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` }
-                });
+                }));
                 if (!response.ok) return null;
                 const data = await response.json();
                 return data.total_available || 0;

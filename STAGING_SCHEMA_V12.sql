@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS public.contracts (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-END $$;
+
 -- Create admin_notifications table
 create table if not exists admin_notifications (
   id uuid default gen_random_uuid() primary key,
@@ -70,11 +70,7 @@ CREATE TABLE IF NOT EXISTS public.contact_messages (
     CONSTRAINT contact_messages_pkey PRIMARY KEY (id)
 );
 
-    RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
-    RAISE EXCEPTION 'Failed to create user profile for %: %', NEW.email, SQLERRM;
-END;
-$$;
+
 -- Migration: Create rental market data table and update user preferences
 -- CREATE TABLE IF NOT EXISTS for rental market trends
 CREATE TABLE IF NOT EXISTS public.rental_market_data (

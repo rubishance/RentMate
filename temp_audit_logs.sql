@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS public.audit_logs ( id BIGSERIAL PRIMARY KEY, user_id UUID REFERENCES public.user_profiles(id) ON DELETE SET NULL, target_user_id UUID REFERENCES public.user_profiles(id) ON DELETE SET NULL, action TEXT NOT NULL, details JSONB, ip_address TEXT, user_agent TEXT, created_at TIMESTAMPTZ DEFAULT NOW() );

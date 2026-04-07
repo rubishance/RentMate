@@ -7,6 +7,7 @@ import { propertyDocumentsService } from '../../services/property-documents.serv
 import { useState, useEffect } from 'react';
 import { getUtilityTypeConfig } from '../../constants/utilityTypes';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
+import { createPortal } from 'react-dom';
 
 interface ExtendedPropertyDocument extends PropertyDocument {
     isMediaGroup?: boolean;
@@ -147,29 +148,31 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
     const formattedCreated = format(new Date(document.created_at), 'dd/MM/yyyy HH:mm');
     const isFinancial = ['receipt', 'receipts', 'check', 'checks', 'utilities'].includes(document.category as string) || !!document.category?.startsWith('utility_');
 
-    return (
+    if (typeof window === 'undefined') return null;
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
-                    />
-                    <div className="fixed inset-0 flex items-center justify-center z-[101] p-4 pb-24 md:pb-4 pointer-events-none">
+                    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={onClose}
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                        />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-window rounded-2xl shadow-2xl w-full max-w-lg pointer-events-auto overflow-hidden flex flex-col max-h-[90vh]"
+                            className="relative bg-window rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90dvh] z-10 mt-auto sm:mt-0 pb-6 sm:pb-0"
                         >
                             {/* Header */}
                             {isEditing ? (
                                 <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-neutral-800 bg-window">
-                                    <div className="flex items-center gap-3 min-w-0 pr-4 w-full">
-                                        <div className="p-3 bg-brand-500/10 text-brand-500 rounded-2xl shrink-0">
+                                    <div className="flex items-center gap-2 sm:gap-4 min-w-0 pr-4 w-full">
+                                        <div className="p-2 sm:p-6 bg-brand-500/10 text-brand-500 rounded-2xl shrink-0">
                                             <FileText className="w-6 h-6" />
                                         </div>
                                         <input
@@ -193,7 +196,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                             ) : (
                                 <div className="relative shrink-0 px-6 pt-6 pb-8 bg-primary text-primary-foreground shadow-lg flex flex-col w-full z-10 border-b border-white/10">
                                     <div className="flex items-start justify-between w-full mb-4">
-                                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-3xl rounded-full border border-white/20 text-xs font-black uppercase tracking-widest shadow-lg">
+                                        <div className="inline-flex items-center gap-2 px-2 sm:px-6 py-1 bg-white/10 backdrop-blur-3xl rounded-full border border-white/20 text-xs font-black uppercase tracking-widest shadow-lg">
                                             <FileText className="w-3.5 h-3.5 text-white" />
                                             <span className="text-white">
                                                 {document.category === 'media' ? (lang === 'he' ? 'מדיה' : 'Media') : (
@@ -226,7 +229,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                                 value={formData.title ?? document.title ?? document.file_name ?? ''}
                                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                                 placeholder={lang === 'he' ? 'שם מסמך' : 'Document Title'}
-                                                className="w-full text-2xl sm:text-3xl font-black tracking-tighter bg-white/20 text-white placeholder:text-white/50 border border-white/30 rounded-lg px-3 py-1 focus:ring-2 focus:ring-white/50 focus:outline-none"
+                                                className="w-full text-2xl sm:text-3xl font-black tracking-tighter bg-white/20 text-white placeholder:text-white/50 border border-white/30 rounded-lg px-2 sm:px-6 py-1 focus:ring-2 focus:ring-white/50 focus:outline-none"
                                             />
                                         ) : (
                                             <h2 className="text-2xl sm:text-3xl font-black tracking-tighter text-white leading-tight break-words line-clamp-2">
@@ -234,7 +237,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                             </h2>
                                         )}
                                         {document.document_date && (
-                                            <div className="flex items-center gap-1.5 text-white/80 font-medium text-sm mt-1">
+                                            <div className="flex items-center gap-2 text-white/80 font-medium text-sm mt-1">
                                                 <Calendar className="w-4 h-4" />
                                                 <span>{format(parseISO(document.document_date), 'dd/MM/yyyy')}</span>
                                             </div>
@@ -247,7 +250,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                             <div className="p-6 overflow-y-auto space-y-8 bg-background dark:bg-black w-full flex-1">
                                 {/* Key Stats */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className={`p-4 bg-background dark:bg-neutral-800/50 rounded-2xl border border-slate-100 dark:border-neutral-800 ${!(isFinancial || document.amount != null) ? 'col-span-2' : ''}`}>
+                                    <div className={`p-6 bg-background dark:bg-neutral-800/50 rounded-2xl border border-slate-100 dark:border-neutral-800 ${!(isFinancial || document.amount != null) ? 'col-span-2' : ''}`}>
                                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                                             <Calendar className="w-3 h-3" /> {document.category === 'media' ? (lang === 'he' ? 'תאריך צילום' : 'Date Taken') : (t('date') || (lang === 'he' ? 'תאריך' : 'Date'))}
                                         </p>
@@ -256,7 +259,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                                 type="date"
                                                 value={formData.document_date ? formData.document_date.split('T')[0] : ''}
                                                 onChange={(e) => setFormData({ ...formData, document_date: e.target.value })}
-                                                className="w-full text-sm font-black bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                                                className="w-full text-sm font-black bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg px-2 sm:px-6 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                                             />
                                         ) : (
                                             <p className="text-sm font-black text-foreground">
@@ -265,7 +268,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                         )}
                                     </div>
                                     {(isFinancial || document.amount != null) && (
-                                        <div className="p-4 bg-background dark:bg-neutral-800/50 rounded-2xl border border-slate-100 dark:border-neutral-800">
+                                        <div className="p-6 bg-background dark:bg-neutral-800/50 rounded-2xl border border-slate-100 dark:border-neutral-800">
                                             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                                                 <DollarSign className="w-3 h-3" /> {t('amount') || (lang === 'he' ? 'סכום' : 'Amount')}
                                             </p>
@@ -298,8 +301,8 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                         
                                         {/* Vendor / Tenant */}
                                         {((isEditing && isFinancial) || (!isEditing && document.vendor_name) || (isEditing && document.vendor_name)) && (
-                                            <div className="flex items-center justify-between p-4">
-                                                <div className="flex items-center gap-3 text-slate-400">
+                                            <div className="flex items-center justify-between p-6">
+                                                <div className="flex items-center gap-2 sm:gap-4 text-slate-400">
                                                     <Building className="w-4 h-4" />
                                                     <span className="text-sm font-medium">
                                                         {['receipt', 'receipts', 'check', 'checks'].includes(document.category as string) ? 
@@ -312,7 +315,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                                         type="text"
                                                         value={formData.vendor_name || ''}
                                                         onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
-                                                        className="w-1/2 text-sm font-bold bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-brand-500"
+                                                        className="w-1/2 text-sm font-bold bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg px-2 sm:px-6 py-2 focus:ring-2 focus:ring-brand-500"
                                                         placeholder={lang === 'he' ? 'הזן שם' : 'Enter name'}
                                                     />
                                                 ) : (
@@ -325,8 +328,8 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
 
                                         {/* Invoice Number */}
                                         {((isEditing && isFinancial) || (!isEditing && document.invoice_number) || (isEditing && document.invoice_number)) && (
-                                            <div className="flex items-center justify-between p-4">
-                                                <div className="flex items-center gap-3 text-slate-400">
+                                            <div className="flex items-center justify-between p-6">
+                                                <div className="flex items-center gap-2 sm:gap-4 text-slate-400">
                                                     <Hash className="w-4 h-4" />
                                                     <span className="text-sm font-medium">{t('invoiceNumber') !== 'invoiceNumber' ? t('invoiceNumber') : (lang === 'he' ? 'מספר סימוכין' : 'Invoice Number')}</span>
                                                 </div>
@@ -335,7 +338,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                                         type="text"
                                                         value={formData.invoice_number || ''}
                                                         onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
-                                                        className="w-1/2 text-sm font-bold bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-brand-500"
+                                                        className="w-1/2 text-sm font-bold bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg px-2 sm:px-6 py-2 focus:ring-2 focus:ring-brand-500"
                                                         placeholder={lang === 'he' ? 'הזן מספר סימוכין' : 'Enter invoice #'}
                                                     />
                                                 ) : (
@@ -350,8 +353,8 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                         {(virtualFields.bank || virtualFields.branch || virtualFields.account) && (
                                             <>
                                                 {virtualFields.bank && (
-                                                    <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-neutral-800">
-                                                        <div className="flex items-center gap-3 text-slate-400">
+                                                    <div className="flex items-center justify-between p-6 border-t border-slate-100 dark:border-neutral-800">
+                                                        <div className="flex items-center gap-2 sm:gap-4 text-slate-400">
                                                             <Building className="w-4 h-4" />
                                                             <span className="text-sm font-medium">{lang === 'he' ? 'בנק' : 'Bank'}</span>
                                                         </div>
@@ -359,8 +362,8 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                                     </div>
                                                 )}
                                                 {virtualFields.branch && (
-                                                    <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-neutral-800">
-                                                        <div className="flex items-center gap-3 text-slate-400">
+                                                    <div className="flex items-center justify-between p-6 border-t border-slate-100 dark:border-neutral-800">
+                                                        <div className="flex items-center gap-2 sm:gap-4 text-slate-400">
                                                             <MapPin className="w-4 h-4" />
                                                             <span className="text-sm font-medium">{lang === 'he' ? 'סניף' : 'Branch'}</span>
                                                         </div>
@@ -368,8 +371,8 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                                     </div>
                                                 )}
                                                 {virtualFields.account && (
-                                                    <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-neutral-800">
-                                                        <div className="flex items-center gap-3 text-slate-400">
+                                                    <div className="flex items-center justify-between p-6 border-t border-slate-100 dark:border-neutral-800">
+                                                        <div className="flex items-center gap-2 sm:gap-4 text-slate-400">
                                                             <Hash className="w-4 h-4" />
                                                             <span className="text-sm font-medium">{lang === 'he' ? 'חשבון' : 'Account'}</span>
                                                         </div>
@@ -381,8 +384,8 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
 
                                         {/* Payment Method (Issue Type) */}
                                         {document.issue_type && (
-                                            <div className="flex items-center justify-between p-4">
-                                                <div className="flex items-center gap-3 text-slate-400">
+                                            <div className="flex items-center justify-between p-6">
+                                                <div className="flex items-center gap-2 sm:gap-4 text-slate-400">
                                                     <CreditCard className="w-4 h-4" />
                                                     <span className="text-sm font-medium">{lang === 'he' ? 'אמצעי תשלום' : 'Payment Method'}</span>
                                                 </div>
@@ -394,8 +397,8 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
 
                                         {/* Period */}
                                         {((isEditing && isFinancial) || (!isEditing && (document.period_start || document.period_end)) || (isEditing && (document.period_start || document.period_end))) && (
-                                            <div className="flex items-center justify-between p-4">
-                                                <div className="flex items-center gap-3 text-slate-400">
+                                            <div className="flex items-center justify-between p-6">
+                                                <div className="flex items-center gap-2 sm:gap-4 text-slate-400">
                                                     <Calendar className="w-4 h-4" />
                                                     <span className="text-sm font-medium">{t('billingPeriod') !== 'billingPeriod' ? t('billingPeriod') : (lang === 'he' ? 'תקופת חיוב' : 'Billing Period')}</span>
                                                 </div>
@@ -405,14 +408,14 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                                             type="date"
                                                             value={formData.period_start ? formData.period_start.split('T')[0] : ''}
                                                             onChange={(e) => setFormData({ ...formData, period_start: e.target.value })}
-                                                            className="w-28 text-xs font-bold bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-brand-500"
+                                                            className="w-28 text-xs font-bold bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg px-2 py-2 focus:ring-2 focus:ring-brand-500"
                                                         />
                                                         <span className="text-slate-400">-</span>
                                                         <input
                                                             type="date"
                                                             value={formData.period_end ? formData.period_end.split('T')[0] : ''}
                                                             onChange={(e) => setFormData({ ...formData, period_end: e.target.value })}
-                                                            className="w-28 text-xs font-bold bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-brand-500"
+                                                            className="w-28 text-xs font-bold bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-lg px-2 py-2 focus:ring-2 focus:ring-brand-500"
                                                         />
                                                     </div>
                                                 ) : (
@@ -426,8 +429,8 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                         )}
 
                                         {/* Category */}
-                                        <div className="flex items-center justify-between p-4">
-                                            <div className="flex items-center gap-3 text-slate-400">
+                                        <div className="flex items-center justify-between p-6">
+                                            <div className="flex items-center gap-2 sm:gap-4 text-slate-400">
                                                 <Tag className="w-4 h-4" />
                                                 <span className="text-sm font-medium">{t('category') !== 'category' ? t('category') : (lang === 'he' ? 'קטגוריה' : 'Category')}</span>
                                             </div>
@@ -443,8 +446,8 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
 
                                         {/* Sub-Category (Utilities) */}
                                         {document.category?.startsWith('utility_') && (
-                                            <div className="flex items-center justify-between p-4">
-                                                <div className="flex items-center gap-3 text-slate-400">
+                                            <div className="flex items-center justify-between p-6">
+                                                <div className="flex items-center gap-2 sm:gap-4 text-slate-400">
                                                     <Tag className="w-4 h-4 opacity-70" />
                                                     <span className="text-sm font-medium">{lang === 'he' ? 'סוג חשבון' : 'Utility Type'}</span>
                                                 </div>
@@ -458,7 +461,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
 
                                 {/* Description */}
                                 {isEditing ? (
-                                    <div className="space-y-2">
+                                    <div className="space-y-4">
                                         <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">
                                             {document.category === 'media' ? (lang === 'he' ? 'תיאור' : 'Description') : (t('note') !== 'note' ? t('note') : (lang === 'he' ? 'הערות' : 'Note'))}
                                         </h3>
@@ -466,16 +469,16 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                             value={formData.description || ''}
                                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                             rows={3}
-                                            className="w-full text-sm leading-relaxed bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-brand-500 resize-none transition-shadow"
+                                            className="w-full text-sm leading-relaxed bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-2xl px-6 py-2 sm:py-6 focus:ring-2 focus:ring-brand-500 resize-none transition-shadow"
                                             placeholder={lang === 'he' ? 'הוסף תיאור או הערה...' : 'Add description or note...'}
                                         />
                                     </div>
                                 ) : document.description ? (
-                                    <div className="space-y-2">
+                                    <div className="space-y-4">
                                         <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">
                                             {document.category === 'media' ? (lang === 'he' ? 'תיאור' : 'Description') : (t('note') !== 'note' ? t('note') : (lang === 'he' ? 'הערות' : 'Note'))}
                                         </h3>
-                                        <div className="p-4 bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-100/50 dark:border-yellow-900/20 rounded-2xl text-sm leading-relaxed text-slate-700 dark:text-neutral-300 whitespace-pre-line">
+                                        <div className="p-6 bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-100/50 dark:border-yellow-900/20 rounded-2xl text-sm leading-relaxed text-slate-700 dark:text-neutral-300 whitespace-pre-line">
                                             {document.description}
                                         </div>
                                     </div>
@@ -489,7 +492,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                         </h3>
                                         <div className="bg-background/50 dark:bg-neutral-800/30 rounded-2xl border border-slate-100 dark:border-neutral-800 divide-y divide-slate-100 dark:divide-neutral-800 max-h-48 overflow-y-auto min-w-0">
                                             {document.groupedDocs.map((file, index) => (
-                                                <div key={file.id} className="flex items-center justify-between p-3 sm:p-4 gap-2">
+                                                <div key={file.id} className="flex items-center justify-between p-2 sm:p-6 sm:p-6 gap-2">
                                                     <div className="flex flex-col min-w-0 pr-2 overflow-hidden flex-1">
                                                         <span className="text-sm font-bold text-foreground truncate block" title={file.file_name || ''}>
                                                             {file.file_name || `${lang === 'he' ? 'קובץ' : 'File'} ${index + 1}`}
@@ -522,11 +525,11 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
 
                             {/* Footer Actions */}
                             {isEditing ? (
-                                <div className="p-5 border-t border-slate-100 dark:border-neutral-800 bg-background/50 dark:bg-neutral-800/30 flex gap-3">
+                                <div className="p-6 border-t border-slate-100 dark:border-neutral-800 bg-background/50 dark:bg-neutral-800/30 flex gap-2 sm:gap-4 shrink-0">
                                     <button
                                         onClick={() => setIsEditing(false)}
                                         disabled={isSaving}
-                                        className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-slate-100/80 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-[0.98] text-slate-700 dark:text-slate-300 font-bold rounded-2xl transition-all"
+                                        className="flex-1 flex items-center justify-center gap-2 py-2 sm:py-6.5 bg-slate-100/80 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 active:scale-[0.98] text-slate-700 dark:text-slate-300 font-bold rounded-2xl transition-all"
                                     >
                                         <XCircle className="w-5 h-5" />
                                         {lang === 'he' ? 'בטל' : 'Cancel'}
@@ -534,7 +537,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                     <button
                                         onClick={handleSave}
                                         disabled={isSaving}
-                                        className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white font-black rounded-2xl shadow-lg shadow-brand-500/20 transition-all disabled:opacity-50"
+                                        className="flex-1 flex items-center justify-center gap-2 py-2 sm:py-6.5 bg-brand-500 hover:bg-brand-600 active:scale-[0.98] text-white font-black rounded-2xl shadow-lg shadow-brand-500/20 transition-all disabled:opacity-50"
                                     >
                                         {isSaving ? <span className="animate-pulse">{lang === 'he' ? 'שומר...' : 'Saving...'}</span> : (
                                             <>
@@ -545,18 +548,18 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                                     </button>
                                 </div>
                             ) : (
-                                <div className="p-6 border-t border-slate-100 dark:border-neutral-800 bg-background/50 dark:bg-neutral-800/30 flex gap-3">
+                                <div className="p-6 border-t border-slate-100 dark:border-neutral-800 bg-background/50 dark:bg-neutral-800/30 flex gap-2 sm:gap-4">
                                     <button
                                         onClick={() => setShowDeleteConfirm(true)}
                                         disabled={isDeleting}
-                                        className="p-4 text-destructive bg-red-500/10 hover:bg-red-500/20 rounded-2xl transition-all disabled:opacity-50"
+                                        className="p-6 text-destructive bg-red-500/10 hover:bg-red-500/20 rounded-2xl transition-all disabled:opacity-50"
                                         title={t('delete') !== 'delete' ? t('delete') : (lang === 'he' ? 'מחק' : 'Delete')}
                                     >
                                         <Trash2 className="w-5 h-5" />
                                     </button>
                                     <button
                                         onClick={handleDownload}
-                                        className="flex-1 flex items-center justify-center gap-2 py-4 bg-primary hover:bg-primary/90 active:scale-[0.98] text-primary-foreground font-black rounded-2xl shadow-lg shadow-primary/20 transition-all"
+                                        className="flex-1 flex items-center justify-center gap-2 py-6 bg-primary hover:bg-primary/90 active:scale-[0.98] text-primary-foreground font-black rounded-2xl shadow-lg shadow-primary/20 transition-all"
                                     >
                                         <Download className="w-5 h-5" />
                                         {t('downloadFile') !== 'downloadFile' ? t('downloadFile') : (lang === 'he' ? 'הורד קובץ' : 'Download File')}
@@ -576,6 +579,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete, onUp
                 message={lang === 'he' ? 'האם אתה בטוח שברצונך למחוק מסמך זה? פעולה זו אינה הפיכה.' : 'Are you sure you want to delete this document? This action cannot be undone.'}
                 isDeleting={isDeleting}
             />
-        </AnimatePresence>
+        </AnimatePresence>,
+        window.document.body
     );
 }

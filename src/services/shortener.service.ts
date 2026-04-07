@@ -41,6 +41,7 @@ export const ShortenerService = {
             .single();
 
         if (error || !data) {
+            console.error('ShortenerService getOriginalUrl failed:', { slug, error, data });
             return null;
         }
 

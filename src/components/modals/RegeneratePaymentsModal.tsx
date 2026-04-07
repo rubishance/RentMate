@@ -183,7 +183,7 @@ export function RegeneratePaymentsModal({ isOpen, onClose, onSuccess }: Regenera
                     {t('troubleshootPaymentsDesc') || 'Scan for active contracts that are missing payment schedules and regenerate them.'}
                 </p>
 
-                <div className="py-4">
+                <div className="py-6">
                     {scanning ? (
                         <div className="flex flex-col items-center justify-center py-8 space-y-4 text-center">
                             <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
@@ -197,14 +197,14 @@ export function RegeneratePaymentsModal({ isOpen, onClose, onSuccess }: Regenera
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-xl text-sm">
+                            <div className="flex items-center gap-2 p-2 sm:p-6 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-xl text-sm">
                                 <AlertTriangle className="w-4 h-4 shrink-0" />
                                 <p>{t('foundMissingPayments', { count: orphanContracts.length }) || `Found ${orphanContracts.length} contracts with missing payments.`}</p>
                             </div>
 
-                            <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2">
+                            <div className="max-h-[300px] overflow-y-auto space-y-4 pr-2">
                                 {orphanContracts.map(contract => (
-                                    <div key={contract.id} className="p-4 border rounded-xl flex items-center justify-between group hover:border-indigo-500/30 transition-colors bg-window">
+                                    <div key={contract.id} className="p-6 border rounded-xl flex items-center justify-between group hover:border-indigo-500/30 transition-colors bg-window">
                                         <div className="min-w-0 flex-1 mr-4">
                                             <h4 className="font-bold truncate">{contract.properties?.address || 'Unknown Property'}</h4>
                                             <p className="text-xs text-muted-foreground">{contract.properties?.city}</p>

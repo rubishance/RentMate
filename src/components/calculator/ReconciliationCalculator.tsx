@@ -9,6 +9,7 @@ import { Switch } from '../ui/Switch';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { calculateReconciliation } from '../../services/calculator.service';
 import { MessageGeneratorModal } from '../modals/MessageGeneratorModal';
+import { InfoTooltip } from '../ui/InfoTooltip';
 import { format, parseISO, addMonths } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
@@ -42,7 +43,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
     const [periodStart, setPeriodStart] = useState(initialValues?.periodStart || '');
     const [periodEnd, setPeriodEnd] = useState(initialValues?.periodEnd || '');
     const [actualPaid, setActualPaid] = useState(initialValues?.actualPaid || '5000');
-    const [recPartialLinkage] = useState('100');
+    const [recPartialLinkage, setRecPartialLinkage] = useState('100');
 
     // Advanced State
     const [recLinkageSubType, setRecLinkageSubType] = useState<'known' | 'respect_of'>(initialValues?.linkageSubType || 'known');
@@ -312,14 +313,21 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
     };
 
     return (
-        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Explanation Banner */}
+            <div className="bg-primary/5 dark:bg-primary/10 border-l-4 border-primary p-4 rounded-r-2xl shadow-minimal">
+                <p className="text-sm font-medium text-foreground/90 leading-relaxed">
+                    {t('advancedCalculatorExplanation')} 
+                </p>
+            </div>
+
             {/* Contract Loading */}
-            <div className="bg-background dark:bg-neutral-800/30 p-5 md:p-8 rounded-[2.5rem] border border-slate-100/50 dark:border-neutral-800/50">
+            <div className="bg-background dark:bg-neutral-800/30 p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-100/50 dark:border-neutral-800/50">
                 <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground mb-4 block ml-1">
                     {t('loadFromContract')}
                 </label>
                 <select
-                    className="w-full h-16 px-4 md:px-6 bg-white dark:bg-neutral-900 border-2 border-transparent focus:border-primary rounded-[1.25rem] text-sm font-black text-foreground outline-none shadow-minimal transition-all appearance-none"
+                    className="w-full h-12 px-4 bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-800 focus:border-primary/20 rounded-xl text-base font-black text-foreground outline-none transition-all appearance-none"
                     onChange={(e) => handleLoadContract(e.target.value)}
                     defaultValue=""
                 >
@@ -331,46 +339,52 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                     ))}
                 </select>
             </div>
-
-            <section className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] p-4 md:p-6 shadow-premium space-y-12">
-                <div className="flex flex-col xl:grid xl:grid-cols-2 gap-16">
+            
+            <section className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-2xl p-4 md:p-6 shadow-premium space-y-4 md:space-y-6">
+                <div className="flex flex-col xl:grid xl:grid-cols-2 gap-8">
                     {/* Left Column: Payments History */}
-                    <div className="order-2 xl:order-1 space-y-12">
+                    <div className="order-2 xl:order-1 space-y-8">
                         {/* Expected Base Rent */}
                         <div className="space-y-6">
                             <div className="flex justify-between items-center px-1">
-                                <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block">{t('expectedBaseRent')}</label>
-                                <button
-                                    onClick={() => {
-                                        if (expectedHistory.length === 0 && periodStart && periodEnd) {
-                                            const months = [];
-                                            const startDate = new Date(periodStart);
-                                            const endDate = new Date(periodEnd);
-                                            const tempDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-                                            const lastDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+                                <div className="flex items-center gap-2">
+                                    <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block">{t('expectedBaseRent')}</label>
+                                    <InfoTooltip titleKey="expectedBaseRent" textKey="tooltipExpectedPaymentsText" />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => {
+                                            if (expectedHistory.length === 0 && periodStart && periodEnd) {
+                                                const months = [];
+                                                const startDate = new Date(periodStart);
+                                                const endDate = new Date(periodEnd);
+                                                const tempDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+                                                const lastDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
 
-                                            while (tempDate <= lastDate) {
-                                                const year = tempDate.getFullYear();
-                                                const month = String(tempDate.getMonth() + 1).padStart(2, '0');
-                                                months.push(`${year}-${month}`);
-                                                tempDate.setMonth(tempDate.getMonth() + 1);
+                                                while (tempDate <= lastDate) {
+                                                    const year = tempDate.getFullYear();
+                                                    const month = String(tempDate.getMonth() + 1).padStart(2, '0');
+                                                    months.push(`${year}-${month}`);
+                                                    tempDate.setMonth(tempDate.getMonth() + 1);
+                                                }
+                                                const expected = months.map((m, i) => ({
+                                                    id: `gen-${i}`,
+                                                    due_date: `${m}-${String(startDate.getDate()).padStart(2, '0')}`,
+                                                    amount: parseFloat(recBaseRent) || 0
+                                                }));
+                                                setExpectedHistory(expected);
+                                            } else if (expectedHistory.length > 0) {
+                                                if (confirm('Clear expected payment list?')) setExpectedHistory([]);
                                             }
-                                            const expected = months.map((m, i) => ({
-                                                id: `gen-${i}`,
-                                                due_date: `${m}-${String(startDate.getDate()).padStart(2, '0')}`,
-                                                amount: parseFloat(recBaseRent) || 0
-                                            }));
-                                            setExpectedHistory(expected);
-                                        } else if (expectedHistory.length > 0) {
-                                            if (confirm('Clear expected payment list?')) setExpectedHistory([]);
-                                        }
-                                    }}
-                                    className="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 transition-opacity"
-                                >
-                                    {expectedHistory.length > 0 ? t('clearList') : t('generateList')}
-                                </button>
+                                        }}
+                                        className="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 transition-opacity"
+                                    >
+                                        {expectedHistory.length > 0 ? t('clearList') : t('generateList')}
+                                    </button>
+                                    <InfoTooltip titleKey={expectedHistory.length > 0 ? "clearList" : "generateList"} textKey="tooltipGenerateListText" />
+                                </div>
                             </div>
-                            <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-background/50 dark:bg-neutral-800/30">
+                            <div className="border border-slate-100 dark:border-neutral-800 rounded-2xl overflow-hidden bg-background/50 dark:bg-neutral-800/30">
                                 <div className="bg-white dark:bg-neutral-900/50 py-4 px-4 md:px-6 text-xs font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 border-b border-slate-100 dark:border-neutral-800">
                                     <span className="col-span-7">{t('date')}</span>
                                     <span className="col-span-4 text-center">{t('amount')}</span>
@@ -379,10 +393,11 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                 <div className="max-h-80 overflow-y-auto scrollbar-thin">
                                     <div className="divide-y divide-slate-100/50 dark:divide-neutral-800/50">
                                         {expectedHistory.map((payment) => (
-                                            <div key={payment.id} className="grid grid-cols-12 gap-4 items-center py-3 px-4 text-sm hover:bg-white dark:hover:bg-neutral-800/80 transition-colors group">
+                                            <div key={payment.id} className="grid grid-cols-12 gap-4 items-center py-2 sm:py-4 px-4 text-sm hover:bg-white dark:hover:bg-neutral-800/80 transition-colors group">
                                                 <div className="col-span-7">
                                                     <DatePicker
                                                         variant="inline"
+                                                        hideIcon
                                                         value={payment.due_date ? parseISO(payment.due_date) : undefined}
                                                         onChange={(date) => handleExpectedChange(payment.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : '')}
                                                         placeholder={t('date')}
@@ -410,6 +425,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                             <div className="col-span-7">
                                                 <DatePicker
                                                     variant="inline"
+                                                    hideIcon
                                                     value={draftExpected.due_date ? parseISO(draftExpected.due_date) : undefined}
                                                     onChange={(date) => setDraftExpected({ ...draftExpected, due_date: date ? format(date, 'yyyy-MM-dd') : '' })}
                                                     placeholder={t('date')}
@@ -449,8 +465,11 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
 
                         {/* Actual Payments */}
                         <div className="space-y-6">
-                            <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('actualPayments')}</label>
-                            <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-background/50 dark:bg-neutral-800/30">
+                            <div className="flex items-center gap-2 ml-1">
+                                <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block">{t('actualPayments')}</label>
+                                <InfoTooltip titleKey="actualPayments" textKey="tooltipActualPaymentsText" />
+                            </div>
+                            <div className="border border-slate-100 dark:border-neutral-800 rounded-2xl overflow-hidden bg-background/50 dark:bg-neutral-800/30">
                                 <div className="bg-white dark:bg-neutral-900/50 py-4 px-4 md:px-6 text-xs font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 border-b border-slate-100 dark:border-neutral-800">
                                     <span className="col-span-7">{t('date')}</span>
                                     <span className="col-span-4 text-center">{t('amount')}</span>
@@ -459,10 +478,11 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                 <div className="max-h-80 overflow-y-auto scrollbar-thin">
                                     <div className="divide-y divide-slate-100/50 dark:divide-neutral-800/50">
                                         {paymentHistory.map((payment) => (
-                                            <div key={payment.id} className="grid grid-cols-12 gap-4 items-center py-3 px-4 text-sm hover:bg-white dark:hover:bg-neutral-800/80 transition-colors group">
+                                            <div key={payment.id} className="grid grid-cols-12 gap-4 items-center py-2 sm:py-4 px-4 text-sm hover:bg-white dark:hover:bg-neutral-800/80 transition-colors group">
                                                 <div className="col-span-7">
                                                     <DatePicker
                                                         variant="inline"
+                                                        hideIcon
                                                         value={payment.due_date ? parseISO(payment.due_date) : undefined}
                                                         onChange={(date) => handlePaymentChange(payment.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : '')}
                                                         placeholder={t('date')}
@@ -490,6 +510,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                             <div className="col-span-7">
                                                 <DatePicker
                                                     variant="inline"
+                                                    hideIcon
                                                     value={draftPayment.due_date ? parseISO(draftPayment.due_date) : undefined}
                                                     onChange={(date) => setDraftPayment({ ...draftPayment, due_date: date ? format(date, 'yyyy-MM-dd') : '' })}
                                                     placeholder={t('date')}
@@ -529,125 +550,208 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                         </div>
                     </div>
 
-                    {/* Right Column: Configuration */}
-                    <div className="order-1 xl:order-2 space-y-10">
-                        <div className="space-y-4">
-                            <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('linkageType')}</label>
-                            <SegmentedControl
-                                options={LINKAGE_TYPES.map((type: any) => ({
-                                    label: t(type.labelKey as any),
-                                    value: type.id
-                                }))}
-                                value={recLinkageType}
-                                onChange={(val) => setRecLinkageType(val as any)}
-                                size="md"
-                            />
+                    <div className="order-1 xl:order-2 space-y-6 md:space-y-8">
+                        <div className="grid grid-cols-2 gap-4 lg:col-span-2">
+                            <div className="flex flex-col h-full justify-between gap-4">
+                                <div className="flex justify-center sm:justify-start items-center gap-2 ml-1">
+                                    <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground block text-center sm:text-start">{t('linkageType')}</label>
+                                    <InfoTooltip titleKey="linkageType" textKey="tooltipLinkageTypeText" />
+                                </div>
+                                <SegmentedControl
+                                    options={[
+                                        { label: t('linkedToCpi'), value: 'cpi' },
+                                        { label: t('linkedToHousing'), value: 'housing' }
+                                    ]}
+                                    value={recLinkageType}
+                                    onChange={(val) => setRecLinkageType(val as any)}
+                                    className="w-full h-12"
+                                />
+                            </div>
+                            <div className="flex flex-col h-full justify-between gap-4">
+                                <div className="flex justify-center sm:justify-start items-center gap-2 ml-1">
+                                    <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground block text-center sm:text-start">{t('linkageCalculationMethod')}</label>
+                                    <InfoTooltip titleKey="linkageCalculationMethod" textKey="tooltipLinkageCalculationMethodText" />
+                                </div>
+                                <SegmentedControl
+                                    options={[
+                                        { label: t('knownIndex'), value: 'known' },
+                                        { label: t('inRespectOf'), value: 'respect_of' }
+                                    ]}
+                                    value={recLinkageSubType}
+                                    onChange={(val) => setRecLinkageSubType(val as any)}
+                                    className="w-full h-12"
+                                />
+                            </div>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4 lg:col-span-2">
                             {selectedContract ? (
-                                <div className="flex flex-col gap-2 p-5 bg-background dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-800 rounded-[1.5rem] shadow-minimal">
+                                <div className="col-span-2 flex flex-col gap-2 p-4 sm:p-6 bg-background dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-800 rounded-[1.5rem] shadow-minimal">
                                     <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-neutral-700/50">
-                                        <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{t('baseIndexDate')}</span>
-                                        <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-minimal">{contractStartDate ? format(parseISO(contractStartDate), 'MM/yyyy') : '-'}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{t('baseIndexDate')}</span>
+                                            <InfoTooltip titleKey="baseIndexDate" textKey="tooltipBaseIndexDateText" />
+                                        </div>
+                                        <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-2 sm:px-4 py-1 rounded-full shadow-minimal">{contractStartDate ? format(parseISO(contractStartDate), 'MM/yyyy') : '-'}</span>
                                     </div>
                                     <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-neutral-700/50 hover:bg-transparent">
-                                        <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{t('periodStart')}</span>
-                                        <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-minimal">{periodStart ? format(parseISO(periodStart), 'MM/yyyy') : '-'}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{t('periodStart')}</span>
+                                            <InfoTooltip titleKey="periodStart" textKey="tooltipPeriodStartText" />
+                                        </div>
+                                        <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-2 sm:px-4 py-1 rounded-full shadow-minimal">{periodStart ? format(parseISO(periodStart), 'MM/yyyy') : '-'}</span>
                                     </div>
                                     <div className="flex items-center justify-between pt-1 hover:bg-transparent">
-                                        <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{t('periodEnd')}</span>
-                                        <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-minimal">{periodEnd ? format(parseISO(periodEnd), 'MM/yyyy') : '-'}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{t('periodEnd')}</span>
+                                            <InfoTooltip titleKey="periodEnd" textKey="tooltipPeriodEndText" />
+                                        </div>
+                                        <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-2 sm:px-4 py-1 rounded-full shadow-minimal">{periodEnd ? format(parseISO(periodEnd), 'MM/yyyy') : '-'}</span>
                                     </div>
                                 </div>
                             ) : (
                                 <>
-                                    <DatePicker
-                                        label={t('baseIndexDate')}
-                                        value={contractStartDate ? parseISO(contractStartDate) : undefined}
-                                        onChange={(date) => setContractStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
-                                        placeholder={t('baseIndexDate')}
-                                    />
-                                    <DatePicker
-                                        label={t('periodStart')}
-                                        value={periodStart ? parseISO(periodStart) : undefined}
-                                        onChange={(date) => setPeriodStart(date ? format(date, 'yyyy-MM-dd') : '')}
-                                        placeholder={t('periodStart')}
-                                    />
-                                    <DatePicker
-                                        label={t('periodEnd')}
-                                        value={periodEnd ? parseISO(periodEnd) : undefined}
-                                        onChange={(date) => setPeriodEnd(date ? format(date, 'yyyy-MM-dd') : '')}
-                                        placeholder={t('periodEnd')}
-                                    />
+                                    <div className="flex flex-col h-full justify-between gap-4 col-span-2">
+                                        <div className="flex justify-center sm:justify-start items-center gap-2 ml-1">
+                                            <label className="text-xs md:text-sm font-black uppercase tracking-widest text-muted-foreground block text-center sm:text-start">{t('baseIndexDate')}</label>
+                                            <InfoTooltip titleKey="baseIndexDate" textKey="tooltipBaseIndexDateText" />
+                                        </div>
+                                        <DatePicker
+                                            variant="bento"
+                                            hideIcon
+                                            value={contractStartDate ? parseISO(contractStartDate) : undefined}
+                                            onChange={(date) => setContractStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                                            placeholder=""
+                                        />
+                                    </div>
+                                    <div className="space-y-4 col-span-1">
+                                        <div className="flex justify-center sm:justify-start items-center gap-2 ml-1">
+                                            <label className="text-xs md:text-sm font-black uppercase tracking-widest text-muted-foreground block text-center sm:text-start">{t('periodStart')}</label>
+                                            <InfoTooltip titleKey="periodStart" textKey="tooltipPeriodStartText" />
+                                        </div>
+                                        <DatePicker
+                                            variant="bento"
+                                            hideIcon
+                                            value={periodStart ? parseISO(periodStart) : undefined}
+                                            onChange={(date) => setPeriodStart(date ? format(date, 'yyyy-MM-dd') : '')}
+                                            placeholder=""
+                                        />
+                                    </div>
+                                    <div className="space-y-4 col-span-1">
+                                        <div className="flex justify-center sm:justify-start items-center gap-2 ml-1">
+                                            <label className="text-xs md:text-sm font-black uppercase tracking-widest text-muted-foreground block text-center sm:text-start">{t('periodEnd')}</label>
+                                            <InfoTooltip titleKey="periodEnd" textKey="tooltipPeriodEndText" />
+                                        </div>
+                                        <DatePicker
+                                            variant="bento"
+                                            hideIcon
+                                            value={periodEnd ? parseISO(periodEnd) : undefined}
+                                            onChange={(date) => setPeriodEnd(date ? format(date, 'yyyy-MM-dd') : '')}
+                                            placeholder=""
+                                        />
+                                    </div>
                                 </>
                             )}
                         </div>
 
-                        <div className="space-y-8 pt-8 border-t border-slate-100 dark:border-neutral-800">
-                            <div className="space-y-4">
-                                <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageCalculationMethod')}</label>
-                                <SegmentedControl
-                                    options={LINKAGE_SUB_TYPES.map((type: any) => ({
-                                        label: t(type.labelKey as any),
-                                        value: type.id
-                                    }))}
-                                    value={recLinkageSubType}
-                                    onChange={(val) => setRecLinkageSubType(val as any)}
-                                />
-                            </div>
+                        <div className="flex flex-col gap-6">
+                            <button
+                                onClick={() => setShowRecAdvanced(!showRecAdvanced)}
+                                className="flex items-center gap-2 self-start text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all px-2"
+                            >
+                                {showRecAdvanced ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                {t('advancedOptions')}
+                            </button>
 
-
-
-                            <div className="grid grid-cols-5 gap-4 md:gap-6">
-                                <div className="col-span-3 space-y-4">
-                                    <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageFloor')}</label>
-                                    <div className="flex items-center justify-between gap-4 h-14 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.25rem]">
-                                        <SegmentedControl
-                                            options={[
-                                                { label: lang === 'he' ? 'פעיל' : 'On', value: 'true' },
-                                                { label: lang === 'he' ? 'כבוי' : 'Off', value: 'false' }
-                                            ]}
-                                            value={recIndexBaseMinimum ? 'true' : 'false'}
-                                            onChange={(val) => setRecIndexBaseMinimum(val === 'true')}
-                                            className="w-full h-full p-1"
+                            {showRecAdvanced && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    className="space-y-8 p-6 md:p-8 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-800"
+                                >
+                                    <div className="flex items-center justify-between bg-slate-50 dark:bg-neutral-800/80 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-neutral-700">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs md:text-sm font-black uppercase tracking-widest text-muted-foreground">
+                                                {t('indexBaseMin')}
+                                            </span>
+                                            <InfoTooltip 
+                                                titleKey="indexBaseMin"
+                                                textKey="tooltipIndexBaseMinText"
+                                                exampleKey="tooltipIndexBaseMinExample"
+                                            />
+                                        </div>
+                                        <Switch
+                                            checked={recIndexBaseMinimum}
+                                            onChange={setRecIndexBaseMinimum}
                                         />
                                     </div>
-                                </div>
-                                <div className="col-span-2">
-                                    <Input
-                                        label={t('maxIncrease')}
-                                        type="number"
-                                        value={recMaxIncrease}
-                                        onChange={(e) => setRecMaxIncrease(e.target.value)}
-                                        placeholder="5"
-                                        rightIcon={<span className="font-bold"> %</span>}
-                                    />
-                                </div>
-                            </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-center sm:justify-start gap-2">
+                                                <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground block ml-1">{t('partialLinkage')}</label>
+                                                <InfoTooltip 
+                                                    titleKey="partialLinkage"
+                                                    textKey="tooltipPartialLinkageText"
+                                                    exampleKey="tooltipPartialLinkageExample"
+                                                />
+                                            </div>
+                                            <Input
+                                                type="number"
+                                                value={recPartialLinkage}
+                                                onChange={(e) => setRecPartialLinkage(e.target.value)}
+                                                placeholder=""
+                                                rightIcon={<span className="font-bold text-lg text-muted-foreground px-2">%</span>}
+                                                className="h-12 text-lg font-black text-center rounded-xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-800 focus:border-primary/20"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-center sm:justify-start gap-2">
+                                                <label className="text-[10px] md:text-xs font-black uppercase tracking-widest text-muted-foreground block ml-1">{t('maxIncrease')}</label>
+                                                <InfoTooltip 
+                                                    titleKey="maxIncrease"
+                                                    textKey="tooltipMaxIncreaseText"
+                                                    exampleKey="tooltipMaxIncreaseExample"
+                                                />
+                                            </div>
+                                            <Input
+                                                type="number"
+                                                value={recMaxIncrease}
+                                                onChange={(e) => setRecMaxIncrease(e.target.value)}
+                                                placeholder=""
+                                                rightIcon={<span className="font-bold text-lg text-muted-foreground px-2">%</span>}
+                                                className="h-12 text-lg font-black text-center rounded-xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-800 focus:border-primary/20"
+                                            />
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                <Button
-                    onClick={handleCalculate}
-                    disabled={loading || !recBaseRent || !contractStartDate || !periodStart || !periodEnd}
-                    isLoading={loading}
-                    className="w-full h-24 rounded-[2rem] text-xl transition-all shadow-premium-dark flex items-center justify-center gap-4 group"
-                >
-                    {t('calculateBackPay')}
-                    <TrendingUp className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                </Button>
+                <div className="pt-4">
+                    <Button
+                        onClick={handleCalculate}
+                        disabled={loading || !recBaseRent || !contractStartDate || !periodStart || !periodEnd}
+                        isLoading={loading}
+                        className="w-full h-12 md:h-14 rounded-xl text-base md:text-lg font-black transition-all shadow-premium-dark flex items-center justify-center group"
+                    >
+                        <TrendingUp className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+                        <span>{t('calculate')}</span>
+                    </Button>
+                </div>
             </section >
 
             {/* Reconciliation Results */}
             {
                 result && (
-                    <section className="relative overflow-hidden bg-white dark:bg-neutral-900 border-y sm:border border-primary/20 dark:border-primary/30 rounded-none sm:rounded-[2.5rem] p-4 md:p-6 shadow-[0_0_40px_-15px_hsl(var(--primary))] space-y-10 animate-in zoom-in-95 duration-700">
+                    <section className="relative overflow-hidden bg-white dark:bg-neutral-900 border-y sm:border border-primary/20 dark:border-primary/30 rounded-none sm:rounded-2xl p-4 md:p-6 shadow-[0_0_40px_-15px_hsl(var(--primary))] space-y-10 animate-in zoom-in-95 duration-700">
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 dark:bg-primary/10 blur-[100px] rounded-full pointer-events-none -z-10" />
                         <h3 className="font-black text-xs uppercase tracking-[0.4em] text-muted-foreground text-center">{t('paymentReconciliationResults')}</h3>
 
-                        <div className="bg-red-50 dark:bg-red-950/20 p-8 md:p-12 rounded-[2.5rem] border border-red-100 dark:border-red-900/30 text-center space-y-3">
+                        <div className="bg-red-50 dark:bg-red-950/20 p-8 md:p-12 rounded-2xl border border-red-100 dark:border-red-900/30 text-center space-y-3">
                             <span className="text-xs font-black uppercase tracking-[0.2em] text-red-400 block">{t('totalBackPayOwed')}</span>
                             <span className="text-6xl font-black text-destructive">₪{result.totalBackPayOwed.toLocaleString()}</span>
                             <p className="text-xs font-bold text-red-300 dark:text-red-800 uppercase tracking-widest pt-2">
@@ -668,7 +772,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] overflow-hidden bg-white dark:bg-neutral-900 shadow-premium"
+                                    className="border border-slate-100 dark:border-neutral-800 rounded-2xl overflow-hidden bg-white dark:bg-neutral-900 shadow-premium"
                                 >
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-sm">
@@ -702,7 +806,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
 
                         <button
                             onClick={() => setIsGeneratorOpen(true)}
-                            className="w-full h-20 bg-foreground text-background py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] transition-all hover:scale-[1.01] flex items-center justify-center gap-4 shadow-premium-dark"
+                            className="w-full h-20 bg-foreground text-background py-4 sm:py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:scale-[1.01] flex items-center justify-center gap-4 shadow-premium-dark"
                         >
                             <Share2 className="w-5 h-5" />
                             {t('shareResult')}

@@ -1,3 +1,4 @@
+import { withEdgeMiddleware } from '../_shared/middleware.ts';
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -12,7 +13,7 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(withEdgeMiddleware('analyze-contract', async (req, logger) => {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
@@ -226,7 +227,7 @@ Ensure all field names match exactly as listed above.`
                         p_user_id: user.id,
                         p_action: 'AI_CONTRACT_EXTRACTION',
                         p_details: { model: result.model || "gpt-4o" }
-                    });
+                    }));
                 }
             } catch (logError) {
                 console.error("Failed to log AI usage:", logError);

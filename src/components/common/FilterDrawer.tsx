@@ -61,7 +61,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-8 border-b border-border shrink-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md sticky top-0 z-10">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-4">
                                 <div className="p-2 bg-brand-50 dark:bg-brand-900/20 rounded-xl">
                                     <Filter className="w-5 h-5 text-brand-600" />
                                 </div>

@@ -131,7 +131,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
     };
 
     const modalFooter = (
-        <div className="flex gap-3 w-full">
+        <div className="flex gap-2 sm:gap-4 w-full">
             <Button variant="ghost" className="flex-1" onClick={onClose}>
                 {t('cancel')}
             </Button>
@@ -166,7 +166,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                             <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <select
                                 {...register('property_id')}
-                                className={`w-full pl-9 pr-4 py-3 bg-secondary border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none ${errors.property_id ? 'border-red-500' : 'border-border'}`}
+                                className={`w-full pl-9 pr-4 py-2 sm:py-6 bg-secondary border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none ${errors.property_id ? 'border-red-500' : 'border-border'}`}
                             >
                                 <option value="">{t('selectProperty')}</option>
                                 {properties.map(p => (
@@ -189,7 +189,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                             type="number"
                             placeholder="0.00"
                             {...register('amount')}
-                            className={`w-full pl-9 pr-4 py-3 bg-secondary border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none ${errors.amount ? 'border-red-500' : 'border-border'}`}
+                            className={`w-full pl-9 pr-4 py-2 sm:py-6 bg-secondary border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none ${errors.amount ? 'border-red-500' : 'border-border'}`}
                         />
                         {errors.amount && <p className="text-xs text-destructive mt-1 ml-1">{t(errors.amount.message as string)}</p>}
                     </div>
@@ -202,7 +202,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                         type="text"
                         placeholder={t('e.g. Kitchen Renovation')}
                         {...register('description')}
-                        className={`w-full px-4 py-3 bg-secondary border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none ${errors.description ? 'border-red-500' : 'border-border'}`}
+                        className={`w-full px-6 py-2 sm:py-6 bg-secondary border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none ${errors.description ? 'border-red-500' : 'border-border'}`}
                     />
                     {errors.description && <p className="text-xs text-destructive mt-1 ml-1">{t(errors.description.message as string)}</p>}
                 </div>
@@ -216,7 +216,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                             <input
                                 type="text"
                                 {...register('vendor_name')}
-                                className="w-full pl-9 pr-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
+                                className="w-full pl-9 pr-4 py-2 sm:py-6 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
                                 placeholder={t('vendor')}
                             />
                         </div>
@@ -227,7 +227,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                             <Wrench className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <select
                                 {...register('issue_type')}
-                                className="w-full pl-9 pr-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none text-sm"
+                                className="w-full pl-9 pr-4 py-2 sm:py-6 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none text-sm"
                             >
                                 <option value="">{t('selectType')}</option>
                                 <option value="plumbing">{t('issuePlumbing')}</option>

@@ -127,6 +127,8 @@ export type TranslationKeys =
     | 'payments'
     | 'totalPendingWithIndex'
     | 'candidates'
+    | 'tenantForms'
+    | 'tenantFormsDesc'
     | 'calculator'
     | 'settings'
     | 'profile'
@@ -521,6 +523,15 @@ export type TranslationKeys =
     | 'capCeiling'
     | 'periodStart'
     | 'periodEnd'
+    | 'tooltipLinkageTypeText'
+    | 'tooltipLinkageCalculationMethodText'
+    | 'tooltipBaseIndexDateText'
+    | 'tooltipPeriodStartText'
+    | 'tooltipPeriodEndText'
+    | 'advancedCalculatorExplanation'
+    | 'tooltipGenerateListText'
+    | 'tooltipExpectedPaymentsText'
+    | 'tooltipActualPaymentsText'
     | 'avgUnderpayment'
     | 'percentageOwed'
     | 'globalBaseRentHelp'
@@ -650,6 +661,7 @@ export type TranslationKeys =
     | 'baseRate'
     | 'rate'
     | 'currentRate'
+    | 'noLinkage'
     | 'cpi'
     | 'housing'
     | 'construction'
@@ -921,6 +933,19 @@ export type TranslationKeys =
     | 'stable' | 'stable_female' | 'stable_male'
     | 'enablePush'
     | 'knowledgeBase'
+    | 'last_updated'
+    | 'try_rentmate_free'
+    | 'hero_title_legal'
+    | 'hero_desc_legal'
+    | 'cta_button_legal'
+    | 'hero_title_tax'
+    | 'hero_desc_tax'
+    | 'cta_button_tax'
+    | 'hero_title_generic'
+    | 'hero_desc_generic'
+    | 'cta_button_generic'
+    | 'article_not_found'
+    | 'back_to_knowledge_base'
     | 'errorTitle404'
     | 'errorDesc404'
     | 'errorTitle500'
@@ -1161,7 +1186,14 @@ export type TranslationKeys =
     | 'noOptionsDefined'
     | '3Months'
     | '6Months'
-    | '12Months';
+    | '12Months'
+    | 'tenantForm'
+    | 'createDocumentFolder'
+    | 'noDocumentsFound'
+    | 'startByAddingAbove'
+    | 'createTenantSignLink'
+    | 'tenantLinkCopied'
+    | 'copyLinkError';
 
 export const translations: Record<string, any> = {
     he: {
@@ -1634,6 +1666,15 @@ export const translations: Record<string, any> = {
         capCeiling: 'מקסימום שינוי (%)',
         periodStart: 'תחילת תקופה',
         periodEnd: 'סוף תקופה',
+        tooltipLinkageTypeText: 'סוג המדד אליו יוצמד הסכום - מדד המחירים לצרכן הוא הנפוץ ביותר בישראל.',
+        tooltipLinkageCalculationMethodText: 'מדד ידוע: מחושב לפי המדד הזמין לפני יום התשלום. מדד קובע: מחושב לפי המדד המשויך לחודש התשלום, גם אם פורסם לאחריו.',
+        tooltipBaseIndexDateText: 'המועד שלפיו נקבע מדד הבסיס שמולו יחושבו כל פערי ההצמדה לכל אורך התקופה. לרוב תאריך חתימת החוזה.',
+        tooltipPeriodStartText: 'החודש שממנו והלאה נתחיל לחשב ולצבור את פערי ההצמדה בחוב.',
+        tooltipPeriodEndText: 'החודש האחרון בתקופת הזמן שעליה מחושב החוב וההצמדה (התקופה הרטרואקטיבית).',
+        tooltipGenerateListText: 'מילוי אוטומטי של חודשי השכירות. המערכת תייצר שורת תשלום לכל חודש בטווח התאריכים שהגדרת למטה (תחילת וסוף תקופה), ותציב בה את סכום הבסיס. חובה להגדיר תאריכי תקופה קודם.',
+        tooltipExpectedPaymentsText: 'הסכום הבסיסי המקורי שהיה אמור להיות משולם בכל חודש, לא כולל ההצמדה למדד.',
+        tooltipActualPaymentsText: 'התשלומים ששולמו בפועל מול הסכום הצפוי. פער הסכומים (והמדד) הוא זה שיוצר את החוב.',
+        advancedCalculatorExplanation: 'מחשבון ההפרשים (מוכר גם כמחשבון רטרואקטיבי) מפיק טבלת חוב מסודרת ומאפשר לחשב את סך כל הפערים שנוצרו כאשר תשלומי שכר דירה שולמו לאורך זמן ללא התחשבות נאותה בעליית המדד כמקובל בחוזה.',
         avgUnderpayment: 'תת-תשלום ממוצע',
         percentageOwed: 'אחוז מהחוב',
         globalBaseRentHelp: 'סכום השכירות לפני הצמדות',
@@ -2394,8 +2435,10 @@ export const translations: Record<string, any> = {
         baseRentWarning: 'יש להזין סכום להצמיד',
         linkageCalculated: 'עדכון ההצמדה חושב',
         indexPulseFailed: 'כישלון בעדכון המדדים',
+        noLinkage: 'ללא הצמדה',
         cpi: 'מדד המחירים לצרכן',
         housing: 'מדד שירותי דיור',
+        construction: 'מדד תשומות הבנייה',
         cpiAbbr: 'מדד',
         housingAbbr: 'דיור',
 
@@ -2419,6 +2462,28 @@ export const translations: Record<string, any> = {
         upcoming_payment: 'תשלום קרוב',
         contract_status_updated: 'סטטוס חוזה עודכן',
         contract_expiry: 'סיום חוזה',
+        tenantForm: 'טופסי הרשמה',
+        tenantForms: 'טופסי הרשמה',
+        tenantFormsDesc: 'ניהול שאלוני הרשמה ופרטי שוכרים',
+        createDocumentFolder: 'צור תיקיית מסמכים',
+        noDocumentsFound: 'לא נמצאו מסמכים',
+        startByAddingAbove: 'התחל על ידי הוספת מסמך למעלה',
+        createTenantSignLink: 'יצירת קישור הרשמה לדייר',
+        tenantLinkCopied: 'ביצוע מוצלח, הקישור הועתק!',
+        copyLinkError: 'שגיאה בהעתקת הקישור',
+        last_updated: 'עודכן לאחרונה',
+        try_rentmate_free: 'נסו עכשיו בחינם!',
+        hero_title_legal: 'כלים משפטיים למשכירים',
+        hero_desc_legal: 'ודאו שהחוזים שלכם חסינים מבחינה משפטית ובטוחים.',
+        cta_button_legal: 'ליצירת חוזה',
+        hero_title_tax: 'מחשבון ההצמדות',
+        hero_desc_tax: 'חשבו בזמן אמת ונהלו את השכירות עם המדד העדכני.',
+        cta_button_tax: 'למחשבון',
+        hero_title_generic: 'לסיים את הבלאגן',
+        hero_desc_generic: 'כלי הניהול החכם והמוביל למשכירים בישראל.',
+        cta_button_generic: 'התחל עכשיו',
+        article_not_found: 'המאמר לא נמצא',
+        back_to_knowledge_base: 'חזרה למרכז הידע',
     },
     en: {
         noActiveContract: 'No active contract',
@@ -2614,6 +2679,7 @@ export const translations: Record<string, any> = {
         baseDateOptional: 'Base Date (Optional)',
         unknownProperty: 'Unknown Property',
         selectDisplayedIndices: 'Select Displayed Indices',
+        noLinkage: 'No Linkage',
         cpi: 'CPI',
         housing: 'Housing',
         construction: 'Construction',
@@ -2732,6 +2798,15 @@ export const translations: Record<string, any> = {
         exampleLabel: 'Example:',
         howItWorksTitle: 'Advanced Reconciliation',
         reconciliationInfoText: 'This calculator checks the payment gap over time. Enter the actual payments made, and the system will compare them against what should have been paid (inclusive of index linkage calculations). Finally, you will receive an accurate debt or credit report.',
+        tooltipLinkageTypeText: 'The type of index to link the amount to. Consumer Price Index (CPI) is the most common.',
+        tooltipLinkageCalculationMethodText: 'Known index: uses the index available before payment. Determining index: uses the index for the payment month, regardless of publish date.',
+        tooltipBaseIndexDateText: 'The date that sets the base index against which all linkage gaps are calculated, usually the contract sign date.',
+        tooltipPeriodStartText: 'The historical month from which linkage gaps begin to accumulate.',
+        tooltipPeriodEndText: 'The final month in the assessed retroactive timeframe.',
+        tooltipGenerateListText: 'Autofills the payment table. The system generates a payment row for each month within the date range defined below (Start and End Period), using your expected base rent. You must configure the period dates first.',
+        tooltipExpectedPaymentsText: 'The original required base payment per month, excluding index linkage.',
+        tooltipActualPaymentsText: 'The payments actually made compared to the expected. Gap between expected and actual forms the debt.',
+        advancedCalculatorExplanation: 'The reconciliation calculator produces an organized debt table measuring all accumulated gaps from historical rent payments paid without the required contractual index linkage.',
         errorMarkingPaid: 'Error marking as paid',
         back: 'Back',
         amountGreaterThanZero: 'Amount must be greater than zero',
@@ -2859,6 +2934,28 @@ export const translations: Record<string, any> = {
         mom: 'MoM',
         addTenant: 'Add Tenant',
         addTenant_female: 'Add Tenant',
+        tenantForm: 'Tenant Forms',
+        tenantForms: 'Tenant Forms',
+        tenantFormsDesc: 'Managing tenant sign up forms and details',
+        createDocumentFolder: 'Create Document Folder',
+        noDocumentsFound: 'No documents found',
+        startByAddingAbove: 'Start by adding a document above',
+        createTenantSignLink: 'Create Tenant Link',
+        tenantLinkCopied: 'Success, link copied!',
+        copyLinkError: 'Error copying link',
+        last_updated: 'Last Updated',
+        try_rentmate_free: 'Try RentMate Free!',
+        hero_title_legal: 'Legal Tools for Landlords',
+        hero_desc_legal: 'Ensure your contracts are bulletproof and secure.',
+        cta_button_legal: 'Create Contract',
+        hero_title_tax: 'Linkage Calculator',
+        hero_desc_tax: 'Calculate rent linkage in real time with the latest data.',
+        cta_button_tax: 'Open Calculator',
+        hero_title_generic: 'End the Mess',
+        hero_desc_generic: 'The ultimate smart management tool for landlords.',
+        cta_button_generic: 'Start Now',
+        article_not_found: 'Article not found',
+        back_to_knowledge_base: 'Back to Knowledge Base',
     }
 };
 

@@ -2,6 +2,7 @@
 /// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { withEdgeMiddleware } from '../_shared/middleware.ts';
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -12,7 +13,7 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req: Request) => {
+serve(withEdgeMiddleware('send-daily-admin-summary', async (req: Request, logger) => {
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
     }
@@ -408,4 +409,4 @@ serve(async (req: Request) => {
             status: 400,
         });
     }
-});
+}));

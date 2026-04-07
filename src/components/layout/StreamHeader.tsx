@@ -43,7 +43,7 @@ export function StreamHeader({ title, hideControls }: StreamHeaderProps) {
         <header className="fixed top-0 left-0 right-0 h-16 glass-premium z-[60] flex items-center justify-between px-4 md:px-10 border-b border-white/10 transition-all duration-500">
             {/* Left: Logo or Title */}
             <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <div className="flex flex-col justify-center">
                         <span className="text-xl md:text-2xl font-black tracking-tighter text-foreground whitespace-nowrap leading-none flex items-center gap-2">
                             {title || 'RentMate'}
@@ -77,7 +77,7 @@ export function StreamHeader({ title, hideControls }: StreamHeaderProps) {
             {!hideControls && (
                 <div className="flex items-center gap-2 md:gap-4">
                     {!loading && plan && (
-                        <div className="flex items-center gap-1.5 sm:gap-2">
+                        <div className="flex items-center gap-2 sm:gap-2">
                             {plan.id === 'free' && (
                                 <button
                                     onClick={() => navigate('/subscription')}
@@ -88,7 +88,7 @@ export function StreamHeader({ title, hideControls }: StreamHeaderProps) {
                             )}
                             <button
                                 onClick={() => navigate('/subscription')}
-                                className="hidden sm:flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-primary/10 to-cyan-600/10 hover:from-primary/20 hover:to-cyan-600/20 border border-blue-200 dark:border-blue-900 transition-all group"
+                                className="hidden sm:flex items-center gap-2 sm:gap-2 px-2.5 sm:px-2 sm:px-4 py-1 sm:py-2 rounded-full bg-gradient-to-r from-primary/10 to-cyan-600/10 hover:from-primary/20 hover:to-cyan-600/20 border border-blue-200 dark:border-blue-900 transition-all group"
                             >
                                 {plan.id === 'free' || plan.id === 'solo' ? (
                                     <Star className="w-3 h-3 text-primary group-hover:scale-110 transition-transform" />

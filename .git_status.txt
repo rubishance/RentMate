@@ -1,0 +1,87 @@
+﻿ M .agent/rules/GEMINI.md
+ M package-lock.json
+ M package.json
+ M public/version.json
+ M rentmate-mobile/App.tsx
+ M rentmate-mobile/app.json
+ M rentmate-mobile/index.ts
+ M rentmate-mobile/package-lock.json
+ M rentmate-mobile/package.json
+ M rentmate-mobile/src/navigation/BottomTabNavigator.tsx
+ M rentmate-mobile/src/screens/CalculatorScreen.tsx
+ M rentmate-mobile/src/screens/DashboardScreen.tsx
+ M rentmate-mobile/src/screens/DocumentsScreen.tsx
+ M rentmate-mobile/src/screens/PaymentsScreen.tsx
+ M rentmate-mobile/src/screens/PropertiesScreen.tsx
+ M src/components/dashboard/IndexPulseWidget.tsx
+ M src/components/dashboard/QuickActionsWidget.tsx
+ M src/components/dashboard/WidgetRegistry.tsx
+ M src/components/ui/Input.tsx
+ M src/hooks/useSubscription.ts
+ M src/pages/Calculator.tsx
+ M src/pages/GlobalDocuments.tsx
+ M src/pages/Properties.tsx
+ M src/pages/PropertyDetails.tsx
+ M src/pages/Signup.tsx
+ M src/pages/SubscriptionSelection.tsx
+ M src/pages/public/TenantApplication.tsx
+ M src/pages/tools/CPICalculatorPage.tsx
+ M supabase/config.toml
+ M supabase/functions/fetch-cbs-monthly-rent/index.ts
+ M supabase/functions/fetch-index-data/index.ts
+ M supabase/functions/handle-whatsapp-inbound/ai-router.ts
+ M supabase/functions/handle-whatsapp-inbound/index.ts
+ D supabase/migrations/20260403000000_rls_deep_scan.sql
+?? .git_status.txt
+?? rentmate-mobile/babel.config.js
+?? rentmate-mobile/eslint_out.json
+?? rentmate-mobile/eslint_out.txt
+?? rentmate-mobile/fix_safe_area.py
+?? rentmate-mobile/jest.config.js
+?? rentmate-mobile/metro.config.js
+?? rentmate-mobile/npx
+?? rentmate-mobile/src/components/
+?? rentmate-mobile/src/contexts/
+?? rentmate-mobile/src/hooks/
+?? rentmate-mobile/src/lib/calculator.logic.test.ts
+?? rentmate-mobile/src/lib/calculator.logic.ts
+?? rentmate-mobile/src/lib/i18n.ts
+?? rentmate-mobile/src/lib/index-data.service.ts
+?? rentmate-mobile/src/lib/pushNotifications.ts
+?? rentmate-mobile/src/lib/region-data.service.ts
+?? rentmate-mobile/src/lib/revenue.service.ts
+?? rentmate-mobile/src/lib/theme.ts
+?? rentmate-mobile/src/navigation/AppNavigator.tsx
+?? rentmate-mobile/src/navigation/AuthNavigator.tsx
+?? rentmate-mobile/src/screens/AIScannerScreen.tsx
+?? rentmate-mobile/src/screens/AddContractWizard.tsx
+?? rentmate-mobile/src/screens/AddPropertyWizard.tsx
+?? rentmate-mobile/src/screens/AutopilotInboxScreen.tsx
+?? rentmate-mobile/src/screens/ContractDetailsScreen.tsx
+?? rentmate-mobile/src/screens/EditProfileScreen.tsx
+?? rentmate-mobile/src/screens/MaintenanceScreen.tsx
+?? rentmate-mobile/src/screens/PropertyDetailsScreen.tsx
+?? rentmate-mobile/src/screens/ProtocolWizardScreen.tsx
+?? rentmate-mobile/src/screens/RentyAssistantScreen.tsx
+?? rentmate-mobile/src/screens/SettingsScreen.tsx
+?? rentmate-mobile/src/screens/TenantsListScreen.tsx
+?? rentmate-mobile/src/screens/auth/
+?? scripts/refactor_theme_rn.py
+?? search_out.txt
+?? search_python.py
+?? search_python_out.txt
+?? search_results.json
+?? search_results2.json
+?? search_results3.json
+?? search_results4.json
+?? src/services/revenuecat.service.ts
+?? supabase/functions/handle-revenuecat-webhook/
+?? supabase/migrations/20260108140000_fix_schema_comprehensive.sql
+?? supabase/migrations/20260403000000_rls_deep_scan.sql.bak
+?? supabase/migrations/20260406223617_remove_unused_indices_and_create_rental_tables.sql
+?? supabase/migrations/20260407000000_global_storage_tracking.sql
+?? supabase/migrations/20260408000000_cbs_rent_pg_cron_trigger.sql
+?? tmp_search_user.cjs
+?? tmp_search_user2.cjs
+?? tmp_search_user3.cjs
+?? tmp_search_user4.cjs

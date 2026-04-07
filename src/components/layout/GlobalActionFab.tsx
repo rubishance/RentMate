@@ -40,7 +40,7 @@ export function GlobalActionFab() {
                                 initial={{ opacity: 0, scale: 0.8, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                                className="absolute bottom-20 right-0 origin-bottom-right z-[100] w-64 p-3 glass-premium border-white/10 rounded-[2rem] shadow-jewel flex flex-col gap-2"
+                                className="absolute bottom-20 right-0 origin-bottom-right z-[100] w-64 p-2 sm:p-4 glass-premium border-white/10 rounded-2xl shadow-jewel flex flex-col gap-2"
                             >
                                 {/* Option 1: Payment */}
                                 <button

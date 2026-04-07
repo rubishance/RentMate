@@ -24,6 +24,7 @@ import {
     Layout, Calendar, ChevronRight, CheckCircle2, AlertCircle, RefreshCw, Wallet,
     Clock, ArrowRight, Receipt as ReceiptIcon
 } from 'lucide-react';
+import { EmptyState } from '../components/common/EmptyState';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -410,7 +411,7 @@ export function Payments() {
                         const config = getPaymentStatusConfig(payment.status);
                         return (
                             <span className={cn(
-                                "px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold tracking-wide border whitespace-nowrap",
+                                "px-2 sm:px-4 py-1 sm:py-2 rounded-full text-[11px] sm:text-xs font-bold tracking-wide border whitespace-nowrap",
                                 payment.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' : 
                                 cn(config.bg, config.color, config.border)
                             )}>
@@ -575,7 +576,7 @@ export function Payments() {
             return (
                 <React.Fragment key={payment.id || index}>
                     {showDivider && index !== 0 && (
-                        <div className="flex items-center gap-4 py-3.5 px-2 opacity-60">
+                        <div className="flex items-center gap-4 py-2 sm:py-4.5 px-2 opacity-60">
                             <div className="h-px flex-1 bg-border/50" />
                             <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{format(pDate, 'MMMM yyyy', { locale: lang === 'he' ? he : undefined })}</span>
                             <div className="h-px flex-1 bg-border/50" />
@@ -589,7 +590,7 @@ export function Payments() {
 
     if (loading) {
         return (
-            <div className="pt-16 px-5 space-y-12">
+            <div className="pt-16 px-4 sm:px-6 space-y-12">
                 <div className="space-y-4">
                     <Skeleton className="h-4 w-32 rounded-full" />
                     <Skeleton className="h-12 w-64 rounded-xl" />
@@ -608,10 +609,10 @@ export function Payments() {
     }
 
     return (
-        <div className="pt-2 pb-24 md:pb-8 md:pt-8 px-5 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
+        <div className="pt-2 md:pt-8 px-4 sm:px-6 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
             {/* Header */}
             {/* Header */}
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 md:gap-6">
                 <div className="flex items-center justify-end gap-4 w-full">
                     {/* Placeholder for layout */}
                     <div className="h-14 w-14 shrink-0 opacity-0 pointer-events-none" />
@@ -635,7 +636,7 @@ export function Payments() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         {/* displayMode toggle removed - relocated to hidden filters */}
 
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
                         <div className="hidden sm:flex p-1 bg-background0/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 h-12">
                             {[
                                 { id: 'desc', label: t('sortNewestFirst') || 'מהחדש לישן' },
@@ -713,7 +714,7 @@ export function Payments() {
                         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                         className="overflow-visible"
                     >
-                        <Card glass className="relative z-50 rounded-[2rem] border shadow-minimal bg-background0/5 border-slate-500/10 overflow-visible">
+                        <Card glass className="relative z-50 rounded-2xl border shadow-minimal bg-background0/5 border-slate-500/10 overflow-visible">
                             <CardContent className="p-6">
                                 <div className="flex flex-col gap-6">
                                     <div className="flex justify-between items-center -mb-2">
@@ -721,14 +722,14 @@ export function Payments() {
                                         {(displayMode !== 'all' || filters.tenantIds.length > 0 || filters.propertyId !== 'all' || filters.paymentMethods.length > 0 || filters.startDate || filters.endDate || filters.contractStatus !== 'active') && (
                                             <button
                                                 onClick={resetFilters}
-                                                className="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 flex items-center gap-1.5 transition-opacity whitespace-nowrap bg-background0/80 backdrop-blur-md px-2 py-1 rounded-xl border border-primary/10 shadow-sm"
+                                                className="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 flex items-center gap-2 transition-opacity whitespace-nowrap bg-background0/80 backdrop-blur-md px-2 py-1 rounded-xl border border-primary/10 shadow-sm"
                                             >
                                                 <RotateCcw className="w-3 h-3" />
                                                 {t('resetFilters') || 'Reset'}
                                             </button>
                                         )}
                                     </div>
-                                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4 sm:gap-4">
                                         <div className="space-y-2 min-w-0">
                                             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('status')} {t('payments') || 'Payment'}</label>
                                             <Select
@@ -841,11 +842,11 @@ export function Payments() {
             <Card glass className="rounded-2xl border shadow-low bg-primary/5 border-primary/10 overflow-hidden">
                 <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x md:divide-x-reverse divide-primary/10">
                     {/* Expected Income Section */}
-                    <div className="flex-[1.2] py-4 px-5 lg:px-6 lg:py-5 flex flex-col justify-center relative">
+                    <div className="flex-[1.2] py-4 px-4 sm:px-6 lg:px-6 lg:py-4 sm:py-6 flex flex-col justify-center relative">
                         {/* Decorative glow */}
                         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                         
-                        <div className="flex flex-col w-full relative z-10 gap-1.5 sm:gap-2">
+                        <div className="flex flex-col w-full relative z-10 gap-2 sm:gap-2">
                             <h3 className="text-sm font-black text-center uppercase tracking-[0.2em] text-foreground w-full">
                                 {t('monthlyExpectedTitle') || 'צפי חודשי'}
                             </h3>
@@ -887,7 +888,7 @@ export function Payments() {
                         {/* Per-contract Breakdown */}
                         {Object.values(stats.contractBreakdown).filter(c => c.isRent && c.monthlyExpected > 0).length > 1 && (
                             <div className="w-full mt-4 bg-primary/5 rounded-2xl p-4 border border-primary/10 relative z-10">
-                                <div className="text-xs font-black uppercase tracking-widest text-primary/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
+                                <div className="text-xs font-black uppercase tracking-widest text-primary/60 mb-2 sm:mb-4">{t('contractBreakdown') || 'Breakdown'}</div>
                                 <div className="space-y-2">
                                     {Object.values(stats.contractBreakdown)
                                         .filter(c => c.isRent && c.monthlyExpected > 0)
@@ -908,11 +909,11 @@ export function Payments() {
                     </div>
 
                     {/* Pending Section */}
-                    <div className="flex-1 py-4 px-5 lg:px-6 lg:py-5 flex flex-col justify-center relative bg-white/40 dark:bg-black/20">
+                    <div className="flex-1 py-4 px-4 sm:px-6 lg:px-6 lg:py-4 sm:py-6 flex flex-col justify-center relative bg-white/40 dark:bg-black/20">
                         {/* Decorative glow */}
                         <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
-                        <div className="flex flex-col w-full relative z-10 gap-1.5 sm:gap-2">
+                        <div className="flex flex-col w-full relative z-10 gap-2 sm:gap-2">
                             <h3 className="text-sm font-black text-center uppercase tracking-[0.2em] text-foreground w-full">
                                 {t('totalPendingToPay') || 'סה״כ ממתין לתשלום'}
                             </h3>
@@ -954,7 +955,7 @@ export function Payments() {
                         {/* Per-contract Breakdown (Pending) */}
                         {Object.values(stats.contractBreakdown).filter(c => c.isRent && c.pending > 0).length > 1 && (
                             <div className="w-full mt-6 bg-warning/5 rounded-2xl p-4 border border-warning/10 relative z-10">
-                                <div className="text-xs font-black uppercase tracking-widest text-warning/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
+                                <div className="text-xs font-black uppercase tracking-widest text-warning/60 mb-2 sm:mb-4">{t('contractBreakdown') || 'Breakdown'}</div>
                                 <div className="space-y-2">
                                     {Object.values(stats.contractBreakdown)
                                         .filter(c => c.isRent && c.pending > 0)
@@ -981,25 +982,20 @@ export function Payments() {
             {/* Payments List */}
             <div className="space-y-4 -mt-2">
                 {sortedFilteredPayments.length === 0 ? (
-                    <div className="py-40 text-center space-y-8">
-                        <div className="w-24 h-24 glass-premium rounded-[2.5rem] flex items-center justify-center mx-auto shadow-minimal">
-                            <AlertCircle className="w-10 h-10 text-muted-foreground/20" />
-                        </div>
-                        <div className="space-y-2">
-                            <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase opacity-70">{t('noPaymentsFound')}</h3>
-                        </div>
-                        <Button
-                            onClick={() => setIsAddModalOpen(true)}
-                            className="shadow-premium"
-                        >
-                            {t('addFirstPayment')}
-                        </Button>
+                    <div className="py-8">
+                        <EmptyState
+                            icon={ReceiptIcon}
+                            title={t('noPaymentsFound')}
+                            description={t('addFirstPayment')}
+                            actionLabel={t('addFirstPayment')}
+                            onAction={() => setIsAddModalOpen(true)}
+                        />
                     </div>
                 ) : viewStyle === 'table' ? (
                     <div className="space-y-12">
                         {actionNeededPayments.length > 0 && (
                             <div className="space-y-4 relative">
-                                <div className="flex items-center gap-3 px-2">
+                                <div className="flex items-center gap-2 sm:gap-4 px-2">
                                     <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center">
                                         <AlertCircle className="w-4 h-4 text-destructive" />
                                     </div>
@@ -1012,7 +1008,7 @@ export function Payments() {
                         {regularPayments.length > 0 && (
                             <div className="space-y-4 relative pb-4">
                                 {actionNeededPayments.length > 0 && (
-                                    <div className="flex items-center gap-3 px-2 pt-4">
+                                    <div className="flex items-center gap-2 sm:gap-4 px-2 pt-4">
                                         <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center">
                                             <CheckCircle2 className="w-4 h-4 text-success" />
                                         </div>

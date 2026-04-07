@@ -30,13 +30,14 @@ export interface Protocol {
     id: string;
     property_id: string;
     contract_id?: string | null;
-    status: 'draft' | 'signed';
+    status: 'draft' | 'pending_signature' | 'signed';
     handover_date?: string | null;
     tenants_details?: Json | null;
     content?: Json | null;
     evidence_urls?: Json | null;
     landlord_signature?: string | null;
     tenant_signature?: string | null;
+    tenant_signing_token?: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -63,6 +64,7 @@ export type DocumentCategory =
     | 'warranty'
     | 'legal'
     | 'protocols'
+    | 'tenant_form'
     | 'other';
 
 export interface DocumentFolder {

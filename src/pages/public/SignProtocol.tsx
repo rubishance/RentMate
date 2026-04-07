@@ -1,30 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SignaturePad } from '../../components/properties/SignaturePad';
 import { Button } from '../../components/ui/Button';
-import { CheckCircle2, AlertCircle, Loader2, Calendar, Droplets, Zap, Flame, Image as ImageIcon } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Loader2, Calendar, Droplets, Zap, Flame, Key, Wrench, Package, FileType, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // --- Types ---
-interface MeterData { value: string; photoPath: string | null; }
-interface InventoryItem {
-    id: string;
-    label: string;
-    labelHe: string;
-    status: 'intact' | 'damaged' | 'na';
-    note: string;
-    photoPath: string | null;
-}
 interface ProtocolData {
     id: string;
     property_id: string;
-    date: string;
-    type: 'move_in' | 'move_out';
     status: string;
-    meters: Record<string, MeterData>;
-    inventory: InventoryItem[];
+    handover_date: string;
+    tenants_details: { name: string, id: string }[];
+    content: {
+        utilities: Array<{ id: string, type: 'electricity' | 'water' | 'gas', meterNumber: string, reading: string, images: string[] }>;
+        inventory: { items: Array<{ id: string, name: string, condition: string, notes: string }>, global_images: string[] };
+        fixes: Array<{ id: string, description: string, isFixed: boolean, severity: string, images: string[] }>;
+        keys: Array<{ id: string, type: string, amount: number }>;
+        includeDisclaimer?: boolean;
+    };
+    landlord_signature: string;
     properties: { address: string; city: string; };
 }
 
@@ -32,6 +29,7 @@ export const SignProtocol = () => {
     const { token } = useParams<{ token: string }>();
     const { lang } = useTranslation();
     const isRtl = lang === 'he';
+    const t = useCallback((en: string, he: string) => isRtl ? he : en, [isRtl]);
 
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -43,56 +41,54 @@ export const SignProtocol = () => {
     useEffect(() => {
         const fetchProtocol = async () => {
             if (!token) {
-                setError(isRtl ? 'קישור לא תקין או חסר' : 'Invalid or missing link');
+                setError(t('Invalid or missing link', 'קישור לא תקין או חסר'));
                 setLoading(false);
                 return;
             }
 
             try {
-                const { data, error: fetchError } = await supabase
-                    .from('property_protocols')
-                    .select('*, properties(address, city)')
-                    .eq('tenant_signing_token', token)
-                    .single();
+                // Fetch securely via RPC without requiring auth
+                const { data, error: fetchError } = await supabase.rpc('get_public_protocol', {
+                    p_token: token
+                });
 
                 if (fetchError || !data) {
-                    setError(isRtl ? 'הפרוטוקול לא נמצא או שכבר נחתם' : 'Protocol not found or already signed');
-                } else if (data.status === 'completed') {
-                    setError(isRtl ? 'פרוטוקול זה כבר נחתם והושלם.' : 'This protocol has already been signed and completed.');
+                    setError(t('Protocol not found, invalid link, or already signed', 'הפרוטוקול לא נמצא, הקישור פג תוקף, או שכבר נחתם.'));
+                } else if (data.status === 'signed') {
+                     // In case the API returns it anyway (though the RPC filters by pending_signature)
+                    setError(t('This protocol has already been signed.', 'פרוטוקול זה כבר נחתם והושלם.'));
                 } else {
-                    setProtocol(data);
+                    setProtocol(data as ProtocolData);
                 }
             } catch (err) {
                 console.error('Error fetching protocol:', err);
-                setError(isRtl ? 'שגיאה בטעינת הפרוטוקול. אנא נסה שוב.' : 'Error loading protocol. Please try again.');
+                setError(t('Error loading protocol. Please try again.', 'שגיאה בטעינת הפרוטוקול. אנא נסה שוב.'));
             } finally {
                 setLoading(false);
             }
         };
 
         fetchProtocol();
-    }, [token, isRtl]);
+    }, [token, isRtl, t]);
 
     const handleSubmit = async () => {
-        if (!signature || !protocol) return;
+        if (!signature || !protocol || !token) return;
 
         setSubmitting(true);
         setError(null);
 
         try {
-            // Update protocol record
-            const { error: updateError } = await supabase
-                .from('property_protocols')
-                .update({
-                    tenant_signature: signature,
-                    status: 'completed',
-                    completed_at: new Date().toISOString()
-                })
-                .eq('id', protocol.id);
+            // Apply signature securely via RPC
+            const { data, error: updateError } = await supabase.rpc('sign_public_protocol', {
+                p_token: token,
+                p_signature: signature
+            });
 
-            if (updateError) throw updateError;
+            if (updateError || !data) {
+                throw new Error(updateError?.message || 'Failed to update signature');
+            }
 
-            // Trigger Edge Function for PDF generation (async, don't await blocking UI if it fails it should retry or queue)
+            // Trigger Edge Function for PDF generation (async)
             supabase.functions.invoke('generate-protocol-pdf', {
                 body: { protocolId: protocol.id }
             }).catch(console.error);
@@ -100,7 +96,7 @@ export const SignProtocol = () => {
             setSuccess(true);
         } catch (err) {
             console.error('Submission error:', err);
-            setError(isRtl ? 'שגיאה בשמירת הפרוטוקול. אנא נסה יותק מאוחר.' : 'Error saving protocol. Please try later.');
+            setError(t('Error saving protocol. Please try again later.', 'שגיאה בשמירת הפרוטוקול. אנא נסה מאוחר יותר.'));
         } finally {
             setSubmitting(false);
         }
@@ -109,22 +105,22 @@ export const SignProtocol = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-muted/20">
-                <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
     }
 
     if (error || !protocol) {
         return (
-            <div className={`min-h-screen flex items-center justify-center bg-muted/20 p-4 ${isRtl ? 'rtl' : 'ltr'}`}>
-                <div className="bg-card w-full max-w-md p-8 rounded-3xl shadow-xl flex flex-col items-center text-center">
+            <div className={`min-h-screen flex items-center justify-center bg-muted/20 p-4 ${isRtl ? 'rtl' : 'ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                <div className="bg-white dark:bg-neutral-900 w-full max-w-md p-8 rounded-[2rem] shadow-xl flex flex-col items-center text-center">
                     <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6">
                         <AlertCircle className="w-8 h-8" />
                     </div>
-                    <h2 className="text-2xl font-bold mb-2">{isRtl ? 'שגיאה' : 'Error'}</h2>
+                    <h2 className="text-2xl font-bold mb-2 text-primary">{t('Error', 'שגיאה')}</h2>
                     <p className="text-muted-foreground mb-8">{error}</p>
-                    <Button variant="outline" onClick={() => window.location.href = 'https://rentmate.co.il'} className="w-full">
-                        {isRtl ? 'חזרה לאתר' : 'Back to Home'}
+                    <Button variant="outline" onClick={() => window.location.href = 'https://rentmate.co.il'} className="w-full rounded-xl text-primary border-primary/20 hover:bg-primary/5">
+                        {t('Back to Home', 'חזרה לאתר')}
                     </Button>
                 </div>
             </div>
@@ -133,151 +129,261 @@ export const SignProtocol = () => {
 
     if (success) {
         return (
-            <div className={`min-h-screen flex items-center justify-center bg-muted/20 p-4 ${isRtl ? 'rtl' : 'ltr'}`}>
-                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-card w-full max-w-md p-8 rounded-3xl shadow-xl flex flex-col items-center text-center">
-                    <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
+            <div className={`min-h-screen flex items-center justify-center bg-slate-50 dark:bg-black p-4 ${isRtl ? 'rtl' : 'ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white dark:bg-neutral-900 border w-full max-w-md p-8 rounded-[2rem] shadow-2xl flex flex-col items-center text-center">
+                    <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
                         <CheckCircle2 className="w-10 h-10" />
                     </div>
-                    <h2 className="text-2xl font-bold mb-2">{isRtl ? 'הפרוטוקול נחתם בהצלחה!' : 'Protocol Signed Successfully!'}</h2>
+                    <h2 className="text-2xl font-black mb-2 text-primary">{t('Protocol Signed Successfully!', 'הפרוטוקול נחתם בהצלחה!')}</h2>
                     <p className="text-muted-foreground mb-8">
-                        {isRtl ? 'עותק של הפרוטוקול הסופי (PDF) יישלח לבעל הנכס ולך בהקדם.' : 'A final PDF copy of this protocol will be ready shortly.'}
+                        {t('A final PDF copy of this protocol will be ready shortly and sent to the landlord.', 'הפרוטוקול הסופי נשמר מיד במערכת. המשכיר יקבל התראה.')}
                     </p>
-                    <Button variant="primary" onClick={() => window.location.href = 'https://rentmate.co.il'} className="w-full rounded-xl">
-                        {isRtl ? 'סגור ומעבר לאתר החברה' : 'Close'}
+                    <Button onClick={() => window.location.href = 'https://rentmate.co.il'} className="w-full rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold h-12">
+                        {t('Close', 'סגור ומעבר לאתר')}
                     </Button>
                 </motion.div>
             </div>
         );
     }
 
-    const { properties: property, date, type, meters, inventory } = protocol;
+    const { properties: property, handover_date, tenants_details, content } = protocol;
+
+    const hebrewKeys: Record<string, string> = {
+        'frontDoor': 'דלת כניסה',
+        'buildingFob': 'צ׳יפ לבניין',
+        'mailBox': 'תיבת דואר',
+        'parkingRemote': 'שלט לחניה',
+        'roomDoor': 'דלת חדר',
+        'storageRoom': 'מחסן'
+    };
+
+    const keysArray = Array.isArray(content?.keys) 
+        ? content.keys 
+        : Object.entries(content?.keys || {}).map(([type, amount], idx) => ({ id: String(idx), type, amount: Number(amount) }));
 
     return (
-        <div className={`min-h-screen bg-muted/10 py-12 px-4 ${isRtl ? 'rtl' : 'ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>
-            <div className="max-w-2xl mx-auto space-y-8">
+        <div className={`min-h-screen bg-slate-50 dark:bg-black py-8 px-4 ${isRtl ? 'rtl' : 'ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+            <div className="max-w-xl mx-auto space-y-6">
                 
+                {/* Brand Header */}
+                <div className="flex justify-between items-center bg-white dark:bg-neutral-900 border px-6 py-4 rounded-[2rem] shadow-sm mb-6">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                            <Home className="w-6 h-6 text-white" />
+                        </div>
+                        <span className="font-black text-2xl tracking-tight text-foreground">RentMate</span>
+                    </div>
+                    <a href="https://rentmate.co.il" className="text-sm font-bold text-primary hover:text-primary/80 transition-colors">
+                        www.rentmate.co.il
+                    </a>
+                </div>
+
                 {/* Header */}
-                <div className="text-center space-y-2">
-                    <h1 className="text-3xl font-bold text-foreground">
-                        {isRtl ? 'אישור פרוטוקול מסירה' : 'Move-in Protocol Approval'}
+                <div className="text-center space-y-2 mb-8">
+                    <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FileType className="w-8 h-8" />
+                    </div>
+                    <h1 className="text-2xl md:text-3xl font-black text-foreground">
+                        {t('Handover Protocol Review', 'אישור פרוטוקול מסירה')}
                     </h1>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground font-medium text-lg">
                         {property?.address}, {property?.city}
                     </p>
                 </div>
 
-                {/* Details Card */}
-                <div className="bg-card rounded-3xl p-6 shadow-sm border border-border space-y-8">
+                {/* Details Container */}
+                <div className="bg-white dark:bg-neutral-900 rounded-[2rem] p-6 shadow-xl border space-y-8">
                     
                     {/* General Info */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-muted/30 p-4 rounded-2xl flex items-center gap-3">
-                            <div className="bg-brand-100 text-brand-600 p-2 rounded-xl">
-                                <Calendar className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">{isRtl ? 'תאריך מסירה' : 'Date'}</p>
-                                <p className="font-semibold">{new Date(date).toLocaleDateString(isRtl ? 'he-IL' : 'en-US')}</p>
-                            </div>
+                    <div className="flex bg-slate-50 dark:bg-neutral-800 p-4 rounded-2xl items-center gap-4">
+                        <div className="bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary/90 p-2 sm:p-4 rounded-xl shrink-0">
+                            <Calendar className="w-6 h-6" />
                         </div>
-                        <div className="bg-muted/30 p-4 rounded-2xl flex items-center gap-3">
-                            <div className="bg-brand-100 text-brand-600 p-2 rounded-xl">
-                                <CheckCircle2 className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">{isRtl ? 'סוג פרוטוקול' : 'Type'}</p>
-                                <p className="font-semibold">{type === 'move_in' ? (isRtl ? 'כניסה' : 'Move-in') : (isRtl ? 'עזיבה' : 'Move-out')}</p>
-                            </div>
+                        <div>
+                            <p className="text-sm text-muted-foreground">{t('Handover Date', 'תאריך מסירה')}</p>
+                            <p className="text-lg font-bold">{new Date(handover_date).toLocaleDateString(isRtl ? 'he-IL' : 'en-US')}</p>
                         </div>
                     </div>
 
-                    {/* Meters */}
-                    <div className="space-y-4">
-                        <h3 className="font-bold text-lg border-b pb-2">{isRtl ? 'מונים' : 'Meters'}</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {Object.entries(meters).map(([key, data]) => {
-                                if (!data || (!data.value && !data.photoPath)) return null;
-                                let icon = <Zap className="w-4 h-4 text-brand-500" />;
-                                if (key === 'water') icon = <Droplets className="w-4 h-4 text-primary" />;
-                                if (key === 'gas') icon = <Flame className="w-4 h-4 text-orange-500" />;
-
-                                return (
-                                    <div key={key} className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted/10">
-                                        <div className="flex items-center gap-2">
-                                            {icon}
-                                            <span className="font-medium capitalize">{key}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className="font-bold">{data.value || '-'}</span>
-                                            {data.photoPath && <ImageIcon className="w-4 h-4 text-brand-400" />}
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                    {/* Tenant Info */}
+                    {(tenants_details && tenants_details.length > 0) && (
+                        <div>
+                            <h3 className="font-bold text-lg mb-2 sm:mb-4 flex items-center border-b pb-2"><CheckCircle2 className="w-5 h-5 mr-2 ml-2 text-primary" />{t('Tenant', 'שוכר')}</h3>
+                            <p className="font-medium text-lg px-2">{tenants_details[0].name}</p>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Utilities / Meters */}
+                    {content.utilities && content.utilities.length > 0 && (
+                        <div className="space-y-4">
+                            <h3 className="font-bold text-lg border-b pb-2 flex items-center">
+                                <Zap className="w-5 h-5 mr-2 ml-2 text-primary" />
+                                {t('Meters', 'מונים')}
+                            </h3>
+                            <div className="grid grid-cols-1 gap-2 sm:gap-4">
+                                {content.utilities.map((item) => {
+                                    if (!item.reading) return null;
+                                    let icon = <Zap className="w-5 h-5 text-primary" />;
+                                    let label = t('Electricity', 'חשמל');
+                                    if (item.type === 'water') { icon = <Droplets className="w-5 h-5 text-blue-500" />; label = t('Water', 'מים'); }
+                                    if (item.type === 'gas') { icon = <Flame className="w-5 h-5 text-orange-500" />; label = t('Gas', 'גז'); }
+                                    
+                                    return (
+                                        <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border bg-slate-50 dark:bg-neutral-800/50 gap-2">
+                                            <div className="flex items-center gap-2 sm:gap-4">
+                                                <div className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-sm border">{icon}</div>
+                                                <div>
+                                                    <span className="font-bold block">{label}</span>
+                                                    {item.meterNumber && <span className="text-xs text-muted-foreground font-mono">#{item.meterNumber}</span>}
+                                                </div>
+                                            </div>
+                                            <div className="font-black text-xl text-left" dir="ltr">{item.reading}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Inventory */}
-                    <div className="space-y-4">
-                        <h3 className="font-bold text-lg border-b pb-2">{isRtl ? 'תכולה ומצב הנכס' : 'Inventory & Condition'}</h3>
-                        <div className="space-y-3">
-                            {inventory.filter(item => item.status !== 'na').map((item, idx) => (
-                                <div key={idx} className="p-4 rounded-xl border border-border bg-muted/10 space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-medium">{isRtl ? item.labelHe : item.label}</span>
-                                        <span className={`text-sm px-2 py-1 rounded-full font-medium ${item.status === 'intact' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                            {isRtl ? (item.status === 'intact' ? 'תקין' : 'פגום') : (item.status === 'intact' ? 'Working' : 'Damaged')}
-                                        </span>
-                                    </div>
-                                    {item.note && <p className="text-base text-muted-foreground mt-1">{item.note}</p>}
-                                    {item.photoPath && (
-                                        <div className="mt-2 flex items-center gap-1 text-sm text-brand-600 bg-brand-50 w-fit px-2 py-1 rounded-lg">
-                                            <ImageIcon className="w-3 h-3" />
-                                            {isRtl ? 'תמונה צורפה' : 'Photo Attached'}
+                    {content.inventory && content.inventory.items && content.inventory.items.length > 0 && (
+                        <div className="space-y-4">
+                            <h3 className="font-bold text-lg border-b pb-2 flex items-center">
+                                <Package className="w-5 h-5 mr-2 ml-2 text-primary" />
+                                {t('Inventory & Assets', 'תכולה ומצב הנכס')}
+                            </h3>
+                            <div className="space-y-3">
+                                {content.inventory.items.map((item) => {
+                                    const statusColors: Record<string, string> = {
+                                        'good': 'bg-emerald-100 text-emerald-700',
+                                        'fair': 'bg-blue-100 text-blue-700',
+                                        'poor': 'bg-orange-100 text-orange-700',
+                                        'broken': 'bg-red-100 text-red-700',
+                                        'missing': 'bg-slate-200 text-slate-700'
+                                    };
+                                    const hebrewStatuses: Record<string, string> = {
+                                      'good': 'תקין',
+                                      'fair': 'סביר',
+                                      'poor': 'לקוי',
+                                      'broken': 'שבור',
+                                      'missing': 'חסר'
+                                    };
+
+                                    return (
+                                        <div key={item.id} className="p-4 rounded-2xl border bg-slate-50 dark:bg-neutral-800/50 flex flex-col gap-2">
+                                            <div className="flex items-start justify-between">
+                                                <span className="font-bold">{item.name}</span>
+                                                <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${statusColors[item.condition] || 'bg-slate-100 text-slate-700'}`}>
+                                                    {isRtl ? (hebrewStatuses[item.condition] || item.condition) : (item.condition?.toUpperCase() || '')}
+                                                </span>
+                                            </div>
+                                            {item.notes && <p className="text-sm text-muted-foreground">{item.notes}</p>}
                                         </div>
-                                    )}
-                                </div>
-                            ))}
+                                    )
+                                })}
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Fixes */}
+                    {content.fixes && content.fixes.length > 0 && (
+                        <div className="space-y-4">
+                            <h3 className="font-bold text-lg border-b pb-2 flex items-center text-red-600">
+                                <Wrench className="w-5 h-5 mr-2 ml-2" />
+                                {t('Required Fixes', 'ליקויים לתיקון')}
+                            </h3>
+                            <div className="space-y-3">
+                                {content.fixes.map((fix) => (
+                                    <div key={fix.id} className="p-4 rounded-2xl border border-red-100 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20">
+                                        <p className="font-medium text-red-800 dark:text-red-300">{fix.description}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Keys */}
+                    {keysArray.length > 0 && (
+                        <div className="space-y-4">
+                            <h3 className="font-bold text-lg border-b pb-2 flex items-center">
+                                <Key className="w-5 h-5 mr-2 ml-2 text-primary" />
+                                {t('Keys Handed Over', 'מפתחות שנימסרו')}
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                                {keysArray.map((key) => (
+                                    <div key={key.id} className="px-4 py-2 font-medium bg-slate-100 dark:bg-neutral-800 rounded-xl border flex items-center gap-2">
+                                        <Key className="w-4 h-4 text-slate-500" />
+                                        <span>{isRtl ? (hebrewKeys[key.type] || key.type) : key.type}</span>
+                                        <span className="bg-slate-200 dark:bg-neutral-700 px-2 py-0.5 rounded text-xs ml-1">{key.amount}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Legal Disclaimer */}
+                    {content.includeDisclaimer && (
+                        <div className="p-4 sm:p-6 rounded-2xl bg-slate-100 dark:bg-neutral-800 border text-sm text-foreground space-y-2">
+                            <div className="font-bold text-base">{t('Legal Disclaimer', 'הצהרה משפטית - ויתור על פגם נסתר')}</div>
+                            <p className="text-muted-foreground leading-relaxed">
+                                {t(
+                                    "By signing below, the tenant confirms they have inspected the property, it is fit for their needs, and they waive claims of hidden defects that could have reasonably been discovered, except for the defects noted in this protocol.", 
+                                    "בחתימתו מטה, השוכר מאשר כי בדק את הנכס, הוא מתאים לצרכיו, והוא מוותר על כל טענה לפגם נסתר שניתן היה לגלותו באופן סביר, למעט הליקויים המצויינים בפרוטוקול זה."
+                                )}
+                            </p>
+                        </div>
+                    )}
 
                     {/* Signatures */}
-                    <div className="space-y-6 pt-4 border-t">
-                        <h3 className="font-bold text-lg">{isRtl ? 'חתימות' : 'Signatures'}</h3>
+                    <div className="space-y-6 pt-6 border-t">
+                        <h3 className="font-bold text-xl">{t('Signatures', 'חתימות')}</h3>
                         
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div>
-                                <p className="text-base font-medium mb-2">{isRtl ? 'חתימת בעל הנכס' : 'Landlord Signature'}</p>
-                                <div className="border rounded-xl bg-card p-4 flex justify-center h-24 items-center">
-                                    <CheckCircle2 className="w-6 h-6 text-green-500 mr-2" />
-                                    <span className="text-base text-muted-foreground">{isRtl ? 'נחתם מראש' : 'Signed'}</span>
+                                <p className="text-base font-medium mb-2 sm:mb-4">{t('Landlord Signature', 'חתימת המשכיר')}</p>
+                                <div className="border border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-900 rounded-2xl p-6 flex flex-col justify-center items-center h-32 relative overflow-hidden">
+                                     {protocol.landlord_signature ? (
+                                         <img src={protocol.landlord_signature} alt="Landlord Signature" className="max-h-full opacity-80" />
+                                     ) : (
+                                        <>
+                                            <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-2" />
+                                            <span className="font-bold text-emerald-800 dark:text-emerald-400">{t('Pre-Signed by Landlord', 'נחתם מראש על ידי המשכיר')}</span>
+                                        </>
+                                     )}
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t">
-                                <p className="text-base font-medium mb-2">{isRtl ? 'חתימת השוכר - חתום כאן' : 'Tenant Signature - Sign Below'}</p>
-                                <SignaturePad 
-                                    onSign={(dataUrl: string) => setSignature(dataUrl ? dataUrl : null)}
-                                />
+                            <div className="pt-4 border-t border-dashed">
+                                <p className="text-base font-medium mb-2 sm:mb-4 text-primary dark:text-primary/90">
+                                    {t('Your Signature (Tenant)', 'חתימת השוכר - חתום כאן')}
+                                </p>
+                                <div className="border border-primary/20 dark:border-primary/20 rounded-2xl overflow-hidden shadow-inner">
+                                    <SignaturePad 
+                                        label={t('Signature', 'חתימה')}
+                                        placeholder={t('Signature', 'חתימה')}
+                                        clearLabel={t('Clear', 'נקה')}
+                                        onSign={(dataUrl: string) => setSignature(dataUrl ? dataUrl : null)}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Footer Actions */}
-                <div className="bg-card w-full border-t border-border p-4 fixed bottom-0 left-0 right-0 z-50 px-4 md:static md:bg-transparent md:border-none md:p-0 flex justify-center shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:shadow-none">
+                <div className="pt-4 pb-8 flex justify-center sticky bottom-4 z-50">
                     <Button
-                        variant="primary"
-                        isLoading={submitting}
-                        disabled={!signature}
+                        disabled={!signature || submitting}
                         onClick={handleSubmit}
-                        className="w-full max-w-2xl rounded-xl py-3.5 text-lg font-bold"
+                        className="w-full rounded-2xl h-14 text-white font-bold text-lg shadow-xl shadow-primary/20 transition-all bg-primary hover:bg-primary/90"
                     >
-                        {isRtl ? 'אני מאשר וחותם על הפרוטוקול' : 'Approve & Submit Protocol'}
+                        {submitting ? (
+                            <Loader2 className="w-6 h-6 animate-spin" />
+                        ) : (
+                            t('I Approve & Sign', 'אני מאשר וחותם על הפרוטוקול')
+                        )}
                     </Button>
                 </div>
-                {/* Spacer for fixed footer on mobile */}
-                <div className="h-24 md:hidden"></div>
             </div>
         </div>
     );

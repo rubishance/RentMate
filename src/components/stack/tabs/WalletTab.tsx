@@ -176,10 +176,10 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
     }
 
     return (
-        <div className="space-y-6 pb-16">
+        <div className="space-y-6">
             {/* Filter Bar */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
                     {/* Filter Toggle Button */}
                     <Button
                         variant="primary"
@@ -224,7 +224,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                         className="overflow-visible"
                     >
-                        <Card glass className="relative z-50 rounded-[2rem] border shadow-minimal bg-background0/5 border-slate-500/10 overflow-visible mt-4">
+                        <Card glass className="relative z-50 rounded-2xl border shadow-minimal bg-background0/5 border-slate-500/10 overflow-visible mt-4">
                             <CardContent className="p-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {/* Type Toggle */}
@@ -257,7 +257,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                                         <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">
                                             {t('dateRange')}
                                         </label>
-                                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:gap-4">
                                             <div className="flex-1 min-w-0 flex flex-col gap-1">
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70 px-1">
                                                     {lang === 'he' ? 'מתאריך:' : 'From:'}
@@ -288,7 +288,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
             </AnimatePresence>
 
             {/* Timeline List */}
-            <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] border border-slate-100 dark:border-neutral-800 shadow-premium overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-100 dark:border-neutral-800 shadow-premium overflow-hidden">
                 {filteredPayments.length === 0 ? (
                     <div className="py-24 text-center space-y-4">
                         <div className="w-20 h-20 bg-background dark:bg-neutral-800 rounded-2xl flex items-center justify-center mx-auto shadow-minimal">
@@ -299,7 +299,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                         </h3>
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-3 pb-2">
+                    <div className="flex flex-col gap-2 sm:gap-4 pb-2">
                         {filteredPayments.map((item, idx) => {
                             const isPaid = item.status === 'paid';
                             const isRent = item.displayType === 'rent';
@@ -324,7 +324,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                                         }
                                     }}
                                     className={cn(
-                                        "p-3 sm:p-4 md:p-5 flex items-start justify-between w-full transition-all group overflow-hidden",
+                                        "p-2 sm:p-4 sm:p-4 md:p-4 sm:p-6 flex items-start justify-between w-full transition-all group overflow-hidden",
                                         "bg-white/80 dark:bg-neutral-900/60 rounded-2xl border border-black/[0.04] dark:border-white/[0.04] shadow-sm",
                                         isRent ? "cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/80 hover:shadow-md" : ""
                                     )}
@@ -356,7 +356,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                                                 </h3>
                                             )}
                                             <span className={cn(
-                                                "text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full uppercase font-black tracking-widest border shrink-0 text-center leading-none",
+                                                "text-[10px] sm:text-xs px-2.5 sm:px-2 sm:px-4 py-1 sm:py-2 rounded-full uppercase font-black tracking-widest border shrink-0 text-center leading-none",
                                                 item.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' :
                                                     isPaid ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                                         item.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
@@ -368,7 +368,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                                         </div>
                                         {!isRent && (
                                             <div className="h-6 flex items-end justify-center min-w-0">
-                                                <p className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-muted-foreground opacity-90 truncate justify-center">
+                                                <p className="flex items-center gap-2 text-xs sm:text-sm font-bold text-muted-foreground opacity-90 truncate justify-center">
                                                     <FileTextIcon className="w-3 h-3 shrink-0" />
                                                     <span className="truncate">{lang === 'he' ? 'חשבונות ותחזוקה' : 'Bills & Maintenance'}</span>
                                                 </p>

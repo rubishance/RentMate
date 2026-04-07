@@ -57,10 +57,11 @@ export async function processWhatsappAI(
 
     const systemPrompt = {
         role: 'system',
-        content: `You are Renty, the AI assistant for RentMate. Help the user manage their properties. 
-        If they upload a document (contract, bill) or text details, use the available tools to extract structured data.
-        If you are missing data, just ask a simple, friendly question (like "What's the end date?").
-        Keep responses extremely short and use emojis. Use simple formatting like *this*.`
+        content: `You are Renty, the AI customer service and technical support assistant for RentMate. 
+        Your job is to answer questions, explain features, and troubleshoot technical issues for RentMate users.
+        Do NOT attempt to parse contracts, bills, or perform account actions. Explain to users that the mobile app is the best place to manage properties.
+        If a user explicitly asks for a human agent (e.g. "נציג", "אנושי", "תמיכה"), or if you cannot solve their problem, use the request_human_support tool.
+        Always reply in Hebrew by default. Keep responses helpful and use simple formatting.`
     };
 
     // Tools definition
@@ -104,7 +105,7 @@ export async function processWhatsappAI(
     const payload = {
         model: "gpt-4o",
         messages: [systemPrompt, ...formattedMessages],
-        tools: tools,
+        tools: tools.filter(t => t.function.name === 'request_human_support'),
         tool_choice: "auto",
         temperature: 0.2
     };
@@ -150,7 +151,7 @@ export async function processWhatsappAI(
                 updated_at: new Date().toISOString()
             }).eq('phone_number', fromMobile);
 
-            return `I've paused my automated replies and notified our human support team. They will jump into this chat shortly to assist you! 🧑‍💻`;
+            return `העברתי את הפנייה שלך לצוות האנושי שלנו. נציג תמיכה יחזור אליך בהקדם האפשרי. 🧑‍💻`;
         }
     }
 

@@ -252,7 +252,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
             description={`${contract.properties?.address || 'N/A'}, ${contract.properties?.city || 'N/A'}`}
             size="xl"
             footer={
-                <div className="flex justify-end gap-3 w-full">
+                <div className="flex justify-end gap-2 sm:gap-4 w-full">
                     {readOnly ? (
                         <Button
                             variant="outline"
@@ -298,7 +298,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                         variant="ghost"
                         size="sm"
                         onClick={() => setReadOnly(false)}
-                        className="text-primary hover:text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-full h-8 px-3"
+                        className="text-primary hover:text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-full h-8 px-2 sm:px-6"
                         leftIcon={<Pen className="w-3.5 h-3.5" />}
                     >
                         {lang === 'he' ? 'ערוך' : 'Edit'}
@@ -310,8 +310,8 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
             <form className="space-y-8">
 
                 {/* General Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-primary/10/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30">
-                    <div className="flex items-center gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-primary/10/50 dark:bg-blue-900/10 p-6 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                    <div className="flex items-center gap-2 sm:gap-4">
                         <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 text-primary shadow-sm flex items-center justify-center shrink-0">
                             <User className="w-5 h-5" />
                         </div>
@@ -320,7 +320,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             <p className="font-medium text-foreground dark:text-gray-100">{contract.tenants?.map(t => t.name).join(', ') || 'N/A'}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-4">
                         <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 text-primary shadow-sm flex items-center justify-center shrink-0">
                             <Building2 className="w-5 h-5" />
                         </div>
@@ -450,9 +450,9 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                 </div>
                             </div>
                             {/* Variable Rent Steps */}
-                            <div className="pt-4 border-t border-border dark:border-gray-700">
-                                <h4 className="text-sm font-medium text-foreground dark:text-white mb-3">{t('rentStepsVariable')}</h4>
-                                <div className="space-y-2">
+                            <div className="pt-6 border-t border-border dark:border-gray-700">
+                                <h4 className="text-sm font-medium text-foreground dark:text-white mb-2 sm:mb-4">{t('rentStepsVariable')}</h4>
+                                <div className="space-y-4">
                                     {rentStepFields.map((field, idx) => (
                                         <div key={field.id} className="flex items-center gap-2">
                                             <div className="w-32">
@@ -539,15 +539,14 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                     options={[
                                                         { value: 'none', label: t('notLinked') },
                                                         { value: 'cpi', label: t('linkedToCpi') },
-                                                        { value: 'housing', label: t('linkedToHousing') },
-                                                        { value: 'construction', label: t('linkedToConstruction') }
+                                                        { value: 'housing', label: t('linkedToHousing') }
                                                     ]}
                                                     className="w-full"
                                                 />
                                             )}
                                         />
                                     </div>
-                                    {['cpi', 'housing', 'construction'].includes(linkageType) && (
+                                    {['cpi', 'housing'].includes(linkageType) && (
                                         <div className="space-y-1.5">
                                             <Controller
                                                 control={control}
@@ -571,8 +570,8 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                 </div>
 
                                 {linkageType !== 'none' && (
-                                    <div className="bg-secondary dark:bg-foreground/50 p-3 rounded-xl space-y-3">
-                                        <div className="grid grid-cols-1 gap-3">
+                                    <div className="bg-secondary dark:bg-foreground/50 p-2 sm:p-6 rounded-xl space-y-3">
+                                        <div className="grid grid-cols-1 gap-2 sm:gap-4">
                                             <div className="space-y-1">
                                                 <label className="text-xs text-muted-foreground">{t('baseIndexDate')}</label>
                                                 <Controller
@@ -588,7 +587,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                 />
                                             </div>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border dark:border-gray-700">
+                                        <div className="grid grid-cols-2 gap-2 sm:gap-4 pt-2 border-t border-border dark:border-gray-700">
                                             <div className="space-y-1 flex flex-col justify-end">
                                                 <Controller
                                                     control={control}
@@ -625,7 +624,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             </h3>
                             <div className="space-y-3">
                                 {optionPeriodFields.map((field, idx) => (
-                                    <div key={field.id} className="bg-secondary dark:bg-gray-800 p-3 rounded-xl space-y-3">
+                                    <div key={field.id} className="bg-secondary dark:bg-gray-800 p-2 sm:p-6 rounded-xl space-y-3">
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs font-medium text-muted-foreground uppercase">{t('optionRent')} {idx + 1}</span>
                                             {!readOnly && (
@@ -662,7 +661,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                         type="number"
                                                         disabled={readOnly}
                                                         {...register(`optionPeriods.${idx}.rentAmount`)}
-                                                        className="w-full px-2 py-1.5 text-xs border border-border rounded-xl"
+                                                        className="w-full px-2 py-2 text-xs border border-border rounded-xl"
                                                     />
                                                 </div>
                                                 <div className="w-24">
@@ -691,7 +690,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                     type="number"
                                                     disabled={readOnly}
                                                     {...register(`optionPeriods.${idx}.noticeDays`, { valueAsNumber: true })}
-                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded-xl"
+                                                    className="w-full px-2 py-2 text-xs border border-border rounded-xl"
                                                 />
                                             </div>
                                             <div className="relative">
@@ -700,7 +699,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                     type="number"
                                                     disabled={readOnly}
                                                     {...register(`optionPeriods.${idx}.reminderDays`, { valueAsNumber: true })}
-                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded-xl"
+                                                    className="w-full px-2 py-2 text-xs border border-border rounded-xl"
                                                 />
                                             </div>
                                         </div>

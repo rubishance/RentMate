@@ -71,31 +71,31 @@ export function DatePicker({
                         }
                     }}
                     className={cn(
-                        "w-full flex items-center justify-between transition-all duration-300 group",
+                        "w-full flex items-center justify-between transition-all duration-300 group border rounded-xl shadow-sm bg-white dark:bg-neutral-900 border-slate-200 dark:border-white/10",
                         variant === 'bento' 
-                            ? "h-20 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border-2 border-transparent px-6 font-black text-xl hover:border-primary/20"
-                            : "bg-background/50 backdrop-blur-sm border rounded-xl",
-                        variant === 'default' && "p-3",
-                        variant === 'compact' && "p-2",
+                            ? "h-16 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border-2 border-transparent px-4 font-black text-lg hover:border-primary/20"
+                            : "",
+                        variant === 'default' && "h-12 px-4",
+                        variant === 'compact' && "h-10 px-3 text-sm",
                         variant === 'inline' && "p-1",
-                        error ? (variant === 'bento' ? "border-red-500 bg-red-50/50" : "border-red-500 ring-1 ring-red-500") : (!variant || variant !== 'bento') && "border-border hover:border-primary/50 hover:bg-muted/30",
-                        isOpen && (variant === 'bento' ? "border-primary/30 shadow-sm" : "ring-2 ring-primary/20 border-primary"),
+                        error ? "border-destructive focus-visible:border-destructive ring-1 ring-destructive" : (!variant || variant !== 'bento') && "hover:border-primary/50",
+                        isOpen && (variant === 'bento' ? "border-primary/30 shadow-sm" : "ring-2 ring-ring border-ring"),
                         readonly && "cursor-default opacity-60 bg-muted/20 hover:border-border hover:bg-muted/20"
                     )}
                 >
-                    <div className={cn("flex items-center", variant === 'default' && !hideIcon ? "gap-3" : "gap-2")}>
+                    <div className={cn("flex items-center w-full", variant === 'default' && !hideIcon ? "gap-2" : "gap-2")}>
                         {!hideIcon && (
                             <div className={cn(
-                                "transition-colors flex items-center justify-center shrink-0",
-                                variant === 'bento' ? "w-12 h-12 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary/20" :
-                                (variant === 'default' ? "w-10 h-10 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20" : "w-8 h-8 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20")
+                                "transition-colors flex items-center justify-center shrink-0 text-muted-foreground group-focus-within:text-primary",
+                                variant === 'bento' ? "w-12 h-12 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary/20" : ""
                             )}>
-                                <CalendarIcon className={variant === 'bento' ? "w-5 h-5 ml-0.5" : variant === 'default' ? "w-5 h-5" : "w-4 h-4"} />
+                                <CalendarIcon className={variant === 'bento' ? "w-5 h-5" : "w-4 h-4"} />
                             </div>
                         )}
                         <span className={cn(
-                            variant === 'bento' ? "text-xl translate-y-[1px]" :
-                            (variant === 'default' ? "text-sm font-medium" : (variant === 'compact' ? "text-xs font-semibold" : "text-xs font-bold")),
+                            "block truncate text-start",
+                            variant === 'bento' ? "text-lg font-black" :
+                            (variant === 'default' ? "text-base font-normal" : (variant === 'compact' ? "text-xs font-semibold" : "text-xs font-bold")),
                             value ? "text-foreground" : "text-muted-foreground"
                         )}>
                             {value ? format(value, 'dd/MM/yyyy') : t(placeholder as any)}
@@ -125,7 +125,7 @@ export function DatePicker({
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: "100%", scale: window.matchMedia('(min-width: 768px)').matches ? 0.9 : 1 }}
                                     transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                                    className="relative w-full md:w-auto md:min-w-[400px] bg-white dark:bg-neutral-900 rounded-t-[2.5rem] md:rounded-[2.5rem] p-6 pb-12 md:pb-6 shadow-2xl"
+                                    className="relative w-full md:w-auto md:min-w-[400px] bg-white dark:bg-neutral-900 rounded-t-[2.5rem] md:rounded-2xl p-6 pb-12 md:pb-6 shadow-2xl"
                                 >
                                     <div className="flex justify-between items-center mb-6 px-2 w-full">
                                         <h2 className="font-bold text-lg text-foreground">{t('selectDate')}</h2>
@@ -150,7 +150,7 @@ export function DatePicker({
                 )}
             </div>
             {typeof error === 'string' && error && (
-                <p className="text-[0.8rem] font-medium text-destructive mt-1.5">{error}</p>
+                <p className="text-[0.8rem] font-medium text-destructive mt-1.5 text-start w-full">{error}</p>
             )}
         </div>
     );

@@ -77,7 +77,7 @@ export function BionicWelcomeOverlay({ firstName }: BionicWelcomeOverlayProps) {
                         <div className="absolute -top-20 -left-20 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
                         <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-primary/20 rounded-full blur-3xl animate-pulse delay-700" />
 
-                        <div className="relative overflow-hidden rounded-[2.5rem] bg-white/10 dark:bg-neutral-950/40 border border-white/20 shadow-2xl backdrop-blur-xl">
+                        <div className="relative overflow-hidden rounded-2xl bg-white/10 dark:bg-neutral-950/40 border border-white/20 shadow-2xl backdrop-blur-xl">
                             {/* Renty Visualization (Abstract/Icon driven) */}
                             <div className="flex flex-col items-center text-center p-8 sm:p-12 space-y-8">
 
@@ -87,11 +87,11 @@ export function BionicWelcomeOverlay({ firstName }: BionicWelcomeOverlayProps) {
                                     transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
                                     className="relative"
                                 >
-                                    <div className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-indigo-500/20 to-blue-600/20 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-jewel rotate-3 relative overflow-hidden group">
+                                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-blue-600/20 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-jewel rotate-3 relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                         <RentyMascot size={96} showBackground={false} className="relative z-10 drop-shadow-2xl" />
                                     </div>
-                                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-white dark:bg-neutral-900 rounded-full shadow-lg border border-indigo-100 dark:border-indigo-900/50 z-20">
+                                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-2 sm:px-4 py-1 bg-white dark:bg-neutral-900 rounded-full shadow-lg border border-indigo-100 dark:border-indigo-900/50 z-20">
                                         <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
                                             Renty AI
                                         </span>
@@ -120,7 +120,7 @@ export function BionicWelcomeOverlay({ firstName }: BionicWelcomeOverlayProps) {
                                         onClick={handleStart}
                                         className="w-full group relative overflow-hidden rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 px-6 transition-all duration-300 shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-1"
                                     >
-                                        <div className="flex items-center justify-center gap-3">
+                                        <div className="flex items-center justify-center gap-2 sm:gap-4">
                                             <span>{lang === 'he' ? 'הוסף את הנכס הראשון' : 'Add First Property'}</span>
                                             <ArrowRight className={cn("w-5 h-5 transition-transform group-hover:translate-x-1", isRtl && "rotate-180 group-hover:-translate-x-1")} />
                                         </div>

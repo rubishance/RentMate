@@ -18,8 +18,14 @@ export function ShortLinkRedirect() {
                 const originalUrl = await ShortenerService.getOriginalUrl(slug);
 
                 if (originalUrl) {
-                    // Redirect to the original URL (which is likely a calculator link)
-                    window.location.href = originalUrl;
+                    // Rewrite legacy calculator links to the new public route
+                    let redirectUrl = originalUrl;
+                    if (redirectUrl.includes('/calculator?share=')) {
+                        redirectUrl = redirectUrl.replace('/calculator?share=', '/shared-calculator?share=');
+                    }
+                    
+                    // Redirect to the parsed URL
+                    window.location.href = redirectUrl;
                 } else {
                     setError('linkExpiredOrInvalid');
                 }

@@ -78,13 +78,13 @@ const AdminErrorLogs = () => {
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-black text-foreground dark:text-white flex items-center gap-3">
+                    <h1 className="text-2xl font-black text-foreground dark:text-white flex items-center gap-2 sm:gap-4">
                         <BugAntIcon className="w-8 h-8 text-destructive" />
                         System Error Logs
                     </h1>
                     <p className="text-muted-foreground text-sm mt-1">Monitor and manage application-wide errors and user reports.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <div className="flex bg-muted dark:bg-gray-800 p-1 rounded-xl border border-border dark:border-gray-700">
                         {(['all', 'open', 'resolved'] as const).map((f) => (
                             <button
@@ -124,25 +124,25 @@ const AdminErrorLogs = () => {
                     {logs.map((log) => (
                         <div
                             key={log.id}
-                            className={`bg-white dark:bg-gray-800 rounded-2xl border transition-all hover:shadow-premium p-5 ${log.is_resolved
+                            className={`bg-white dark:bg-gray-800 rounded-2xl border transition-all hover:shadow-premium p-4 sm:p-6 ${log.is_resolved
                                 ? 'border-green-100 dark:border-green-900/20 opacity-75'
                                 : 'border-red-100 dark:border-red-900/20'
                                 }`}
                         >
                             <div className="flex justify-between items-start gap-4">
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                    <div className="flex items-center gap-2 sm:gap-4 mb-2 flex-wrap">
                                         <span className={`px-2.5 py-1 rounded-xl text-xs font-black uppercase tracking-widest border ${log.is_resolved
                                             ? 'bg-blue-50/10 text-blue-50 border-green-100 dark:bg-green-900/10 dark:text-green-400'
                                             : 'bg-destructive/10 text-destructive border-red-100 dark:bg-red-900/10 dark:text-red-400'
                                             }`}>
                                             {log.is_resolved ? 'Resolved' : 'Open'}
                                         </span>
-                                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+                                        <span className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
                                             <ClockIcon className="w-4 h-4" />
                                             {format(new Date(log.created_at), 'dd/MM HH:mm:ss')}
                                         </span>
-                                        <span className="flex items-center gap-1.5 text-xs text-primary-500 font-medium bg-primary-50 dark:bg-primary-900/10 px-2 py-0.5 rounded-xl border border-primary-100 dark:border-primary-900/20">
+                                        <span className="flex items-center gap-2 text-xs text-primary-500 font-medium bg-primary-50 dark:bg-primary-900/10 px-2 py-0.5 rounded-xl border border-primary-100 dark:border-primary-900/20">
                                             <GlobeAltIcon className="w-4 h-4" />
                                             {log.environment}
                                         </span>
@@ -154,17 +154,17 @@ const AdminErrorLogs = () => {
                                     </h3>
 
                                     <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
-                                        <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-gray-700/50 px-2 py-1 rounded-lg">
+                                        <div className="flex items-center gap-2 bg-blue-50 dark:bg-gray-700/50 px-2 py-1 rounded-lg">
                                             <FunnelIcon className="w-3.5 h-3.5" />
                                             <span className="font-mono">{log.route}</span>
                                         </div>
                                         {log.user_profiles ? (
-                                            <div className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400 font-bold">
+                                            <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 font-bold">
                                                 <UserIcon className="w-3.5 h-3.5" />
                                                 {log.user_profiles.full_name || log.user_profiles.email}
                                             </div>
                                         ) : (
-                                            <div className="flex items-center gap-1.5 italic opacity-60">
+                                            <div className="flex items-center gap-2 italic opacity-60">
                                                 <UserIcon className="w-3.5 h-3.5" />
                                                 Anonymous
                                             </div>
@@ -176,7 +176,7 @@ const AdminErrorLogs = () => {
                                             <span className="group-open/details:rotate-90 transition-transform">▸</span>
                                             View Stack Trace
                                         </summary>
-                                        <div className="mt-3 p-4 bg-blue-50 dark:bg-foreground/50 rounded-xl border border-border dark:border-gray-700/50 overflow-x-auto">
+                                        <div className="mt-2 sm:mt-4 p-4 bg-blue-50 dark:bg-foreground/50 rounded-xl border border-border dark:border-gray-700/50 overflow-x-auto">
                                             <pre className="text-xs text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed">
                                                 {log.stack || 'No stack trace provided'}
                                             </pre>

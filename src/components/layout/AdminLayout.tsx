@@ -157,7 +157,7 @@ const AdminLayout = () => {
                     <p className="font-semibold text-foreground dark:text-white truncate mt-1">{user?.email}</p>
                 </div>
 
-                <nav className="flex-1 space-y-1 px-3 py-6 h-[calc(100vh-180px)] overflow-y-auto hide-scrollbar">
+                <nav className="flex-1 space-y-1 px-2 sm:px-4 py-6 h-[calc(100vh-180px)] overflow-y-auto hide-scrollbar">
                     {navigation.map((item) => {
                         const isActive = location.pathname === item.href;
                         return (
@@ -168,7 +168,7 @@ const AdminLayout = () => {
                                 className={`${isActive
                                     ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
                                     : 'text-muted-foreground dark:text-muted-foreground hover:bg-blue-50 dark:hover:bg-gray-800 hover:text-foreground dark:hover:text-white'
-                                    } group flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200`}
+                                    } group flex items-center rounded-xl px-2 sm:px-4 py-2.5 text-sm font-semibold transition-all duration-200`}
                             >
                                 <item.icon
                                     className={`${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-gray-300'
@@ -228,13 +228,13 @@ const AdminLayout = () => {
                                 <Link
                                     to={`/admin/client/${notification.userId}`}
                                     onClick={() => setNotification(null)}
-                                    className="bg-primary-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-primary-700 transition-colors uppercase tracking-wider"
+                                    className="bg-primary-600 text-white text-xs font-bold px-2 sm:px-4 py-2 rounded-xl hover:bg-primary-700 transition-colors uppercase tracking-wider"
                                 >
                                     Open Chat
                                 </Link>
                                 <button
                                     onClick={() => setNotification(null)}
-                                    className="text-muted-foreground hover:text-muted-foreground text-xs font-bold px-3 py-1.5 uppercase tracking-wider"
+                                    className="text-muted-foreground hover:text-muted-foreground text-xs font-bold px-2 sm:px-4 py-2 uppercase tracking-wider"
                                 >
                                     Dismiss
                                 </button>

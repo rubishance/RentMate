@@ -296,9 +296,13 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
 
                 let finalCategory = selectedCategory as string;
                 if (selectedCategory === 'utilities') {
-                    finalCategory = sharedFields.billType 
-                        ? (sharedFields.billType.startsWith('utility_') ? sharedFields.billType : `utility_${sharedFields.billType}`) 
-                        : 'utility_other';
+                    if (sharedFields.billType === 'insurance') {
+                        finalCategory = 'insurance';
+                    } else {
+                        finalCategory = sharedFields.billType 
+                            ? (sharedFields.billType.startsWith('utility_') ? sharedFields.billType : `utility_${sharedFields.billType}`) 
+                            : 'utility_other';
+                    }
                 } else if (selectedCategory === 'documents') {
                     finalCategory = 'other';
                 } else if (selectedCategory === 'media') {
@@ -347,34 +351,39 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 pb-24 md:pb-4"
+                className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6 mt-auto"
             >
+                <div 
+                    onClick={onClose}
+                    className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+                />
+                
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="bg-window rounded-2xl shadow-2xl w-full max-w-2xl max-h-[75vh] md:max-h-[85vh] overflow-hidden flex flex-col relative"
+                    className="relative w-full max-w-2xl bg-white dark:bg-neutral-900 rounded-t-3xl sm:rounded-2xl shadow-xl overflow-hidden mt-auto sm:mt-0 flex flex-col max-h-[90vh]"
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-white/5 bg-background/50">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-primary/10 text-primary rounded-2xl">
-                                <Upload className="w-6 h-6" />
-                            </div>
-                            <h2 className="text-xl font-bold text-foreground">
-                                {lang === 'he' ? 'העלאת מסמך חדש' : 'Upload New Document'}
-                            </h2>
-                        </div>
+                    <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-white/5 bg-white/50 dark:bg-background/50 backdrop-blur-xl shrink-0">
                         <button
                             onClick={onClose}
-                            className="p-2 hover:bg-muted/50 rounded-full transition-colors text-slate-400"
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-xl transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                         >
                             <X className="w-5 h-5" />
                         </button>
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                                {lang === 'he' ? 'העלאת מסמך חדש' : 'Upload New Document'}
+                            </h2>
+                            <div className="p-2 sm:p-3 bg-primary/10 text-primary rounded-xl">
+                                <Upload className="w-5 h-5" />
+                            </div>
+                        </div>
                     </div>
 
                     {/* Content */}
-                    <div className="p-4 sm:p-5 pb-40 overflow-y-auto space-y-5 flex-1 relative custom-scrollbar">
+                    <div className="p-6 overflow-y-auto space-y-6 flex-1 custom-scrollbar">
                         
                         {/* 1 & 2. Top Level Selections */}
                         <div className="grid grid-cols-2 gap-4">
@@ -387,7 +396,7 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                 <select
                                     value={selectedPropertyId}
                                     onChange={(e) => setSelectedPropertyId(e.target.value)}
-                                    className="w-full px-3 py-2.5 bg-background dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none font-medium text-foreground"
+                                    className="w-full px-2 sm:px-6 py-2.5 bg-background dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none font-medium text-foreground"
                                 >
                                     <option value="" disabled>{lang === 'he' ? '-- בחר נכס --' : '-- Select Property --'}</option>
                                     {properties.map(p => (
@@ -405,7 +414,7 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                 <select
                                     value={selectedCategory}
                                     onChange={(e) => setSelectedCategory(e.target.value as DocumentCategory)}
-                                    className="w-full px-3 py-2.5 bg-background dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none font-medium text-foreground"
+                                    className="w-full px-2 sm:px-6 py-2.5 bg-background dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none font-medium text-foreground"
                                 >
                                     {categories.map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.label}</option>
@@ -417,7 +426,7 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                         {/* Shared Fields (For Utilities, Documents, Receipts, Media) */}
                         {/* Shared Fields (For Utilities, Documents, Receipts, Media, Checks) */}
                         {['utilities', 'documents', 'receipt', 'media', 'checks'].includes(selectedCategory) && (
-                            <div className="space-y-3 bg-white/5 dark:bg-neutral-900 p-4 rounded-xl border border-border/50 shadow-sm mt-4">
+                            <div className="space-y-3 bg-white/5 dark:bg-neutral-900 p-6 rounded-xl border border-border/50 shadow-sm mt-4">
                                 <h4 className="text-sm font-bold text-foreground">
                                     {selectedCategory === 'utilities' ? (lang === 'he' ? 'פרטי החשבון (יחול על כל הקבצים)' : 'Utility Details') :
                                      selectedCategory === 'receipt' ? (lang === 'he' ? 'פרטי אסמכתא' : 'Receipt Details') :
@@ -426,12 +435,12 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                      (lang === 'he' ? 'פרטי המסמכים (יחול על הכל)' : 'Document Details')}
                                 </h4>
                                 
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-2 gap-2 sm:gap-4">
                                     {selectedCategory === 'utilities' && (
                                         <>
                                             <div>
                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'סוג חשבון' : 'Bill Type'}</label>
-                                                <select value={sharedFields.billType} onChange={e => setSharedFields(s => ({ ...s, billType: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl">
+                                                <select value={sharedFields.billType} onChange={e => setSharedFields(s => ({ ...s, billType: e.target.value }))} className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl">
                                                     <option value="">{lang === 'he' ? '-- בחר --' : '-- Select --'}</option>
                                                     {UTILITY_TYPES.map(u => (
                                                         <option key={u.id} value={u.id}>
@@ -450,11 +459,11 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                             </div>
                                             <div>
                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'ספק (אופציונלי)' : 'Provider'}</label>
-                                                <input type="text" value={sharedFields.provider} onChange={e => setSharedFields(s => ({ ...s, provider: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl" />
+                                                <input type="text" value={sharedFields.provider} onChange={e => setSharedFields(s => ({ ...s, provider: e.target.value }))} className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl" />
                                             </div>
                                             <div>
                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'סכום' : 'Amount'} (₪)</label>
-                                                <input type="number" value={sharedFields.globalAmount} onChange={e => setSharedFields(s => ({ ...s, globalAmount: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl" />
+                                                <input type="number" value={sharedFields.globalAmount} onChange={e => setSharedFields(s => ({ ...s, globalAmount: e.target.value }))} className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl" />
                                             </div>
                                             <div className="col-span-2">
                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'תקופת חיוב' : 'Billing Period'}</label>
@@ -464,7 +473,7 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                                         title={lang === 'he' ? 'תאריך התחלה' : 'Start Date'} 
                                                         value={sharedFields.periodStart} 
                                                         onChange={e => setSharedFields(s => ({ ...s, periodStart: e.target.value }))} 
-                                                        className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl text-sm" 
+                                                        className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl text-sm" 
                                                     />
                                                     <span className="text-slate-400">-</span>
                                                     <input 
@@ -472,7 +481,7 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                                         title={lang === 'he' ? 'תאריך סיום' : 'End Date'} 
                                                         value={sharedFields.periodEnd} 
                                                         onChange={e => setSharedFields(s => ({ ...s, periodEnd: e.target.value }))} 
-                                                        className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl text-sm" 
+                                                        className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl text-sm" 
                                                     />
                                                 </div>
                                             </div>
@@ -482,7 +491,7 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                     {(selectedCategory === 'documents' || selectedCategory === 'media') && (
                                         <div className="col-span-2">
                                             <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'כותרת כללית (אופציונלי)' : 'General Title (Optional)'}</label>
-                                            <input type="text" placeholder={selectedCategory === 'media' ? (lang === 'he' ? 'לדוגמה: דירה לפני שיפוץ' : 'e.g., Apartment before renovation') : (lang === 'he' ? 'ברירת מחדל: שם הקובץ' : 'Default: File name')} value={sharedFields.title} onChange={e => setSharedFields(s => ({ ...s, title: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl" />
+                                            <input type="text" placeholder={selectedCategory === 'media' ? (lang === 'he' ? 'לדוגמה: דירה לפני שיפוץ' : 'e.g., Apartment before renovation') : (lang === 'he' ? 'ברירת מחדל: שם הקובץ' : 'Default: File name')} value={sharedFields.title} onChange={e => setSharedFields(s => ({ ...s, title: e.target.value }))} className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl" />
                                         </div>
                                     )}
 
@@ -511,7 +520,7 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                                             setSharedFields(s => ({ ...s, linkedPaymentId: paymentId }));
                                                         }
                                                     }} 
-                                                    className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl"
+                                                    className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl"
                                                 >
                                                     <option value="">{lang === 'he' ? '-- ללא שיוך --' : '-- No Link --'}</option>
                                                     {pendingPayments.map(p => {
@@ -528,11 +537,11 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                             </div>
                                             <div>
                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('amount')} (₪)</label>
-                                                <input type="number" value={sharedFields.globalAmount} onChange={e => setSharedFields(s => ({ ...s, globalAmount: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl" />
+                                                <input type="number" value={sharedFields.globalAmount} onChange={e => setSharedFields(s => ({ ...s, globalAmount: e.target.value }))} className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl" />
                                             </div>
                                             <div>
                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'אמצעי תשלום' : 'Payment Method'}</label>
-                                                <select value={sharedFields.paymentMethod} onChange={e => setSharedFields(s => ({ ...s, paymentMethod: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl">
+                                                <select value={sharedFields.paymentMethod} onChange={e => setSharedFields(s => ({ ...s, paymentMethod: e.target.value }))} className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl">
                                                     <option value="">{lang === 'he' ? '-- בחר --' : '-- Select --'}</option>
                                                     <option value="transfer">{t('transfer') || (lang === 'he' ? 'העברה בנקאית' : 'Bank Transfer')}</option>
                                                     <option value="checks">{t('checks') || (lang === 'he' ? 'צ\'ק' : 'Check')}</option>
@@ -545,24 +554,24 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
 
                                             {(sharedFields.paymentMethod === 'transfer' || sharedFields.paymentMethod === 'checks') && (
                                                 <div className="col-span-2 my-2">
-                                                    <div className="grid grid-cols-2 gap-3">
+                                                    <div className="grid grid-cols-2 gap-2 sm:gap-4">
                                                         <div>
                                                             <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'בנק' : 'Bank'}</label>
-                                                            <input type="text" value={sharedFields.bank} onChange={e => setSharedFields(s => ({ ...s, bank: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl" />
+                                                            <input type="text" value={sharedFields.bank} onChange={e => setSharedFields(s => ({ ...s, bank: e.target.value }))} className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl" />
                                                         </div>
                                                         <div>
                                                             <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'סניף' : 'Branch'}</label>
-                                                            <input type="text" value={sharedFields.branch} onChange={e => setSharedFields(s => ({ ...s, branch: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl" />
+                                                            <input type="text" value={sharedFields.branch} onChange={e => setSharedFields(s => ({ ...s, branch: e.target.value }))} className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl" />
                                                         </div>
                                                         {sharedFields.paymentMethod === 'transfer' ? (
                                                             <div className="col-span-2">
                                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'חשבון' : 'Account'}</label>
-                                                                <input type="text" value={sharedFields.account} onChange={e => setSharedFields(s => ({ ...s, account: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl" />
+                                                                <input type="text" value={sharedFields.account} onChange={e => setSharedFields(s => ({ ...s, account: e.target.value }))} className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl" />
                                                             </div>
                                                         ) : (
                                                             <div className="col-span-2">
                                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'מספר צ\'ק' : 'Check Number'}</label>
-                                                                <input type="text" value={sharedFields.checkNumber} onChange={e => setSharedFields(s => ({ ...s, checkNumber: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl" />
+                                                                <input type="text" value={sharedFields.checkNumber} onChange={e => setSharedFields(s => ({ ...s, checkNumber: e.target.value }))} className="w-full px-2 sm:px-6 py-2 bg-background border border-border/50 rounded-xl" />
                                                             </div>
                                                         )}
                                                     </div>
@@ -597,7 +606,7 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
                                 <div className="w-full py-6 border-2 border-dashed border-primary/30 rounded-2xl group-hover:bg-primary/5 dark:group-hover:bg-primary/10 transition-all flex flex-col items-center justify-center text-center gap-2 bg-white/5 dark:bg-neutral-900">
-                                    <div className="p-3 bg-primary/10 rounded-full group-hover:scale-110 transition-transform">
+                                    <div className="p-2 sm:p-6 bg-primary/10 rounded-full group-hover:scale-110 transition-transform">
                                         <Upload className="w-6 h-6 text-primary" />
                                     </div>
                                     <div>
@@ -615,11 +624,11 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                             {stagedFiles.length > 0 && (
                                 <div className="space-y-3 mt-6">
                                     <h4 className="text-sm font-bold text-foreground">{lang === 'he' ? 'קבצים שנבחרו' : 'Selected Files'}</h4>
-                                    <div className="grid gap-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                                    <div className="grid gap-2 sm:gap-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                                         {stagedFiles.map((file) => (
-                                            <div key={file.id} className="relative group bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-border/50 shadow-sm">
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <div className="flex items-center gap-3 overflow-hidden">
+                                            <div key={file.id} className="relative group bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-border/50 shadow-sm">
+                                                <div className="flex justify-between items-start mb-2 sm:mb-4">
+                                                    <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
                                                         <div className="p-2 bg-primary/5 rounded-xl border border-primary/10 text-primary">
                                                             <FileText className="w-5 h-5" />
                                                         </div>
@@ -638,31 +647,31 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                                 {/* Individual Fields strictly for non-shared categories */}
                                                 {!['utilities', 'documents', 'receipt'].includes(selectedCategory) && (
                                                     selectedCategory === 'checks' ? (
-                                                        <div className="grid grid-cols-2 gap-3 mb-3">
+                                                        <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-2 sm:mb-4">
                                                             <div className="col-span-2">
                                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'תאריך פירעון' : 'Due Date'}</label>
                                                                 <DatePicker value={file.documentDate ? parseISO(file.documentDate) : undefined} onChange={(date) => updateStagedFile(file.id, 'documentDate', date ? format(date, 'yyyy-MM-dd') : '')} className="w-full rounded-xl" />
                                                             </div>
                                                             <div>
                                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'בנק' : 'Bank'}</label>
-                                                                <input type="text" value={file.bankName || ''} onChange={(e) => updateStagedFile(file.id, 'bankName', e.target.value)} className="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all" />
+                                                                <input type="text" value={file.bankName || ''} onChange={(e) => updateStagedFile(file.id, 'bankName', e.target.value)} className="w-full px-2 sm:px-6 py-2 text-sm bg-white dark:bg-neutral-800 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all" />
                                                             </div>
                                                             <div>
                                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'סניף' : 'Branch'}</label>
-                                                                <input type="text" value={file.branchNumber || ''} onChange={(e) => updateStagedFile(file.id, 'branchNumber', e.target.value)} className="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all" />
+                                                                <input type="text" value={file.branchNumber || ''} onChange={(e) => updateStagedFile(file.id, 'branchNumber', e.target.value)} className="w-full px-2 sm:px-6 py-2 text-sm bg-white dark:bg-neutral-800 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all" />
                                                             </div>
                                                             <div>
                                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'מספר צ\'ק' : 'Check Number'}</label>
-                                                                <input type="text" value={file.checkNumber || ''} onChange={(e) => updateStagedFile(file.id, 'checkNumber', e.target.value)} className="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all" />
+                                                                <input type="text" value={file.checkNumber || ''} onChange={(e) => updateStagedFile(file.id, 'checkNumber', e.target.value)} className="w-full px-2 sm:px-6 py-2 text-sm bg-white dark:bg-neutral-800 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all" />
                                                             </div>
                                                             <div>
                                                                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('amount')} (₪)</label>
-                                                                <input type="number" value={file.amount} onChange={(e) => updateStagedFile(file.id, 'amount', e.target.value)} className="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all" />
+                                                                <input type="number" value={file.amount} onChange={(e) => updateStagedFile(file.id, 'amount', e.target.value)} className="w-full px-2 sm:px-6 py-2 text-sm bg-white dark:bg-neutral-800 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all" />
                                                             </div>
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                                            <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-2 sm:mb-4">
                                                                 <div className={selectedCategory === 'media' ? "col-span-2" : ""}>
                                                                     <label className="text-xs font-semibold text-muted-foreground mb-1 block">
                                                                         {selectedCategory === 'media' ? (lang === 'he' ? 'תאריך צילום' : 'Date Taken') : t('date')}
@@ -680,7 +689,7 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                                                             type="number"
                                                                             value={file.amount}
                                                                             onChange={(e) => updateStagedFile(file.id, 'amount', e.target.value)}
-                                                                            className="w-full px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all"
+                                                                            className="w-full px-2 sm:px-6 py-2 text-sm bg-white dark:bg-neutral-800 border border-border/50 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all"
                                                                             placeholder="0.00"
                                                                         />
                                                                     </div>
@@ -691,12 +700,12 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                                 )}
 
                                                 {/* Individual Description for ALL files */}
-                                                <div className="mt-3">
+                                                <div className="mt-2 sm:mt-4">
                                                     <input
                                                         type="text"
                                                         value={file.description}
                                                         onChange={(e) => updateStagedFile(file.id, 'description', e.target.value)}
-                                                        className="w-full px-4 py-2 text-sm bg-muted/30 dark:bg-neutral-800 border-none focus:ring-2 focus:ring-primary rounded-xl transition-all outline-none"
+                                                        className="w-full px-6 py-2 text-sm bg-muted/30 dark:bg-neutral-800 border-none focus:ring-2 focus:ring-primary rounded-xl transition-all outline-none"
                                                         placeholder={lang === 'he' ? 'הוסף הערה או תיאור לקובץ זה...' : 'Add note or description for this file...'}
                                                     />
                                                 </div>
@@ -708,25 +717,22 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                         </div>
                     </div>
 
-                    {/* Footer Actions - Floating */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 bg-gradient-to-t from-window via-window/95 to-transparent pt-12 flex gap-4 pointer-events-none z-10 border-t border-transparent">
+                    {/* Footer Actions */}
+                    <div className="p-6 bg-slate-50 dark:bg-neutral-900/50 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-4 shrink-0">
                         <button
                             onClick={onClose}
-                            className="pointer-events-auto px-6 py-3 font-semibold text-muted-foreground bg-muted/90 backdrop-blur hover:bg-muted dark:bg-neutral-800/90 dark:hover:bg-neutral-700/90 rounded-2xl transition-all shadow-sm border border-border/50"
+                            className="flex-1 sm:flex-none px-6 h-12 bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-slate-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700 font-bold rounded-xl transition-all flex items-center justify-center"
                         >
                             {t('cancel')}
                         </button>
-                        <button
+                         <button
                             onClick={handleUploadClick}
                             disabled={uploading || stagedFiles.length === 0 || !selectedPropertyId}
-                            className={`
-                                pointer-events-auto flex-1 px-6 py-3 font-black text-white rounded-2xl shadow-xl 
-                                flex items-center justify-center gap-2 transition-all backdrop-blur-sm
-                                ${uploading || stagedFiles.length === 0 || !selectedPropertyId
+                            className={`flex-1 sm:flex-none px-6 h-12 rounded-xl font-bold text-white transition-all shadow-sm hover:shadow active:scale-95 flex items-center justify-center gap-2 ${
+                                uploading || stagedFiles.length === 0 || !selectedPropertyId
                                     ? 'bg-primary/50 cursor-not-allowed shadow-none'
-                                    : 'bg-primary hover:bg-primary/95 hover:scale-[1.02] hover:shadow-primary/30 active:scale-95'
-                                }
-                            `}
+                                    : 'bg-primary hover:bg-primary/95'
+                            }`}
                         >
                             {uploading ? (
                                 <>

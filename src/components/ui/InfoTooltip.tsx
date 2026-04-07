@@ -53,7 +53,7 @@ const PanelContent = ({ title, text, example, t }: { title: string, text: string
             className="overflow-hidden rounded-2xl shadow-premium-dark bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/40 dark:border-white/10 ring-1 ring-black/5 transition-transform duration-300 ease-out"
             style={offset !== 0 ? { transform: `translateX(${offset}px)` } : undefined}
         >
-            <div className="p-6 flex flex-col gap-3">
+            <div className="p-6 flex flex-col gap-2 sm:gap-4">
                 {title && (
                     <h4 className="font-extrabold text-sm text-foreground tracking-tight">{title}</h4>
                 )}
@@ -82,7 +82,7 @@ export function InfoTooltip({ titleKey, textKey, exampleKey, className, titleOve
     const example = exampleKey ? t(exampleKey as any) : undefined;
 
     return (
-        <Popover className={cn("relative flex items-center z-[100]", className)}>
+        <Popover className={cn("relative flex items-center z-auto", className)}>
             {({ open }) => (
                 <>
                     <Popover.Button
@@ -106,7 +106,7 @@ export function InfoTooltip({ titleKey, textKey, exampleKey, className, titleOve
                         leaveFrom="opacity-100 translate-y-0 md:scale-100 origin-bottom md:origin-top"
                         leaveTo="opacity-0 translate-y-2 md:translate-y-0 md:scale-95 origin-bottom md:origin-top"
                     >
-                        <Popover.Panel className="fixed inset-x-4 bottom-[120px] z-[999] md:absolute md:inset-auto md:w-80 md:top-full md:mt-3 md:right-0 lg:right-auto lg:left-0 origin-bottom md:origin-top">
+                        <Popover.Panel className="fixed inset-x-4 bottom-[120px] z-[999] md:absolute md:inset-auto md:w-80 md:top-full md:mt-2 sm:mt-4 md:right-0 lg:right-auto lg:left-0 origin-bottom md:origin-top">
                             <PanelContent 
                                 title={title}
                                 text={text}

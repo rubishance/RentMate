@@ -104,7 +104,7 @@ serve(async (req) => {
                                 recipient_type: 'individual',
                                 to: fromMobile,
                                 type: 'text',
-                                text: { body: "Hi! We don't recognize this number. You are receiving general support. To get account-specific help, please log into RentMate and add your phone number in the Profile Settings." }
+                                text: { body: "שלום! הגעתם לרנטי - הצ'טבוט של RentMate. איך אפשר לעזור?" }
                             };
                             await fetch(url, {
                                 method: 'POST',

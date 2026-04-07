@@ -1,0 +1,8 @@
+{
+  "pdfStatus": 200,
+  "waStatus": 400,
+  "pdfLatency": "4755.11",
+  "waLatency": "1543.67",
+  "pdfBodyText": "{\"success\":true,\"message\":\"PDF generated successfully\"}",
+  "waBodyText": "{\"error\":\"Missing WhatsApp configuration secrets on server\"}"
+}

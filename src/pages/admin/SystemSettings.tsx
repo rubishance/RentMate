@@ -275,7 +275,7 @@ export default function SystemSettings() {
                         Configure global behaviors, notification triggers, and administrative rules.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <button
                         onClick={fetchData}
                         className="p-2.5 text-muted-foreground hover:text-foreground dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm"
@@ -294,7 +294,7 @@ export default function SystemSettings() {
             </div>
 
             {message && (
-                <div className={`p-4 rounded-2xl flex items-center gap-3 border animate-in fade-in slide-in-from-top-2 ${message.type === 'success'
+                <div className={`p-4 rounded-2xl flex items-center gap-2 sm:gap-4 border animate-in fade-in slide-in-from-top-2 ${message.type === 'success'
                     ? 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800'
                     : 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:border-red-800'
                     }`}>
@@ -382,7 +382,7 @@ export default function SystemSettings() {
             {/* Notifications Tab */}
             {activeTab === 'notifications' && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
-                    <div className="p-5 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                    <div className="p-4 sm:p-6 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                         <h2 className="text-base font-black text-foreground dark:text-white uppercase tracking-tight">Automation Engine</h2>
                         <p className="text-xs font-medium text-muted-foreground mt-1">Configure when and how users receive automated system notifications.</p>
                     </div>
@@ -399,7 +399,7 @@ export default function SystemSettings() {
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700 text-right">
                                 {rules.map((rule) => (
                                     <tr key={rule.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
-                                        <td className="px-6 py-5">
+                                        <td className="px-6 py-4 sm:py-6">
                                             <button
                                                 onClick={() => handleRuleChange(rule.id, 'is_enabled', !rule.is_enabled)}
                                                 className={`transition-all ${rule.is_enabled ? 'text-primary-600' : 'text-gray-300'}`}
@@ -407,19 +407,19 @@ export default function SystemSettings() {
                                                 {rule.is_enabled ? <ToggleRight className="w-10 h-10" /> : <ToggleLeft className="w-10 h-10" />}
                                             </button>
                                         </td>
-                                        <td className="px-6 py-5">
+                                        <td className="px-6 py-4 sm:py-6">
                                             <div className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight">{rule.name}</div>
                                             <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-0.5">{rule.description}</div>
                                         </td>
-                                        <td className="px-6 py-5 text-center">
+                                        <td className="px-6 py-4 sm:py-6 text-center">
                                             <input
                                                 type="number"
                                                 value={rule.days_offset}
                                                 onChange={(e) => handleRuleChange(rule.id, 'days_offset', parseInt(e.target.value))}
-                                                className="w-20 px-3 py-2 bg-slate-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-primary-500/20 outline-none"
+                                                className="w-20 px-2 sm:px-4 py-2 bg-slate-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-primary-500/20 outline-none"
                                             />
                                         </td>
-                                        <td className="px-6 py-5">
+                                        <td className="px-6 py-4 sm:py-6">
                                             <input
                                                 type="text"
                                                 value={rule.message_template}
@@ -439,7 +439,7 @@ export default function SystemSettings() {
             {activeTab === 'general' && (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {settings.filter(s => !s.key.startsWith('auto_') && !s.key.startsWith('voice_') && s.key !== 'chatbot_system_prompt').map((setting) => (
-                        <div key={setting.key} className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                        <div key={setting.key} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
                             <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-2">Technical Key: {setting.key}</div>
                             <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-2">{setting.key.replace(/_/g, ' ')}</h3>
                             <p className="text-xs font-bold text-muted-foreground dark:text-muted-foreground mb-6 leading-relaxed flex-1">{setting.description}</p>
@@ -449,7 +449,7 @@ export default function SystemSettings() {
                                 {(setting.value === true || setting.value === false || setting.value === 'true' || setting.value === 'false') ? (
                                     <button
                                         onClick={() => handleSettingChange(setting.key, !setting.value)}
-                                        className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl border-2 transition-all ${setting.value
+                                        className={`w-full flex items-center justify-between px-4 py-2 sm:py-4 rounded-2xl border-2 transition-all ${setting.value
                                             ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400'
                                             : 'bg-blue-50 dark:bg-foreground/50 border-border dark:border-gray-700 text-muted-foreground'
                                             }`}
@@ -463,7 +463,7 @@ export default function SystemSettings() {
                                             type="number"
                                             value={setting.value}
                                             onChange={(e) => handleSettingChange(setting.key, parseFloat(e.target.value))}
-                                            className="w-full px-5 py-3 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-black text-lg focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
+                                            className="w-full px-4 sm:px-6 py-2 sm:py-4 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-black text-lg focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
                                         />
                                     </div>
                                 ) : (
@@ -471,7 +471,7 @@ export default function SystemSettings() {
                                         type="text"
                                         value={typeof setting.value === 'object' ? JSON.stringify(setting.value) : setting.value}
                                         onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                                        className="w-full px-5 py-3 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
+                                        className="w-full px-4 sm:px-6 py-2 sm:py-4 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
                                     />
                                 )}
                             </div>
@@ -485,7 +485,7 @@ export default function SystemSettings() {
                 <div className="space-y-10">
                     {/* Master Switch Section */}
                     {settings.find(s => s.key === 'auto_autopilot_master_enabled') && (
-                        <div className="bg-primary-600 p-8 rounded-[2.5rem] shadow-xl shadow-primary-600/20 text-white flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
+                        <div className="bg-primary-600 p-8 rounded-2xl shadow-xl shadow-primary-600/20 text-white flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
                             <div className="flex-1 space-y-2">
                                 <h2 className="text-2xl font-black uppercase tracking-tight">Backend Automation Engine</h2>
                                 <p className="text-sm font-bold opacity-80 max-w-xl">
@@ -509,7 +509,7 @@ export default function SystemSettings() {
 
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {settings.filter(s => s.key.startsWith('auto_') && s.key !== 'auto_autopilot_master_enabled').map((setting) => (
-                            <div key={setting.key} className="bg-white dark:bg-gray-800 p-6 rounded-3xl border-2 border-dashed border-border dark:border-gray-700 shadow-sm transition-all hover:border-primary-200 dark:hover:border-primary-800">
+                            <div key={setting.key} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border-2 border-dashed border-border dark:border-gray-700 shadow-sm transition-all hover:border-primary-200 dark:hover:border-primary-800">
                                 <div className="flex items-center gap-2 mb-4">
                                     <div className={`p-2 rounded-xl ${setting.value ? 'bg-primary-50 text-primary-600' : 'bg-blue-50 text-muted-foreground'}`}>
                                         <Sparkles className="w-5 h-5" />
@@ -520,7 +520,7 @@ export default function SystemSettings() {
 
                                 <button
                                     onClick={() => handleSettingChange(setting.key, !setting.value)}
-                                    className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl border-2 transition-all ${setting.value
+                                    className={`w-full flex items-center justify-between px-4 py-2 sm:py-4 rounded-2xl border-2 transition-all ${setting.value
                                         ? 'bg-primary-600 border-primary-600 text-white shadow-lg shadow-primary-600/20'
                                         : 'bg-blue-50 dark:bg-foreground/50 border-border dark:border-gray-700 text-muted-foreground'
                                         }`}
@@ -532,8 +532,8 @@ export default function SystemSettings() {
                         ))}
                     </div>
 
-                    <div className="p-8 bg-blue-50 dark:bg-foreground/50 rounded-[2.5rem] border border-border dark:border-gray-800">
-                        <div className="flex items-center gap-3 mb-6">
+                    <div className="p-8 bg-blue-50 dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-800">
+                        <div className="flex items-center gap-2 sm:gap-4 mb-6">
                             <ToggleLeft className="w-6 h-6 text-muted-foreground" />
                             <h2 className="text-base font-black text-foreground dark:text-white uppercase tracking-tight">Voice & Phone Integration (RESTRICTED)</h2>
                         </div>
@@ -544,7 +544,7 @@ export default function SystemSettings() {
                                     {typeof setting.value === 'boolean' ? (
                                         <button
                                             onClick={() => handleSettingChange(setting.key, !setting.value)}
-                                            className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 transition-all ${setting.value
+                                            className={`w-full flex items-center justify-between px-4 sm:px-6 py-4 rounded-2xl border-2 transition-all ${setting.value
                                                 ? 'bg-amber-50 border-amber-200 text-amber-700'
                                                 : 'bg-white dark:bg-gray-800 border-border dark:border-gray-700 text-gray-300'
                                                 }`}
@@ -558,7 +558,7 @@ export default function SystemSettings() {
                                             value={typeof setting.value === 'string' ? setting.value : ''}
                                             placeholder="Enter API Key..."
                                             onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                                            className="w-full px-5 py-4 bg-white dark:bg-gray-800 border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
+                                            className="w-full px-4 sm:px-6 py-4 bg-white dark:bg-gray-800 border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
                                         />
                                     )}
                                 </div>
@@ -568,11 +568,11 @@ export default function SystemSettings() {
                 </div>
             )}
             {activeTab === 'integrations' && (
-                <div className="bg-white dark:bg-gray-800 rounded-3xl border border-border dark:border-gray-700 shadow-sm overflow-hidden p-8">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden p-8">
                     <div className="flex flex-col md:flex-row items-start justify-between gap-8">
                         <div className="max-w-xl space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-3 bg-primary-50 rounded-2xl">
+                            <div className="flex items-center gap-2 sm:gap-4">
+                                <div className="p-2 sm:p-4 bg-primary-50 rounded-2xl">
                                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-8 h-8" />
                                 </div>
                                 <h3 className="text-xl font-black text-foreground dark:text-white uppercase tracking-tight">Google Drive Integration</h3>
@@ -601,7 +601,7 @@ export default function SystemSettings() {
                         <div className="w-full md:w-auto">
                             <button
                                 onClick={connectGoogle}
-                                className="w-full md:w-[280px] flex items-center justify-center gap-3 px-8 py-5 bg-white dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl hover:border-primary-500 transition-all group shadow-sm"
+                                className="w-full md:w-[280px] flex items-center justify-center gap-2 sm:gap-4 px-8 py-4 sm:py-6 bg-white dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl hover:border-primary-500 transition-all group shadow-sm"
                             >
                                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" />
                                 <span className="text-sm font-black text-foreground dark:text-white uppercase tracking-widest group-hover:text-primary-600">Connect account</span>
@@ -613,7 +613,7 @@ export default function SystemSettings() {
             {activeTab === 'email_reports' && (
                 <div className="space-y-10">
                     {!settings.find(s => s.key === 'admin_email_daily_summary_enabled') ? (
-                        <div className="bg-white dark:bg-gray-800 p-12 rounded-[2.5rem] border-2 border-dashed border-border dark:border-gray-700 text-center space-y-6">
+                        <div className="bg-white dark:bg-gray-800 p-12 rounded-2xl border-2 border-dashed border-border dark:border-gray-700 text-center space-y-6">
                             <div className="w-20 h-20 bg-primary-50 rounded-full flex items-center justify-center mx-auto">
                                 <Bell className="w-10 h-10 text-primary-600" />
                             </div>
@@ -636,7 +636,7 @@ export default function SystemSettings() {
                         <>
                             {/* Master Switch Section */}
                             {settings.find(s => s.key === 'admin_email_daily_summary_enabled') && (
-                                <div className="bg-primary-600 p-8 rounded-[2.5rem] shadow-xl shadow-primary-600/20 text-white flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
+                                <div className="bg-primary-600 p-8 rounded-2xl shadow-xl shadow-primary-600/20 text-white flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
                                     <div className="flex-1 space-y-2">
                                         <h2 className="text-2xl font-black uppercase tracking-tight">Daily Summary Email</h2>
                                         <p className="text-sm font-bold opacity-80 max-w-xl">
@@ -660,9 +660,9 @@ export default function SystemSettings() {
 
                             {/* Content Preferences */}
                             {settings.find(s => s.key === 'admin_email_content_preferences') && (
-                                <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-border dark:border-gray-700 shadow-sm">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="p-3 bg-primary-50 rounded-2xl">
+                                <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
+                                    <div className="flex items-center gap-2 sm:gap-4 mb-6">
+                                        <div className="p-2 sm:p-4 bg-primary-50 rounded-2xl">
                                             <Sparkles className="w-6 h-6 text-primary-600" />
                                         </div>
                                         <h2 className="text-lg font-black text-foreground dark:text-white uppercase tracking-tight">Report Content Configuration</h2>
@@ -691,9 +691,9 @@ export default function SystemSettings() {
 
                             {/* Recipient Configuration */}
                             {settings.find(s => s.key === 'admin_notification_email') && (
-                                <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-border dark:border-gray-700 shadow-sm">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="p-3 bg-primary-50 rounded-2xl">
+                                <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
+                                    <div className="flex items-center gap-2 sm:gap-4 mb-6">
+                                        <div className="p-2 sm:p-4 bg-primary-50 rounded-2xl">
                                             <Bell className="w-6 h-6 text-primary-600" />
                                         </div>
                                         <h2 className="text-lg font-black text-foreground dark:text-white uppercase tracking-tight">Recipient Configuration</h2>
@@ -706,7 +706,7 @@ export default function SystemSettings() {
                                                 value={settings.find(s => s.key === 'admin_notification_email')?.value as string || ''}
                                                 onChange={(e) => handleSettingChange('admin_notification_email', e.target.value)}
                                                 placeholder="e.g. admin@rentmate.co.il"
-                                                className="w-full px-5 py-4 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
+                                                className="w-full px-4 sm:px-6 py-4 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
                                             />
                                             <p className="text-xs font-bold text-muted-foreground mt-1 uppercase tracking-tight">
                                                 The daily report and system alerts will be sent to this address.
@@ -721,9 +721,9 @@ export default function SystemSettings() {
             )}
             {activeTab === 'contact' && (
                 <div className="space-y-10">
-                    <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-border dark:border-gray-700 shadow-sm">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-3 bg-primary-50 rounded-2xl">
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
+                        <div className="flex items-center gap-2 sm:gap-4 mb-6">
+                            <div className="p-2 sm:p-4 bg-primary-50 rounded-2xl">
                                 <Mail className="w-6 h-6 text-primary-600" />
                             </div>
                             <h2 className="text-lg font-black text-foreground dark:text-white uppercase tracking-tight">System Email Addresses</h2>
@@ -738,7 +738,7 @@ export default function SystemSettings() {
                                         type="email"
                                         value={setting.value as string || ''}
                                         onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                                        className="w-full px-5 py-4 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
+                                        className="w-full px-4 sm:px-6 py-4 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
                                     />
                                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-tight px-1">{setting.description}</p>
                                 </div>
@@ -746,9 +746,9 @@ export default function SystemSettings() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-border dark:border-gray-700 shadow-sm">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-3 bg-primary-50 rounded-2xl">
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
+                        <div className="flex items-center gap-2 sm:gap-4 mb-6">
+                            <div className="p-2 sm:p-4 bg-primary-50 rounded-2xl">
                                 <Phone className="w-6 h-6 text-primary-600" />
                             </div>
                             <h2 className="text-lg font-black text-foreground dark:text-white uppercase tracking-tight">Support Contact Methods</h2>
@@ -763,7 +763,7 @@ export default function SystemSettings() {
                                         type="text"
                                         value={setting.value as string || ''}
                                         onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                                        className="w-full px-5 py-4 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
+                                        className="w-full px-4 sm:px-6 py-4 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
                                     />
                                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-tight px-1">{setting.description}</p>
                                 </div>

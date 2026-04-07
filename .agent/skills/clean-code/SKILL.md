@@ -57,6 +57,7 @@ priority: CRITICAL
 | **Flat > Nested** | Avoid deep nesting (max 2 levels) |
 | **Composition** | Small functions composed together |
 | **Colocation** | Keep related code close |
+| **Flat HTML (No Div Soup)** | Wrap elements ONLY when functionally necessary. Refactor to a flat hierarchy if layout logic (Flex/Grid) can achieve the same result without extra container `div`s. |
 
 ---
 
@@ -135,6 +136,7 @@ File to edit: UserService.ts
 | ✅ **No errors?** | Lint and TypeScript pass? |
 | ✅ **Nothing forgotten?** | Any edge cases missed? |
 | 📸 **UI Changed?** | **MANDATORY: Did I update the relevant App Manual in `src/content/articles/` AND capture a new updated screenshot? Every single manual MUST have a screenshot of its relevant page.** |
+| 👁️ **Visual Review (UI)** | ✅ **No Overlaps?** Is any button hiding text/content? ✅ **Div Purge?** Have I deleted redundant `div`s that create white holes/stretching? ✅ **4px Grid?** Are all spacing increments precise multiples of 4? |
 
 > 🔴 **Rule:** If ANY check fails, fix it before completing.
 

@@ -90,4 +90,4 @@ $$ LANGUAGE plpgsql;
 
 -- Comments
 COMMENT ON TABLE user_storage_usage IS 'Tracks storage usage per user for quota enforcement';
-COMMENT ON FUNCTION check_storage_quota IS 'Checks if user can upload a file based on their plan quota';
+COMMENT ON FUNCTION check_storage_quota(UUID, BIGINT) IS 'Checks if user can upload a file based on their plan quota';

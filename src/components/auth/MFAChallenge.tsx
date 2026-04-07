@@ -98,7 +98,7 @@ export default function MFAChallenge() {
                                     name="code"
                                     type="text"
                                     required
-                                    className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-foreground focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
+                                    className="appearance-none rounded-lg relative block w-full pl-10 px-2 sm:px-4 py-2 border border-gray-300 placeholder-gray-500 text-foreground focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
                                     placeholder="000 000"
                                     value={code}
                                     onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}

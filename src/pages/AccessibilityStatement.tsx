@@ -33,9 +33,9 @@ export function AccessibilityStatement() {
 
                     <div className="mt-8 space-y-8">
                         {/* Introduction Card */}
-                        <GlassCard className="p-6 md:p-8 bg-card/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
+                        <GlassCard className="p-6 md:p-8 bg-card/80 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
                             <div className="flex items-start gap-4">
-                                <div className="p-3 bg-primary-100 dark:bg-primary-900/20 rounded-xl shrink-0">
+                                <div className="p-2 sm:p-4 bg-primary-100 dark:bg-primary-900/20 rounded-xl shrink-0">
                                     <Accessibility className="w-8 h-8 text-primary-600 dark:text-primary-400" />
                                 </div>
                                 <div className="space-y-4">
@@ -52,7 +52,7 @@ export function AccessibilityStatement() {
                         </GlassCard>
 
                         {/* Compliance Level */}
-                        <GlassCard className="p-6 md:p-8 bg-card/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
+                        <GlassCard className="p-6 md:p-8 bg-card/80 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
                             <h2 className="text-xl font-bold text-foreground mb-4">
                                 {isRtl ? 'רמת הנגישות באתר' : 'Accessibility Compliance Level'}
                             </h2>
@@ -81,7 +81,7 @@ export function AccessibilityStatement() {
                         </GlassCard>
 
                         {/* Contact Info */}
-                        <GlassCard className="p-6 md:p-8 bg-card/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
+                        <GlassCard className="p-6 md:p-8 bg-card/80 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
                             <h2 className="text-xl font-bold text-foreground mb-6">
                                 {isRtl ? 'פרטי רכז נגישות' : 'Accessibility Coordinator Details'}
                             </h2>
@@ -101,7 +101,7 @@ export function AccessibilityStatement() {
                         </GlassCard>
 
                         {/* Feedback */}
-                        <div className="bg-primary-50/50 dark:bg-primary-900/10 rounded-3xl p-6 md:p-8 border border-primary-100 dark:border-primary-900/30 shadow-inner">
+                        <div className="bg-primary-50/50 dark:bg-primary-900/10 rounded-2xl p-6 md:p-8 border border-primary-100 dark:border-primary-900/30 shadow-inner">
                             <h2 className="text-lg font-bold text-primary-900 dark:text-primary-100 mb-2">
                                 {isRtl ? 'נתקלתם בבעיה?' : 'Encountered an issue?'}
                             </h2>
@@ -112,7 +112,7 @@ export function AccessibilityStatement() {
                             </p>
                             <a
                                 href="mailto:support@rentmate.co.il"
-                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium text-sm shadow-sm hover:shadow shadow-primary-500/20"
+                                className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium text-sm shadow-sm hover:shadow shadow-primary-500/20"
                             >
                                 <ExternalLink className="w-4 h-4" />
                                 {isRtl ? 'צור קשר לדיווח על בעיה' : 'Contact us to report an issue'}

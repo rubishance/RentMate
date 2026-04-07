@@ -55,7 +55,7 @@ export function WizardFooter({
                     <Button
                         variant="ghost"
                         onClick={onBack}
-                        className="h-14 px-8 rounded-2xl font-bold text-[#37474F] hover:text-[#0D47A1] hover:bg-[#E3F2FD] shrink-0"
+                        className="h-12 px-6 rounded-2xl font-bold text-[#37474F] hover:text-[#0D47A1] hover:bg-[#E3F2FD] shrink-0"
                     >
                         {backLabel || t('back')}
                     </Button>
@@ -69,8 +69,8 @@ export function WizardFooter({
                     onClick={onNext}
                     disabled={!isValid || isSaving}
                     className={cn(
-                        "flex-1 md:w-44 h-14 rounded-2xl text-xs font-black uppercase tracking-widest shadow-minimal group",
-                        "button-jewel text-white"
+                        "flex-1 md:w-44 h-12 rounded-2xl text-xs font-black uppercase tracking-widest shadow-minimal group",
+                        "bg-primary hover:bg-primary/90 text-primary-foreground"
                     )}
                 >
                     {isSaving ? (

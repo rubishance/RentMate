@@ -344,7 +344,7 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"
+                        className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-2 sm:gap-4"
                     >
                         <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
                         <div className="text-right">
@@ -422,7 +422,7 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                             </div>
                         </div>
 
-                        <div className="bg-primary/10/50 rounded-xl p-4 flex items-start gap-3">
+                        <div className="bg-primary/10/50 rounded-xl p-4 flex items-start gap-2 sm:gap-4">
                             <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                             <div className="text-right">
                                 <h4 className="font-bold text-blue-900 text-sm">הפרטיות שלך מוגנת</h4>

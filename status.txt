@@ -1,0 +1,114 @@
+ M .agent/rules/GEMINI.md
+ M design.md
+ M eslint.config.js
+ M index.html
+ M package-lock.json
+ M package.json
+ M public/sw.js
+ M public/version.json
+ M src/components/analytics/ActivityWidget.tsx
+ M src/components/animations/BillScanningAnimation.tsx
+ M src/components/calculator/ReconciliationCalculator.tsx
+ M src/components/calculator/StandardCalculator.tsx
+ M src/components/common/ErrorDisplay.tsx
+ M src/components/common/GoogleAutocomplete.tsx
+ M src/components/common/NotificationCenter.tsx
+ M src/components/common/PropertyTypeSelect.tsx
+ M src/components/common/RouteErrorBoundary.tsx
+ M src/components/common/ScrollSequence.tsx
+ M src/components/common/WizardFooter.tsx
+ M src/components/layout/AppShell.tsx
+ M src/components/layout/StreamHeader.tsx
+ M src/components/layout/TopBar.tsx
+ M src/components/modals/AddPaymentModal.tsx
+ M src/components/modals/ConfirmActionModal.tsx
+ M src/components/modals/ContractDetailsModal.tsx
+ M src/components/modals/DocumentDetailsModal.tsx
+ M src/components/modals/GlobalDocumentUploadModal.tsx
+ M src/components/modals/IndexedRentModal.tsx
+ M src/components/modals/PaymentDetailsModal.tsx
+ M src/components/modals/SelectPropertyModal.tsx
+ M src/components/properties/ChecksManager.tsx
+ M src/components/properties/DocumentTimeline.tsx
+ M src/components/properties/MaintenanceRecords.tsx
+ M src/components/properties/MediaGallery.tsx
+ M src/components/properties/MiscDocuments.tsx
+ M src/components/properties/PropertyDocumentsHub.tsx
+ M src/components/properties/ProtocolView.tsx
+ M src/components/properties/UtilityBillsManager.tsx
+ M src/components/stack/AddContractWizard.tsx
+ M src/components/stack/ContractHub.tsx
+ M src/components/stack/PropertyHub.tsx
+ M src/components/stack/tabs/ContractsTab.tsx
+ M src/components/stack/tabs/WalletTab.tsx
+ M src/components/ui/InfoTooltip.tsx
+ M src/components/ui/Modal.tsx
+ M src/components/ui/SegmentedControl.tsx
+ M src/components/ui/Select.tsx
+ M src/contexts/AuthContext.tsx
+ M src/contexts/NotificationsContext.tsx
+ M src/db/schema.ts
+ M src/hooks/translations_data.ts
+ M src/hooks/useIndexedPayments.ts
+ M src/hooks/useTranslation.ts
+ M src/index.css
+ M src/main.tsx
+ M src/pages/Calculator.tsx
+ M src/pages/Dashboard.tsx
+ M src/pages/GlobalDocuments.tsx
+ M src/pages/Login.tsx
+ M src/pages/Payments.tsx
+ M src/pages/Properties.tsx
+ M src/pages/PropertyDetails.tsx
+ M src/pages/Signup.tsx
+ M src/pages/SubscriptionSelection.tsx
+ M src/pages/Tools.tsx
+ M src/pages/admin/AdminDashboard.tsx
+ M src/pages/admin/StorageManagement.tsx
+ M src/services/NotificationGeneratorService.ts
+ M src/services/calculator.service.ts
+ M src/services/chaining-factor.service.ts
+ M src/services/index-data.service.ts
+ M src/services/property-documents.service.ts
+ M src/types/database.ts
+ M src/utils/payment-generator.ts
+ M supabase/.temp/cli-latest
+ M supabase/functions/generate-payments/index.ts
+ M supabase/migrations/20260313224150_tenant_leasing_features.sql
+?? .agent/original_wallet.txt
+?? .agent/tmp_wallet.tsx
+?? android/
+?? capacitor.config.ts
+?? drizzle/
+?? ios/
+?? openapi.json
+?? out.json
+?? out.txt
+?? scripts/debug_calc.ts
+?? scripts/test_calc.ts
+?? src/components/ErrorBoundary.tsx
+?? src/components/modals/EarlyTerminationModal.tsx
+?? src/components/properties/ReceiptsManager.tsx
+?? src/components/ui/DataFieldWidget.tsx
+?? src/constants/
+?? src/lib/cloudinary.ts
+?? src/pages/Landing.tsx
+?? src/utils/platform.ts
+?? status.txt
+?? supabase/functions/admin-cloudinary-usage/
+?? supabase/functions/admin-openai-usage/
+?? supabase/migrations/20260322000000_add_payment_details_and_receipt.sql
+?? supabase/migrations/20260322191840_add_actual_end_date_to_contracts.sql
+?? supabase/migrations/20260323000000_translate_notifications_to_hebrew.sql
+?? supabase/migrations/20260323000001_translate_contract_status.sql
+?? supabase/migrations/20260324133307_add_actual_published_at.sql
+?? supabase/migrations/20260325000000_fix_storage_quota_integer_overflow.sql
+?? supabase/migrations/20260325000001_storage_bucket_media_limits.sql
+?? supabase/migrations/20260325000002_update_property_documents_categories.sql
+?? supabase/migrations/20260325000003_comprehensive_property_documents_categories.sql
+?? tmp-test-payments.ts
+?? tmp/
+?? tmp_align_fix.py
+?? tmp_p_fix.py
+?? tmp_p_fix2.py
+?? tmp_spacing_fix.py

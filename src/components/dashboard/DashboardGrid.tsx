@@ -42,7 +42,7 @@ export function DashboardGrid({ layout, data, isEditing = false, onLayoutChange,
             values={sortedLayout.filter(w => w.visible)}
             onReorder={handleReorder}
             className={cn(
-                "grid gap-6 pb-20",
+                "grid gap-6",
                 isEditing ? "grid-cols-1 max-w-2xl mx-auto" : "grid-cols-1 lg:grid-cols-2"
             )}
         >
@@ -107,7 +107,7 @@ function WidgetRow({ widget, data, isEditing, sizeClass, onRender }: any) {
 
             <div className={cn(
                 "h-full transition-all duration-300",
-                isEditing && "ring-2 ring-primary ring-offset-8 dark:ring-offset-black rounded-[2.5rem] opacity-95 scale-[0.98] pointer-events-none select-none shadow-2xl bg-white dark:bg-neutral-900"
+                isEditing && "ring-2 ring-primary ring-offset-8 dark:ring-offset-black rounded-2xl opacity-95 scale-[0.98] pointer-events-none select-none shadow-2xl bg-white dark:bg-neutral-900"
             )}>
                 {onRender()}
             </div>

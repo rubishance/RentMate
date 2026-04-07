@@ -90,7 +90,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="flex items-center gap-2 px-3"
+                                className="flex items-center gap-2 px-2 sm:px-4"
                             >
                                 <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_10px_#34d399]" />
                                 <span className="text-xs font-black text-white uppercase tracking-tighter">SCANNING</span>
@@ -102,7 +102,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                 animate={{ opacity: 1 }}
                                 className="w-full flex justify-center items-center h-full"
                             >
-                                <div className="flex gap-1.5 items-center h-full">
+                                <div className="flex gap-2 items-center h-full">
                                     {[0.5, 1, 0.4, 0.8, 0.3].map((v, i) => (
                                         <motion.div
                                             key={i}
@@ -137,7 +137,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
 
                         {/* DASHBOARD WIDGETS */}
                         <div className={`space-y-6 transition-all duration-700 ${step !== 'DASHBOARD' ? 'opacity-10 blur-xl scale-90 translate-y-10' : 'opacity-100 scale-100 translate-y-0'}`}>
-                            <div className="bg-white/10 backdrop-blur-xl p-8 rounded-[3rem] shadow-2xl border border-white/10">
+                            <div className="bg-white/10 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/10">
                                 <div className="flex justify-between items-center mb-4">
                                     <span className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">{isRtl ? 'הכנסה חודשית' : 'MONTHLY REVENUE'}</span>
                                     <TrendingUp className="w-5 h-5 text-emerald-400" />
@@ -154,11 +154,11 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                             </div>
 
                             <div className="grid grid-cols-2 gap-6">
-                                <div className="bg-white/10 backdrop-blur-lg p-6 rounded-[2.5rem] border border-white/10 aspect-square flex flex-col justify-between group overflow-hidden relative shadow-xl">
+                                <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl border border-white/10 aspect-square flex flex-col justify-between group overflow-hidden relative shadow-xl">
                                     <Folder className="w-8 h-8 text-muted-foreground/40" />
                                     <div className="w-14 h-3 bg-foreground rounded-full opacity-20" />
                                 </div>
-                                <div className="bg-black/40 backdrop-blur-lg p-6 rounded-[2.5rem] border border-white/10 aspect-square flex flex-col justify-between shadow-2xl relative overflow-hidden">
+                                <div className="bg-black/40 backdrop-blur-lg p-6 rounded-2xl border border-white/10 aspect-square flex flex-col justify-between shadow-2xl relative overflow-hidden">
                                     <Zap className="w-8 h-8 text-secondary animate-pulse" />
                                     <div className="w-14 h-3 bg-white rounded-full opacity-40" />
                                 </div>
@@ -227,7 +227,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                     <AnimatePresence>
                                         {(step === 'USER_VOICE' || step === 'SCANNING') && (
                                             <motion.div
-                                                className="absolute top-[-10px] left-1/2 -translate-x-1/2 w-[60%] bg-secondary text-primary-foreground p-3 rounded-xl shadow-xl border border-white/20 z-20 text-center"
+                                                className="absolute top-[-10px] left-1/2 -translate-x-1/2 w-[60%] bg-secondary text-primary-foreground p-2 sm:p-4 rounded-xl shadow-xl border border-white/20 z-20 text-center"
                                                 initial={{ scale: 0, opacity: 0 }}
                                                 animate={{ scale: 1, opacity: 1 }}
                                                 exit={{ scale: 0, opacity: 0 }}
@@ -251,7 +251,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                         <AnimatePresence>
                             {(step === 'SCANNING') && (
                                 <motion.div
-                                    className="absolute inset-x-4 top-24 bg-white dark:bg-neutral-900 rounded-[3rem] shadow-[0_40px_80px_rgba(0,0,0,0.5)] border border-neutral-100 dark:border-neutral-800 z-[100] p-8 overflow-hidden"
+                                    className="absolute inset-x-4 top-24 bg-white dark:bg-neutral-900 rounded-2xl shadow-[0_40px_80px_rgba(0,0,0,0.5)] border border-neutral-100 dark:border-neutral-800 z-[100] p-8 overflow-hidden"
                                     initial={{ y: 350, opacity: 0, scale: 0.95 }}
                                     animate={{ y: 0, opacity: 1, scale: 1 }}
                                     exit={{ y: 350, opacity: 0, scale: 0.95 }}
@@ -291,7 +291,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                     animate={{ opacity: 1 }}
                                 >
                                     <motion.div
-                                        className="w-28 h-28 bg-secondary rounded-[2.5rem] flex items-center justify-center shadow-[0_0_60px_rgba(69,147,103,0.3)] relative"
+                                        className="w-28 h-28 bg-secondary rounded-2xl flex items-center justify-center shadow-[0_0_60px_rgba(69,147,103,0.3)] relative"
                                         initial={{ scale: 0, rotate: -45 }}
                                         animate={{ scale: 1, rotate: 0 }}
                                         transition={{ type: 'spring', damping: 10 }}

@@ -1,0 +1,17 @@
+[
+  {
+    "step": 1,
+    "status": 401,
+    "body": "{\"code\":401,\"message\":\"Missing authorization header\"}"
+  },
+  {
+    "step": 2,
+    "status": 500,
+    "body": "{\"error\":\"protocolId is required\",\"user_message\":\"שגיאת שרת פנימית. הצוות שלנו קיבל דיווח על כך.\"}"
+  },
+  {
+    "step": 3,
+    "status": 401,
+    "body": "{\"error\":\"Unauthorized: Invalid or expired token\",\"user_message\":\"אין לכם הרשאה לביצוע פעולה זו. אנא התחברו מחדש.\"}"
+  }
+]

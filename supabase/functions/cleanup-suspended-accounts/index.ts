@@ -1,7 +1,8 @@
+import { withEdgeMiddleware } from '../_shared/middleware.ts';
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-serve(async (req) => {
+serve(withEdgeMiddleware('cleanup-suspended-accounts', async (req, logger) => {
     try {
         // Create Supabase client with service role key
         const supabaseClient = createClient(

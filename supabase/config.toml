@@ -86,3 +86,46 @@ entrypoint = "./functions/verify-whatsapp-otp/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/handle-whatsapp-inbound/index.ts"
+
+[functions.admin-gemini-usage]
+enabled = true
+verify_jwt = true
+import_map = "./functions/admin-gemini-usage/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/admin-gemini-usage/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/admin-gemini-usage/*.html" ]
+
+[functions.security-alerter]
+enabled = true
+verify_jwt = true
+import_map = "./functions/security-alerter/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/security-alerter/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/security-alerter/*.html" ]
+
+[functions.get-system-stats]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/get-system-stats/index.ts"
+
+[functions.generate-protocol-pdf]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/generate-protocol-pdf/index.ts"
+
+[functions.handle-revenuecat-webhook]
+enabled = true
+verify_jwt = true
+import_map = "./functions/handle-revenuecat-webhook/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/handle-revenuecat-webhook/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/handle-revenuecat-webhook/*.html" ]

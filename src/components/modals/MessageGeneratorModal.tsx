@@ -37,7 +37,7 @@ export function MessageGeneratorModal({ isOpen, onClose, calculationData }: Mess
         try {
             // 1. Create the compressed "stateless" URL (long)
             const compressed = UrlCompression.compress(calculationData);
-            const longUrl = `${window.location.origin}/calculator?share=${compressed}`;
+            const longUrl = `${window.location.origin}/shared-calculator?share=${compressed}`;
 
             // 2. Shorten it using our internal service (short)
             const shortUrl = await ShortenerService.generateShortLink(longUrl);
@@ -94,9 +94,7 @@ ${urlToUse}`,
 סכום השכירות המעודכן הינו ${amount}.
 לצפייה בפירוט התחשיב המלא:
 ${urlToUse}
-בברכה,
-RentMate 🏠
-www.RentMate.co.il`
+בברכה,`
         };
 
         const stdTemplatesEn = {
@@ -110,9 +108,7 @@ In accordance with the lease agreement, a rent adjustment calculation based on i
 The updated rent amount is ${amount}.
 You can view the full detailed calculation here:
 ${urlToUse}
-Best regards,
-RentMate 🏠
-www.RentMate.co.il`
+Best regards,`
         };
 
         // Reconciliation Templates
@@ -129,9 +125,7 @@ rentmate.co.il`,
 סך חוב ההפרשים לתשלום הינו ${amount}.
 לצפייה בפירוט התחשיב המלא לכל חודש:
 ${urlToUse}
-בברכה,
-RentMate 🏠
-rentmate.co.il`
+בברכה,`
         };
 
         const recoTemplatesEn = {
@@ -147,9 +141,7 @@ A retroactive index linkage calculation has been performed in accordance with th
 The total back-pay amount due is ${amount}.
 Please find the detailed monthly breakdown attached:
 ${urlToUse}
-Best regards,
-RentMate 🏠
-rentmate.co.il`
+Best regards,`
         };
 
         if (lang === 'he') {
@@ -178,25 +170,29 @@ rentmate.co.il`
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" dir={lang === 'he' ? 'rtl' : 'ltr'}>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-6 mt-auto animate-in fade-in duration-200" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+            <div 
+                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+                onClick={onClose}
+            />
+            <div className="relative bg-white dark:bg-gray-800 rounded-t-3xl sm:rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh] mt-auto sm:mt-0">
                 {/* Header */}
-                <div className="p-6 border-b border-border dark:border-gray-700 flex items-center justify-between">
-                    <div>
-                        <h2 className="text-xl font-bold text-foreground dark:text-white flex items-center gap-2">
-                            <RentyMascot size={40} showBackground={false} className="drop-shadow-sm" />
-                            {lang === 'he' ? 'שתף חישוב' : 'Share Calculation'}
-                        </h2>
-                    </div>
+                <div className="p-6 border-b border-border dark:border-gray-700 flex items-center justify-between shrink-0">
                     <button
                         onClick={onClose}
-                        className="p-2 text-muted-foreground hover:text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-full transition-colors"
+                        className="p-2 text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-xl transition-colors"
                     >
                         <CloseIcon className="w-5 h-5" />
                     </button>
+                    <div>
+                        <h2 className="text-xl font-bold text-foreground dark:text-white flex items-center gap-2">
+                            {lang === 'he' ? 'שתף חישוב' : 'Share Calculation'}
+                            <RentyMascot size={40} showBackground={false} className="drop-shadow-sm" />
+                        </h2>
+                    </div>
                 </div>
 
-                <div className="p-6 overflow-y-auto">
+                <div className="p-6 overflow-y-auto pb-10 sm:pb-6 custom-scrollbar flex-1">
                     <div className="space-y-4">
                         {/* Tone Selector */}
                         <div className="flex p-1 bg-muted dark:bg-gray-700/50 rounded-xl">
@@ -230,7 +226,7 @@ rentmate.co.il`
                             <textarea
                                 readOnly
                                 value={generateMessage()}
-                                className="w-full h-40 p-3 bg-secondary dark:bg-foreground/50 border border-border dark:border-gray-700 rounded-xl text-base resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                className="w-full h-40 p-2 sm:p-6 bg-secondary dark:bg-foreground/50 border border-border dark:border-gray-700 rounded-xl text-base resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                             />
                             <button
                                 onClick={() => handleCopyObj(generateMessage())}
@@ -243,7 +239,14 @@ rentmate.co.il`
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex gap-3 pt-2">
+                        <div className="flex gap-2 sm:gap-4 pt-2">
+                            <button
+                                onClick={() => handleCopyObj(shareUrl)}
+                                className="flex-1 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-foreground dark:text-white py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors"
+                            >
+                                <CopyIcon className="w-4 h-4" />
+                                {lang === 'he' ? 'העתק קישור' : 'Copy Link'}
+                            </button>
                             <button
                                 onClick={handleWhatsApp}
                                 disabled={loadingUrl}
@@ -251,13 +254,6 @@ rentmate.co.il`
                             >
                                 <MessageIcon className="w-5 h-5" />
                                 WhatsApp
-                            </button>
-                            <button
-                                onClick={() => handleCopyObj(shareUrl)}
-                                className="flex-1 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-foreground dark:text-white py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors"
-                            >
-                                <CopyIcon className="w-4 h-4" />
-                                {lang === 'he' ? 'העתק קישור' : 'Copy Link'}
                             </button>
                         </div>
                     </div>

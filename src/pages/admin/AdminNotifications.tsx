@@ -163,7 +163,7 @@ const AdminNotifications = () => {
                         Respond to system alerts, manual upgrade requests, and administrative actions.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <button
                         onClick={fetchNotifications}
                         className="p-2.5 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm"
@@ -174,7 +174,7 @@ const AdminNotifications = () => {
             </div>
 
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-3 text-red-700 dark:text-red-400 font-bold text-sm">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-2 sm:gap-4 text-red-700 dark:text-red-400 font-bold text-sm">
                     <ExclamationTriangleIcon className="w-6 h-6 flex-shrink-0" />
                     {error}
                 </div>
@@ -188,7 +188,7 @@ const AdminNotifications = () => {
                 </div>
             ) : (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
-                    <div className="p-5 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                    <div className="p-4 sm:p-6 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                         <h2 className="text-base font-black text-foreground dark:text-white uppercase tracking-tight">Active Alerts</h2>
                         <p className="text-xs font-medium text-muted-foreground mt-1">Real-time status of system-generated notifications.</p>
                     </div>
@@ -198,7 +198,7 @@ const AdminNotifications = () => {
                             <li key={n.id} className={`p-6 transition-colors ${n.status === 'pending' ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/20 dark:bg-foreground/20 opacity-60'}`}>
                                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                                     <div className="flex-1 flex gap-4">
-                                        <div className={`p-3 rounded-2xl border shrink-0 ${n.type === 'upgrade_request' ? 'bg-primary-50 text-primary border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
+                                        <div className={`p-2 sm:p-4 rounded-2xl border shrink-0 ${n.type === 'upgrade_request' ? 'bg-primary-50 text-primary border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
                                             'bg-primary-50 text-primary-600 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800'
                                             }`}>
                                             {n.type === 'upgrade_request' ? <ArrowUpCircleIcon className="w-6 h-6" /> : <BellIcon className="w-6 h-6" />}
@@ -230,7 +230,7 @@ const AdminNotifications = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-3 self-end md:self-center">
+                                    <div className="flex items-center gap-2 sm:gap-4 self-end md:self-center">
                                         <div className="text-right mr-4 hidden md:block">
                                             <div className="text-xs font-black text-muted-foreground uppercase tracking-widest">Received</div>
                                             <div className="text-xs font-bold text-foreground dark:text-white">
@@ -242,7 +242,7 @@ const AdminNotifications = () => {
                                                 <button
                                                     onClick={() => handleDismiss(n.id)}
                                                     disabled={!!processingId}
-                                                    className="p-3 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-border dark:border-gray-700 transition-all"
+                                                    className="p-2 sm:p-4 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-border dark:border-gray-700 transition-all"
                                                     title="Dismiss Request"
                                                 >
                                                     <XCircleIcon className="w-6 h-6" />

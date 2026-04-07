@@ -22,7 +22,7 @@ interface PropertyDocumentsHubProps {
     autoOpenUpload?: boolean;
 }
 
-type TabType = 'menu' | 'media' | 'utilities' | 'maintenance' | 'documents' | 'checks' | 'protocols' | 'receipts';
+type TabType = 'menu' | 'media' | 'utilities' | 'maintenance' | 'documents' | 'checks' | 'protocols' | 'receipts' | 'tenant_form';
 
 export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpenUpload }: PropertyDocumentsHubProps) {
     const { t, lang } = useTranslation();
@@ -34,14 +34,22 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
         }
     }, [requestedTab]);
 
-    const categories = DOCUMENT_CATEGORIES.map(cat => ({
-        id: cat.id as TabType,
-        label: t(cat.labelKey) || (lang === 'he' ? cat.fallbackHe : cat.fallbackEn),
-        icon: cat.icon,
-        color: cat.color,
-        bg: cat.bg,
-        description: t(cat.labelKey + 'Desc') || (lang === 'he' ? cat.descFallbackHe : cat.descFallbackEn)
-    }));
+    const categories = DOCUMENT_CATEGORIES.map(cat => {
+        const key = cat.labelKey || cat.id;
+        let translatedLabel = t(key as any);
+        // If translation is missing (returns the key), use the category's fallback
+        if (translatedLabel === key) {
+            translatedLabel = lang === 'he' ? cat.fallbackHe : cat.fallbackEn;
+        }
+
+        return {
+            id: cat.id as TabType,
+            label: translatedLabel,
+            icon: cat.icon,
+            color: cat.color,
+            bg: cat.bg
+        };
+    });
 
     const renderContent = () => {
         switch (activeTab) {
@@ -51,6 +59,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
             case 'checks': return <ChecksManager property={property} readOnly={readOnly} />;
             case 'protocols': return <ProtocolsManager property={property} readOnly={readOnly} />;
             case 'receipts': return <ReceiptsManager property={property} readOnly={readOnly} />;
+            case 'tenant_form': return <MiscDocuments property={property} readOnly={readOnly} autoOpenUpload={autoOpenUpload} categoryFilter="tenant_form" />;
             default: return null;
         }
     };
@@ -59,13 +68,13 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
         hidden: { opacity: 0 },
         show: {
             opacity: 1,
-            transition: { staggerChildren: 0.05 }
+            transition: { staggerChildren: 0.02 }
         }
     };
 
     const itemVariants = {
         hidden: { opacity: 0, y: 10 },
-        show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+        show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 400, damping: 25 } }
     };
 
     return (
@@ -78,13 +87,13 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.2 }}
-                        className="flex-1 overflow-y-auto no-scrollbar pb-6"
+                        className="flex-1 overflow-y-auto no-scrollbar"
                     >
                         <motion.div
                             variants={containerVariants}
                             initial="hidden"
                             animate="show"
-                            className="grid grid-cols-2 lg:grid-cols-3 gap-3"
+                            className="flex flex-col gap-2"
                         >
                             {categories.map((category) => {
                                 const Icon = category.icon;
@@ -93,24 +102,18 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
                                         key={category.id}
                                         variants={itemVariants}
                                         onClick={() => setActiveTab(category.id)}
-                                        className="text-start focus:outline-none focus-visible:ring-2 ring-primary rounded-[1.5rem] group"
+                                        className="text-start focus:outline-none focus-visible:ring-2 ring-primary rounded-2xl group w-full"
                                     >
-                                        <GlassCard className="h-full p-4 flex flex-col gap-3 transition-all duration-300 hover:shadow-lg hover:border-primary/20 hover:bg-white/40 dark:hover:bg-neutral-800/60 active:scale-[0.98]">
-                                            <div className="flex items-start justify-between">
-                                                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300", category.bg)}>
-
+                                        <GlassCard className="w-full flex items-center justify-between p-2 sm:p-4 px-4 transition-all duration-300 hover:shadow-md hover:border-primary/30 hover:bg-white/60 dark:hover:bg-neutral-800/80 active:scale-[0.98]">
+                                            <div className="flex items-center gap-2 sm:gap-4">
+                                                <div className={cn("w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl shadow-sm transition-transform group-hover:scale-110 duration-300", category.bg)}>
+                                                    <Icon className={cn("w-5 h-5", category.color)} />
                                                 </div>
-                                                <ChevronLeft className={cn("w-4 h-4 text-muted-foreground/50 transition-transform duration-300 group-hover:-translate-x-1", lang === 'he' ? "" : "rotate-180")} />
-                                            </div>
-
-                                            <div className="space-y-1">
-                                                <h3 className="font-black text-sm text-foreground tracking-tight leading-tight">
+                                                <h3 className="font-bold text-sm md:text-base text-foreground tracking-tight leading-tight">
                                                     {category.label}
                                                 </h3>
-                                                <p className="text-xs text-muted-foreground line-clamp-2 leading-tight opacity-90">
-                                                    {category.description}
-                                                </p>
                                             </div>
+                                            <ChevronLeft className={cn("w-4 h-4 text-muted-foreground/30 transition-transform duration-300 group-hover:-translate-x-1", lang === 'he' ? "" : "rotate-180 drop-shadow-sm")} />
                                         </GlassCard>
                                     </motion.button>
                                 );
@@ -127,12 +130,12 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
                         className="flex flex-col h-full"
                     >
                         {/* Sticky Inline Header */}
-                        <div className="sticky top-0 z-10 flex items-center gap-3 pb-4 mb-4 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+                        <div className="sticky top-0 z-10 flex items-center gap-2 sm:gap-4 pb-4 mb-4 border-b border-white/10 bg-background/80 backdrop-blur-xl">
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setActiveTab('menu')}
-                                className="h-9 px-3 gap-2 bg-muted/50 dark:bg-neutral-800/50 hover:bg-muted dark:hover:bg-neutral-800 rounded-xl"
+                                className="h-9 px-2 sm:px-4 gap-2 bg-muted/50 dark:bg-neutral-800/50 hover:bg-muted dark:hover:bg-neutral-800 rounded-xl"
                             >
                                 <ChevronRight className={cn("w-4 h-4", lang === 'he' ? "" : "rotate-180")} />
                                 <span className="text-xs font-bold">{lang === 'he' ? 'חזרה לתיקיות' : 'Back to Folders'}</span>
@@ -156,7 +159,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
                         </div>
 
                         {/* Content Area */}
-                        <div className="flex-1 overflow-y-auto min-h-0 bg-background/50 dark:bg-neutral-900/30 rounded-2xl border border-slate-200/40 dark:border-neutral-800/40 p-1 mb-4 pb-24">
+                        <div className="flex-1 overflow-y-auto min-h-0 bg-background/50 dark:bg-neutral-900/30 rounded-2xl border border-slate-200/40 dark:border-neutral-800/40 p-1 mb-2 pb-2">
                             {renderContent()}
                         </div>
                     </motion.div>

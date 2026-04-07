@@ -1,6 +1,6 @@
-import { Zap, Landmark, Flame, Building2, Droplets, Wifi, Tv, Home as HomeIcon, FileText } from 'lucide-react';
+import { Zap, Landmark, Flame, Building2, Droplets, Wifi, Tv, Home as HomeIcon, FileText, ShieldCheck } from 'lucide-react';
 
-export type UtilityType = 'water' | 'electric' | 'gas' | 'internet' | 'municipality' | 'management' | 'tv' | 'mortgage' | 'other';
+export type UtilityType = 'water' | 'electric' | 'gas' | 'internet' | 'municipality' | 'management' | 'tv' | 'mortgage' | 'insurance' | 'other';
 
 export interface UtilityTypeConfig {
     id: UtilityType;
@@ -84,6 +84,15 @@ export const UTILITY_TYPES: UtilityTypeConfig[] = [
         icon: HomeIcon,
         color: 'text-emerald-500',
         bg: 'bg-emerald-100 dark:bg-emerald-900/30'
+    },
+    {
+        id: 'insurance',
+        labelKey: 'utilityInsurance',
+        fallbackHe: 'ביטוח',
+        fallbackEn: 'Insurance',
+        icon: ShieldCheck,
+        color: 'text-cyan-500',
+        bg: 'bg-cyan-100 dark:bg-cyan-900/30'
     },
     {
         id: 'other',

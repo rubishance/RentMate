@@ -71,11 +71,11 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
 
     if (loading) {
         return (
-            <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-border dark:border-neutral-800 h-full flex items-center justify-center">
-                <div className="animate-pulse flex flex-col items-center gap-3 w-full">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 shadow-sm border border-border dark:border-neutral-800 h-full flex items-center justify-center">
+                <div className="animate-pulse flex flex-col items-center gap-2 sm:gap-4 w-full">
                     <div className="h-4 w-1/3 bg-muted dark:bg-neutral-800 rounded self-start"></div>
-                    <div className="h-20 w-full bg-secondary dark:bg-neutral-800/50 rounded-[2rem]"></div>
-                    <div className="h-20 w-full bg-secondary dark:bg-neutral-800/50 rounded-[2rem]"></div>
+                    <div className="h-20 w-full bg-secondary dark:bg-neutral-800/50 rounded-2xl"></div>
+                    <div className="h-20 w-full bg-secondary dark:bg-neutral-800/50 rounded-2xl"></div>
                 </div>
             </div>
         );
@@ -83,7 +83,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
 
     if (timelineItems.length === 0) {
         return (
-            <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-border dark:border-neutral-800 h-full flex flex-col items-center justify-center text-center min-h-[300px] space-y-6">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 shadow-sm border border-border dark:border-neutral-800 h-full flex flex-col items-center justify-center text-center min-h-[300px] space-y-6">
                 <div className="w-16 h-16 bg-secondary dark:bg-neutral-800 rounded-2xl flex items-center justify-center">
                     <Calendar className="w-8 h-8 text-black dark:text-white" />
                 </div>
@@ -93,7 +93,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                 </div>
                 <button
                     onClick={() => push('contract_wizard', {}, { isExpanded: true, title: t('addContract') })}
-                    className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold transition-all active:scale-95 shadow-lg"
+                    className="px-6 py-2 sm:py-4 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold transition-all active:scale-95 shadow-lg"
                 >
                     {t('createContract')}
                 </button>
@@ -102,7 +102,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
     }
 
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-border dark:border-neutral-800">
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 shadow-sm border border-border dark:border-neutral-800">
             <div className="flex items-center justify-between mb-8">
                 <h3 className="text-xl font-black uppercase tracking-widest text-primary flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
@@ -113,7 +113,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
             <div className="space-y-6">
                 {timelineItems.slice(0, 3).map(item => (
                     <div key={item.id} className="relative group">
-                        <div className="flex justify-between items-start mb-3">
+                        <div className="flex justify-between items-start mb-2 sm:mb-4">
                             <div>
                                 <h4 className="font-bold text-black dark:text-white group-hover:underline cursor-pointer" onClick={() => navigate((item as any).properties?.id ? `/properties/${(item as any).properties.id}` : '/properties')}>{item.address}</h4>
                                 <p className="text-xs font-medium text-muted-foreground dark:text-muted-foreground mt-1">
@@ -122,7 +122,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                                         : t('contractEnded')}
                                 </p>
                             </div>
-                            <div className={`px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5
+                            <div className={`px-2 sm:px-4 py-1 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2
                                 ${item.status === 'critical' ? 'bg-destructive/10 text-destructive dark:bg-red-900/20 dark:text-red-400 border border-red-100 dark:border-red-900/40' :
                                     item.status === 'warning' ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 border border-orange-100 dark:border-orange-900/40' :
                                         'bg-secondary text-black dark:bg-neutral-800 dark:text-white border border-border dark:border-neutral-700'}`}

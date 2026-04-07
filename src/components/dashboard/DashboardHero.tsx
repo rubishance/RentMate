@@ -72,7 +72,7 @@ function FeedItemCard({ item, isActionOrInfo, lang, t, idx }: { item: FeedItem, 
         >
             <Card
                 className={cn(
-                    "w-full rounded-[2.5rem] border transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden",
+                    "w-full rounded-2xl border transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden",
                     item.type === 'urgent'
                         ? "bg-rose-50/50 border-rose-200 dark:bg-rose-900/10 dark:border-rose-900/30"
                         : item.type === 'warning'
@@ -82,10 +82,10 @@ function FeedItemCard({ item, isActionOrInfo, lang, t, idx }: { item: FeedItem, 
                 onClick={() => setIsExpanded(!isExpanded)}
                 hoverEffect
             >
-                <CardContent className={cn("h-full flex flex-col justify-between transition-all duration-300", isExpanded ? "p-5" : "py-3 md:py-4 px-5")}>
+                <CardContent className={cn("h-full flex flex-col justify-between transition-all duration-300", isExpanded ? "p-4 sm:p-6" : "py-2 sm:py-4 md:py-4 px-4 sm:px-6")}>
                     <div className="relative z-10 w-full flex flex-col items-stretch" dir="auto">
                         <div className={cn("flex items-center justify-between gap-4", isExpanded ? "mb-4" : "mb-0")}>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-4">
                                 <div className={cn(
                                     "p-2.5 rounded-2xl shrink-0",
                                     item.type === 'urgent' ? "bg-rose-100 text-rose-600 dark:bg-rose-900/50 dark:text-rose-400" :
@@ -101,7 +101,7 @@ function FeedItemCard({ item, isActionOrInfo, lang, t, idx }: { item: FeedItem, 
                                     {item.title}
                                 </h3>
                             </div>
-                            <div className="flex items-center gap-3 shrink-0">
+                            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                                 {item.date && (
                                     <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground opacity-90 font-mono">
                                         {item.date}

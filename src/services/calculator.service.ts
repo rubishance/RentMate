@@ -27,39 +27,8 @@ export const standardCalculationSchema = z.object({
     linkageSubType: z.enum(['known', 'respect_of']).optional().default('known'),
 });
 
-/**
- * Pure Logic: Calculate Prorated Ceiling
- */
-export function calculateProratedCeiling(annualCeiling: number, startDate: string, endDate: string): number {
-    const start = parseISO(startDate + '-01');
-    const end = parseISO(endDate + '-01');
-    const days = Math.max(0, differenceInDays(end, start));
-    const years = days / 365.25;
-    return (annualCeiling / 100) * years;
-}
-
-/**
- * Pure Logic: Calculate Effective Change
- */
-export function calculateEffectiveChange(params: {
-    linkageCoefficient: number;
-    partialLinkage: number;
-    isIndexBaseMinimum: boolean;
-    proratedCeiling?: number;
-}): number {
-    let effectiveChange = (params.linkageCoefficient / 100) * (params.partialLinkage / 100);
-
-    if (params.proratedCeiling !== undefined) {
-        effectiveChange = Math.min(effectiveChange, params.proratedCeiling);
-    }
-
-    if (params.isIndexBaseMinimum && effectiveChange < 0) {
-        effectiveChange = 0;
-    }
-
-    return effectiveChange;
-}
-
+import { calculateProratedCeiling, calculateEffectiveChange } from '../shared-core/linkage-math';
+export { calculateProratedCeiling, calculateEffectiveChange };
 /**
  * Pure Logic: Find precise index in-memory (For Reconciliation engine looping)
  */
@@ -128,7 +97,7 @@ export async function calculateStandard(
         // Fallback logic for target index: if not published yet, try up to 2 months prior
         if (targetIndexValue === null && !input.manualTargetIndex) {
             for (let i = 1; i <= 2; i++) {
-                const fallbackDate = format(subMonths(parseISO(adjustedTargetDate + '-01'), i), 'yyyy-MM');
+                const fallbackDate = format(subMonths(parseISO(adjustedTargetDate.slice(0, 7) + '-01'), i), 'yyyy-MM');
                 const fallbackValue = await getIndexValue(input.linkageType, fallbackDate);
                 if (fallbackValue !== null) {
                     targetIndexValue = fallbackValue;
@@ -179,12 +148,12 @@ export async function calculateStandard(
         if (input.partialLinkage === 100) {
             if (hasChaining) {
                 const chainingFactor = adjustedTargetValue / targetIndexValue;
-                formula = `New Rent = ₪${input.baseRent.toLocaleString()} × ((${targetIndexValue} × ${chainingFactor.toFixed(4)}) / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
+                formula = `שכירות מעודכנת = ₪${input.baseRent.toLocaleString()} × ((${targetIndexValue} × ${chainingFactor.toFixed(4)}) / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
             } else {
-                formula = `New Rent = ₪${input.baseRent.toLocaleString()} × (${adjustedTargetValue} / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
+                formula = `שכירות מעודכנת = ₪${input.baseRent.toLocaleString()} × (${adjustedTargetValue} / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
             }
         } else {
-            formula = `New Rent = ₪${input.baseRent.toLocaleString()} × (1 + (${linkageCoefficient.toFixed(2)}% × ${input.partialLinkage}%)) = ₪${Math.round(newRent).toLocaleString()}`;
+            formula = `שכירות מעודכנת = ₪${input.baseRent.toLocaleString()} × (1 + (${linkageCoefficient.toFixed(2)}% × ${input.partialLinkage}%)) = ₪${Math.round(newRent).toLocaleString()}`;
         }
 
         return {

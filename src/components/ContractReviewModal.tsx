@@ -105,7 +105,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                     <div
                                         key={index}
                                         ref={(el) => { fieldRefs.current[index] = el; }}
-                                        className={`border rounded-xl p-3 lg:p-4 transition-all ${field.userConfirmed
+                                        className={`border rounded-xl p-2 sm:p-4 lg:p-4 transition-all ${field.userConfirmed
                                             ? 'border-green-300 bg-green-50 dark:bg-green-900/10 shadow-sm'
                                             : 'border-gray-300 dark:border-gray-600 bg-white shadow-sm hover:shadow-md'
                                             }`}
@@ -140,7 +140,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                                     value={field.extractedValue?.toString() || ''}
                                                     onChange={(e) => handleFieldChange(index, e.target.value)}
                                                     rows={4}
-                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm w-full"
+                                                    className="flex-1 px-2 sm:px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm w-full"
                                                 />
                                             ) : (
                                                 <input
@@ -148,13 +148,13 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                                     type="text"
                                                     value={field.extractedValue?.toString() || ''}
                                                     onChange={(e) => handleFieldChange(index, e.target.value)}
-                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                                                    className="flex-1 px-2 sm:px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
                                                 />
                                             )}
                                             {!field.userConfirmed && (
                                                 <button
                                                     onClick={() => handleConfirmField(index)}
-                                                    className="px-3 py-2 bg-secondary text-white rounded-xl hover:bg-green-700 flex items-center gap-1 text-sm font-medium transition-colors shrink-0"
+                                                    className="px-2 sm:px-4 py-2 bg-secondary text-white rounded-xl hover:bg-green-700 flex items-center gap-1 text-sm font-medium transition-colors shrink-0"
                                                 >
                                                     <Check className="w-4 h-4" />
                                                     <span className="hidden sm:inline">אישור</span>
@@ -176,7 +176,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
 
                                     <button
                                         onClick={onCancel}
-                                        className="w-full py-3 text-slate-500 font-medium active:bg-muted/50 rounded-xl transition-colors"
+                                        className="w-full py-2 sm:py-4 text-slate-500 font-medium active:bg-muted/50 rounded-xl transition-colors"
                                     >
                                         ביטול וחזרה
                                     </button>

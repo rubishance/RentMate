@@ -70,7 +70,7 @@ export default function UsageAnalytics() {
 
     if (error) {
         return (
-            <div className="p-8 text-center bg-red-50 dark:bg-red-900/10 rounded-3xl border border-red-100 dark:border-red-900/20">
+            <div className="p-8 text-center bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/20">
                 <Database className="w-12 h-12 text-destructive mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-red-900 dark:text-red-400 mb-2">Failed to Load Analytics</h3>
                 <p className="text-red-600 dark:text-destructive/70 mb-6">{error}</p>
@@ -89,7 +89,7 @@ export default function UsageAnalytics() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-black text-foreground flex items-center gap-3">
+                    <h2 className="text-3xl font-black text-foreground flex items-center gap-2 sm:gap-4">
                         <Activity className="w-8 h-8 text-indigo-500" />
                         Usage Analytics
                     </h2>
@@ -104,7 +104,7 @@ export default function UsageAnalytics() {
                             key={range}
                             onClick={() => setTimeRange(range)}
                             className={cn(
-                                "px-4 py-1.5 rounded-xl text-xs font-bold transition-all",
+                                "px-4 py-2 rounded-xl text-xs font-bold transition-all",
                                 timeRange === range
                                     ? "bg-white dark:bg-neutral-700 text-indigo-600 dark:text-indigo-400 shadow-sm"
                                     : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
@@ -147,7 +147,7 @@ export default function UsageAnalytics() {
             {/* Charts Row 1: Daily Activity & Feature Popularity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Daily Activity Chart */}
-                <div className="bg-white dark:bg-neutral-900/50 p-6 rounded-3xl border border-slate-100 dark:border-neutral-800 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900/50 p-6 rounded-2xl border border-slate-100 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="font-bold text-foreground flex items-center gap-2">
@@ -185,7 +185,7 @@ export default function UsageAnalytics() {
                                     content={({ active, payload, label }) => {
                                         if (active && payload && payload.length) {
                                             return (
-                                                <div className="bg-white dark:bg-neutral-800 p-3 rounded-xl border border-slate-200 dark:border-neutral-700 shadow-xl">
+                                                <div className="bg-white dark:bg-neutral-800 p-2 sm:p-4 rounded-xl border border-slate-200 dark:border-neutral-700 shadow-xl">
                                                     <p className="text-xs font-bold text-foreground mb-1">{label}</p>
                                                     <p className="text-indigo-600 font-black text-lg">{payload[0].value} <span className="text-xs font-normal text-slate-400">events</span></p>
                                                 </div>
@@ -201,7 +201,7 @@ export default function UsageAnalytics() {
                 </div>
 
                 {/* Feature Popularity Chart */}
-                <div className="bg-white dark:bg-neutral-900/50 p-6 rounded-3xl border border-slate-100 dark:border-neutral-800 shadow-sm">
+                <div className="bg-white dark:bg-neutral-900/50 p-6 rounded-2xl border border-slate-100 dark:border-neutral-800 shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="font-bold text-foreground flex items-center gap-2">
@@ -232,7 +232,7 @@ export default function UsageAnalytics() {
                                     content={({ active, payload }) => {
                                         if (active && payload && payload.length) {
                                             return (
-                                                <div className="bg-white dark:bg-neutral-800 p-3 rounded-xl border border-slate-200 dark:border-neutral-700 shadow-xl">
+                                                <div className="bg-white dark:bg-neutral-800 p-2 sm:p-4 rounded-xl border border-slate-200 dark:border-neutral-700 shadow-xl">
                                                     <p className="text-amber-600 font-black text-lg">{payload[0].value} <span className="text-xs font-normal text-slate-400">uses</span></p>
                                                 </div>
                                             );
@@ -252,7 +252,7 @@ export default function UsageAnalytics() {
             </div>
 
             {/* Row 2: Top Users Table */}
-            <div className="bg-white dark:bg-neutral-900/50 rounded-3xl border border-slate-100 dark:border-neutral-800 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900/50 rounded-2xl border border-slate-100 dark:border-neutral-800 shadow-sm overflow-hidden">
                 <div className="px-8 py-6 border-b border-slate-100 dark:border-neutral-800 flex items-center justify-between bg-background/50 dark:bg-neutral-800/30">
                     <div>
                         <h3 className="font-bold text-foreground flex items-center gap-2">
@@ -291,7 +291,7 @@ export default function UsageAnalytics() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2 sm:gap-4">
                                             <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 font-bold text-xs">
                                                 {user.email.charAt(0).toUpperCase()}
                                             </div>
@@ -337,7 +337,7 @@ function MetricCard({ title, value, icon, trend, color }: { title: string, value
     };
 
     return (
-        <div className="bg-white dark:bg-neutral-900/50 p-6 rounded-3xl border border-slate-100 dark:border-neutral-800 shadow-sm">
+        <div className="bg-white dark:bg-neutral-900/50 p-6 rounded-2xl border border-slate-100 dark:border-neutral-800 shadow-sm">
             <div className="flex items-center justify-between mb-4">
                 <div className={cn("p-2.5 rounded-2xl", colorClasses[color])}>
                     {icon}

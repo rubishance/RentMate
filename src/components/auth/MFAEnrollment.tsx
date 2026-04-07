@@ -96,7 +96,7 @@ export default function MFAEnrollment() {
                         <p className="text-xs text-muted-foreground text-center mb-2">
                             Scan this with Google Authenticator or Authy
                         </p>
-                        <div className="flex items-center gap-2 text-sm text-gray-700 font-mono bg-white px-3 py-1 rounded border">
+                        <div className="flex items-center gap-2 text-sm text-gray-700 font-mono bg-white px-2 sm:px-4 py-1 rounded border">
                             {secret}
                             <button
                                 onClick={() => navigator.clipboard.writeText(secret)}
@@ -117,7 +117,7 @@ export default function MFAEnrollment() {
                                     name="code"
                                     type="text"
                                     required
-                                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-foreground focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
+                                    className="appearance-none rounded-lg relative block w-full px-2 sm:px-4 py-2 border border-gray-300 placeholder-gray-500 text-foreground focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
                                     placeholder="000 000"
                                     value={verifyCode}
                                     onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}

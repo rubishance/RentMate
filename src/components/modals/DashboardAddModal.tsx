@@ -46,16 +46,16 @@ export function DashboardAddModal({ isOpen, onClose }: DashboardAddModalProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 md:p-8"
+                        className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-6"
                         onClick={handleBackdropClick}
                     >
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                            className="bg-white dark:bg-neutral-900 w-full max-w-lg rounded-[2.5rem] shadow-jewel overflow-hidden flex flex-col relative"
+                            className="bg-white dark:bg-neutral-900 w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-jewel overflow-hidden flex flex-col relative mt-auto sm:mt-0 max-h-[90dvh]"
                         >
-                            <div className="absolute top-6 right-6 z-10">
+                            <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-10">
                                 <button
                                     onClick={onClose}
                                     className="p-2 rounded-full bg-slate-100 dark:bg-neutral-800 text-slate-500 hover:text-foreground hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors"
@@ -64,10 +64,10 @@ export function DashboardAddModal({ isOpen, onClose }: DashboardAddModalProps) {
                                 </button>
                             </div>
 
-                            <div className="p-8 pt-12 grid gap-4">
+                            <div className="p-6 pt-12 grid gap-4">
                                 <button
                                     onClick={() => handleAction('property')}
-                                    className="group relative overflow-hidden flex items-center gap-4 p-5 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl transition-all duration-300 text-left"
+                                    className="group relative overflow-hidden flex items-center gap-4 p-6 sm:p-6 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl transition-all duration-300 text-left"
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                                         <Home className="w-6 h-6" />
@@ -79,7 +79,7 @@ export function DashboardAddModal({ isOpen, onClose }: DashboardAddModalProps) {
 
                                 <button
                                     onClick={() => handleAction('contract')}
-                                    className="group relative overflow-hidden flex items-center gap-4 p-5 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl transition-all duration-300 text-left"
+                                    className="group relative overflow-hidden flex items-center gap-4 p-6 sm:p-6 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl transition-all duration-300 text-left"
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                                         <FileText className="w-6 h-6" />
@@ -91,7 +91,7 @@ export function DashboardAddModal({ isOpen, onClose }: DashboardAddModalProps) {
 
                                 <button
                                     onClick={() => handleAction('payment')}
-                                    className="group relative overflow-hidden flex items-center gap-4 p-5 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl transition-all duration-300 text-left"
+                                    className="group relative overflow-hidden flex items-center gap-4 p-6 sm:p-6 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl transition-all duration-300 text-left"
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                                         <CreditCard className="w-6 h-6" />
@@ -103,7 +103,7 @@ export function DashboardAddModal({ isOpen, onClose }: DashboardAddModalProps) {
 
                                 <button
                                     onClick={() => handleAction('document')}
-                                    className="group relative overflow-hidden flex items-center gap-4 p-5 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl transition-all duration-300 text-left"
+                                    className="group relative overflow-hidden flex items-center gap-4 p-6 sm:p-6 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl transition-all duration-300 text-left"
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                                         <FileStack className="w-6 h-6" />

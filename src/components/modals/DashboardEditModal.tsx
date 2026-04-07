@@ -30,6 +30,8 @@ export function DashboardEditModal({ isOpen, onClose, layout, onSave }: Dashboar
     
     // Track which dynamic widgets actually have data
     const [activeWidgetIds, setActiveWidgetIds] = useState<Set<string> | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -124,14 +126,27 @@ export function DashboardEditModal({ isOpen, onClose, layout, onSave }: Dashboar
         }
     }, [isOpen, layout, user]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
+        setIsSaving(true);
         // Ensure order is sequential and matches array index before saving
         const finalLayout = editedLayout.map((widget, index) => ({
             ...widget,
             order: index
         }));
-        onSave(finalLayout);
-        onClose();
+        
+        try {
+            await onSave(finalLayout);
+        } catch (e) {
+            console.error(e);
+        }
+        
+        setIsSaving(false);
+        setIsSuccess(true);
+        
+        setTimeout(() => {
+            setIsSuccess(false);
+            onClose();
+        }, 800);
     };
 
     const toggleVisibility = (id: string, currentVisibility: boolean) => {
@@ -174,7 +189,7 @@ export function DashboardEditModal({ isOpen, onClose, layout, onSave }: Dashboar
             case 'usage_overview': return <HardDrive className="w-5 h-5 text-blue-500" />;
             case 'index_pulse': return <Activity className="w-5 h-5 text-rose-500" />;
             case 'smart_actions': return <Zap className="w-5 h-5 text-amber-500" />;
-            case 'digital_protocol': return <FileText className="w-5 h-5 text-purple-500" />;
+            case 'digital_protocol': return <FileText className="w-5 h-5 text-indigo-500" />;
             case 'prospective_tenants': return <Users className="w-5 h-5 text-cyan-500" />;
             case 'rental_trends': return <TrendingUp className="w-5 h-5 text-teal-500" />;
             case 'market_intelligence': return <Lightbulb className="w-5 h-5 text-yellow-500" />;
@@ -190,25 +205,28 @@ export function DashboardEditModal({ isOpen, onClose, layout, onSave }: Dashboar
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 md:p-8"
-                    onClick={(e) => e.target === e.currentTarget && onClose()}
+                    className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-6"
                 >
                     <motion.div
                         initial={{ scale: 0.95, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                        className="bg-white dark:bg-neutral-900 w-full max-w-xl rounded-[2.5rem] shadow-jewel overflow-hidden flex flex-col relative max-h-[90vh]"
+                        className="bg-white dark:bg-neutral-900 w-full max-w-xl rounded-t-3xl sm:rounded-2xl shadow-jewel overflow-hidden flex flex-col relative h-auto max-h-[90dvh] mt-auto sm:mt-0 pb-[env(safe-area-inset-bottom)] sm:pb-0"
                     >
-                        <div className="absolute top-6 right-6 z-10">
+                        {/* Mobile Drawer Handle */}
+                        <div className="w-full flex justify-center pt-3 pb-1 sm:hidden shrink-0 absolute top-0 left-0 right-0 z-50">
+                            <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-700 rounded-full" />
+                        </div>
+
+                        <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-[60]">
                             <button
                                 onClick={onClose}
-                                className="p-2 rounded-full bg-slate-100 dark:bg-neutral-800 text-slate-500 hover:text-foreground hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors"
+                                className="p-2 rounded-full bg-slate-100 dark:bg-neutral-800 text-slate-500 hover:text-foreground hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors pointer-events-auto"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <div className="p-8 pb-6 border-b border-sidebar-border/50 shrink-0">
+                        <div className="p-6 sm:px-6 pt-10 sm:pt-6 border-b border-sidebar-border/50 shrink-0">
                             <h2 className="text-2xl md:text-3xl font-black tracking-tighter text-foreground text-center">
                                 {t('customizeDashboard')}
                             </h2>
@@ -217,7 +235,7 @@ export function DashboardEditModal({ isOpen, onClose, layout, onSave }: Dashboar
                             </p>
                         </div>
 
-                        <div className="p-6 md:p-8 overflow-y-auto space-y-3 bg-slate-50/50 dark:bg-black/10 flex-1">
+                        <div className="p-6 overflow-y-auto space-y-4 bg-slate-50/50 dark:bg-black/10 flex-1">
                             {!activeWidgetIds ? (
                                 <div className="flex flex-col items-center justify-center py-12 gap-4">
                                     <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
@@ -238,7 +256,7 @@ export function DashboardEditModal({ isOpen, onClose, layout, onSave }: Dashboar
                                     <div 
                                         key={widget.id}
                                         className={cn(
-                                            "flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 bg-white dark:bg-neutral-800/80 shadow-sm",
+                                            "flex items-center gap-4 p-6 rounded-2xl border transition-all duration-300 bg-white dark:bg-neutral-800/80 shadow-sm",
                                             !widget.visible && "opacity-60 grayscale-[0.5]"
                                         )}
                                     >
@@ -259,7 +277,7 @@ export function DashboardEditModal({ isOpen, onClose, layout, onSave }: Dashboar
                                             </button>
                                         </div>
                                         
-                                        <div className="flex-1 min-w-0 flex items-center gap-3">
+                                        <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-4">
                                             <div className="p-2 bg-slate-100 dark:bg-neutral-700/50 rounded-xl shrink-0">
                                                 {getWidgetIcon(widget.widgetId)}
                                             </div>
@@ -273,7 +291,7 @@ export function DashboardEditModal({ isOpen, onClose, layout, onSave }: Dashboar
                                             </div>
                                         </div>
 
-                                        <div className="shrink-0 flex items-center gap-3">
+                                        <div className="shrink-0 flex items-center gap-2 sm:gap-4">
                                             <span className="text-xs font-bold text-muted-foreground whitespace-nowrap hidden sm:inline-block w-12 text-center">
                                                 {widget.visible ? t('visible') : t('hidden')}
                                             </span>
@@ -288,11 +306,11 @@ export function DashboardEditModal({ isOpen, onClose, layout, onSave }: Dashboar
                         )}
                         </div>
                         
-                        <div className="p-6 md:p-8 bg-white dark:bg-neutral-900 border-t border-sidebar-border/50 flex justify-end gap-3 shrink-0">
-                             <Button variant="ghost" onClick={onClose} className="rounded-xl px-6">
+                        <div className="p-6 bg-white dark:bg-neutral-900 border-t border-sidebar-border/50 flex gap-2 sm:gap-4 shrink-0">
+                             <Button variant="secondary" onClick={onClose} className="flex-1 rounded-xl h-12">
                                 {t('cancel')}
                              </Button>
-                             <Button variant="primary" onClick={handleSave} className="rounded-xl px-8 shadow-md">
+                             <Button variant="primary" onClick={handleSave} isLoading={isSaving} isSuccess={isSuccess} className="flex-1 rounded-xl h-12 shadow-md">
                                 {t('saveChanges')}
                              </Button>
                         </div>

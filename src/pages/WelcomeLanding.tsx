@@ -97,7 +97,7 @@ export function WelcomeLanding() {
             />
             {/* --- HEADER --- */}
             <header className="fixed top-0 w-full z-50 bg-white/50 dark:bg-black/50 backdrop-blur-3xl border-b border-slate-100 dark:border-neutral-900 transition-all">
-                <div className="max-w-7xl mx-auto px-3 md:px-8 h-20 md:h-24 flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 h-20 md:h-24 flex items-center justify-between">
                     <div className="flex items-center cursor-pointer group" onClick={() => navigate('/')}>
                         <span className="text-2xl md:text-4xl font-black tracking-tighter text-foreground uppercase">
                             Rent<span className="opacity-40">Mate</span>
@@ -144,7 +144,7 @@ export function WelcomeLanding() {
                             {isRtl ? 'כניסה' : 'Sign In'}
                         </Button>
                         <button
-                            className="lg:hidden p-3 text-foreground hover:bg-background dark:hover:bg-neutral-900 rounded-xl transition-colors"
+                            className="lg:hidden p-2 sm:p-4 text-foreground hover:bg-background dark:hover:bg-neutral-900 rounded-xl transition-colors"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             aria-label="Toggle Menu"
                         >
@@ -182,7 +182,7 @@ export function WelcomeLanding() {
                                             setIsMenuOpen(false);
                                         }}
                                         className={cn(
-                                            "w-full text-right p-5 rounded-3xl text-3xl font-black uppercase tracking-tighter transition-all flex items-center justify-between group",
+                                            "w-full text-right p-4 sm:p-6 rounded-2xl text-3xl font-black uppercase tracking-tighter transition-all flex items-center justify-between group",
                                             activeTab === tab
                                                 ? "bg-muted/50 dark:bg-neutral-900 text-foreground"
                                                 : "text-muted-foreground hover:text-foreground"
@@ -217,7 +217,7 @@ export function WelcomeLanding() {
 
                                 <Button
                                     onClick={() => navigate('/login')}
-                                    className="w-full h-20 font-black text-xs uppercase tracking-[0.3em] rounded-[2rem] shadow-premium-dark gap-4"
+                                    className="w-full h-20 font-black text-xs uppercase tracking-[0.3em] rounded-2xl shadow-premium-dark gap-4"
                                 >
                                     {isRtl ? 'כניסה למערכת' : 'Sign In'}
                                     <ArrowRight className={cn("w-6 h-6", isRtl && "rotate-180")} />
@@ -251,7 +251,7 @@ export function WelcomeLanding() {
                                             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                                             className="space-y-8"
                                         >
-                                            <div className="inline-flex items-center gap-3 px-4 py-2 bg-background dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
+                                            <div className="inline-flex items-center gap-2 sm:gap-4 px-4 py-2 bg-background dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
                                                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                                                 <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">
                                                     {isRtl ? 'בינה מלאכותית בשירות הנדל״ן' : 'AI Powered Real Estate'}
@@ -320,7 +320,7 @@ export function WelcomeLanding() {
                                                 whileInView={{ opacity: 1, scale: 1 }}
                                                 transition={{ delay: i * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                                                 viewport={{ once: true }}
-                                                className="group p-10 rounded-[3rem] bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 hover:shadow-premium transition-all duration-700 cursor-pointer relative overflow-hidden"
+                                                className="group p-10 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 hover:shadow-premium transition-all duration-700 cursor-pointer relative overflow-hidden"
                                                 onClick={() => {
                                                     if (f.icon === Calculator) {
                                                         navigate('/tools/cpi-calculator');
@@ -371,7 +371,7 @@ export function WelcomeLanding() {
                                         </div>
                                         <div className="lg:w-1/2 relative group">
                                             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 blur-[100px] rounded-full opacity-50 group-hover:opacity-75 transition-opacity" />
-                                            <div className="relative glass-premium dark:bg-black/40 border border-white/20 p-8 rounded-[2.5rem] shadow-2xl -rotate-3 group-hover:-rotate-1 transition-transform duration-700">
+                                            <div className="relative glass-premium dark:bg-black/40 border border-white/20 p-8 rounded-2xl shadow-2xl -rotate-3 group-hover:-rotate-1 transition-transform duration-700">
                                                 {/* Map Abstract */}
                                                 <div className="aspect-video bg-muted/50 dark:bg-neutral-800 rounded-2xl relative overflow-hidden flex items-center justify-center border border-black/5 dark:border-white/5">
                                                     <MapPin className="w-16 h-16 text-primary animate-bounce" />
@@ -422,7 +422,7 @@ export function WelcomeLanding() {
                             className="min-h-[80vh] flex items-center justify-center px-8"
                         >
                             <div className="text-center space-y-8">
-                                <div className="w-24 h-24 bg-background dark:bg-neutral-900 rounded-[2rem] flex items-center justify-center mx-auto shadow-minimal">
+                                <div className="w-24 h-24 bg-background dark:bg-neutral-900 rounded-2xl flex items-center justify-center mx-auto shadow-minimal">
                                     <Clock className="w-10 h-10 text-slate-300" />
                                 </div>
                                 <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase">Coming Soon</h2>

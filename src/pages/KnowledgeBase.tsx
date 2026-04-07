@@ -44,7 +44,7 @@ export function KnowledgeBase() {
         <div className="animate-in fade-in duration-500">
             {/* Header */}
             <div className="pt-16 pb-12">
-                <div className="w-full px-5">
+                <div className="w-full px-4 sm:px-6">
                     <button
                         onClick={() => navigate('/dashboard')}
                         className="mb-12 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all group px-4 py-2 glass-premium dark:bg-neutral-900/60 rounded-full border-white/5 shadow-minimal w-fit lowercase font-black text-xs uppercase tracking-widest"
@@ -55,7 +55,7 @@ export function KnowledgeBase() {
                     </button>
 
                     <div className="space-y-4">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-2">
+                        <div className="inline-flex items-center gap-2 px-2 sm:px-4 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-2">
                             <Book className="w-3 h-3 text-primary" />
                             <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-indigo-400">
                                 {t('knowledgeBaseTitle')}
@@ -78,14 +78,14 @@ export function KnowledgeBase() {
                                 placeholder={t('search_articles')}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-14 pr-6 py-5 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[2rem] text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-minimal transition-all"
+                                className="w-full pl-14 pr-6 py-4 sm:py-6 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-2xl text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-minimal transition-all"
                             />
                         </div>
                         <div className="relative group">
                             <select
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
-                                className="w-full md:w-64 px-8 py-5 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[2rem] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-minimal transition-all appearance-none cursor-pointer font-black text-xs uppercase tracking-widest lowercase"
+                                className="w-full md:w-64 px-8 py-4 sm:py-6 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-2xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-minimal transition-all appearance-none cursor-pointer font-black text-xs uppercase tracking-widest lowercase"
                             >
                                 <option value="all">{t('all_categories')}</option>
                                 {categories.slice(1).map(cat => (
@@ -98,9 +98,9 @@ export function KnowledgeBase() {
             </div>
 
             {/* Articles Grid */}
-            <div className="w-full px-5 pb-4">
+            <div className="w-full px-4 sm:px-6 pb-4">
                 {filteredArticles.length === 0 ? (
-                    <div className="text-center py-24 glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] shadow-minimal">
+                    <div className="text-center py-24 glass-premium dark:bg-neutral-900/40 border-white/5 rounded-2xl shadow-minimal">
                         <p className="text-muted-foreground text-lg italic opacity-70 font-black tracking-tight">
                             {t('no_articles_found')}
                         </p>
@@ -111,12 +111,12 @@ export function KnowledgeBase() {
                             <article
                                 key={article.slug}
                                 onClick={() => navigate(`/knowledge-base/${article.slug}`)}
-                                className="glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[3rem] p-8 md:p-10 shadow-minimal hover:shadow-jewel transition-all duration-700 cursor-pointer group relative overflow-hidden flex flex-col h-full"
+                                className="glass-premium dark:bg-neutral-900/60 border-white/10 rounded-2xl p-8 md:p-10 shadow-minimal hover:shadow-jewel transition-all duration-700 cursor-pointer group relative overflow-hidden flex flex-col h-full"
                             >
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[60px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000" />
 
                                 <div className="flex items-start justify-between mb-8 relative z-10">
-                                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-black uppercase tracking-widest border border-primary/20">
+                                    <span className="inline-flex items-center gap-2 px-2 sm:px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-black uppercase tracking-widest border border-primary/20">
                                         <Tag className="w-3 h-3" />
                                         {lang === 'he' ? article.category_he : article.category}
                                     </span>

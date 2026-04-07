@@ -97,7 +97,7 @@ export function ActivityWidget() {
     return (
         <div className="space-y-8">
             <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 bg-primary/10 rounded-xl">
+                <div className="p-2 sm:p-4 bg-primary/10 rounded-xl">
                     <Users className="w-6 h-6 text-primary" />
                 </div>
                 <div>
@@ -113,7 +113,7 @@ export function ActivityWidget() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* DAU Chart */}
-                <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[2.5rem] p-8 shadow-minimal">
+                <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-2xl p-8 shadow-minimal">
                     <h3 className="text-xl font-black text-foreground mb-6 flex items-center gap-2 lowercase">
                         <Users className="w-4 h-4 text-emerald-500" />
                         daily active users
@@ -142,7 +142,7 @@ export function ActivityWidget() {
                 </div>
 
                 {/* Page Views Chart */}
-                <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[2.5rem] p-8 shadow-minimal">
+                <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-2xl p-8 shadow-minimal">
                     <h3 className="text-xl font-black text-foreground mb-6 flex items-center gap-2 lowercase">
                         <Eye className="w-4 h-4 text-primary" />
                         page views trend
@@ -178,7 +178,7 @@ export function ActivityWidget() {
             </div>
 
             {/* Top Pages List */}
-            <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[2.5rem] p-8 shadow-minimal">
+            <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-2xl p-8 shadow-minimal">
                 <h3 className="text-xl font-black text-foreground mb-6 flex items-center gap-2 lowercase">
                     <TrendingUp className="w-4 h-4 text-amber-500" />
                     most visited pages
@@ -186,13 +186,13 @@ export function ActivityWidget() {
                 <div className="space-y-4">
                     {topPages.map((page, index) => (
                         <div key={index} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-4">
                                 <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white/10 text-xs font-black text-muted-foreground">
                                     {index + 1}
                                 </span>
                                 <span className="text-sm font-bold text-foreground font-mono">{page.path}</span>
                             </div>
-                            <span className="text-xs font-black text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full">
+                            <span className="text-xs font-black text-amber-500 bg-amber-500/10 px-2 sm:px-4 py-1 rounded-full">
                                 {page.count} views
                             </span>
                         </div>

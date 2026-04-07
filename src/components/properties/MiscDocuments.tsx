@@ -7,6 +7,8 @@ import { CompressionService } from '../../services/compression.service';
 import { format, parseISO } from 'date-fns';
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
+import { TenantCandidateModal } from '../modals/TenantCandidateModal';
+import { supabase } from '../../lib/supabase';
 import { DatePicker } from '../ui/DatePicker';
 import { useSubscription } from '../../hooks/useSubscription';
 
@@ -14,9 +16,10 @@ interface MiscDocumentsProps {
     property: Property;
     readOnly?: boolean;
     autoOpenUpload?: boolean;
+    categoryFilter?: DocumentCategory | DocumentCategory[];
 }
 
-export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocumentsProps) {
+export function MiscDocuments({ property, readOnly, autoOpenUpload, categoryFilter }: MiscDocumentsProps) {
     const { t } = useTranslation();
     const { plan } = useSubscription();
     const isFreePlan = plan?.id === 'free' || plan?.id === 'solo';
@@ -27,6 +30,8 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
     const [showUploadForm, setShowUploadForm] = useState(false);
     const [selectedDocument, setSelectedDocument] = useState<PropertyDocument | null>(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
+    const [isCandidateViewOpen, setIsCandidateViewOpen] = useState(false);
 
     // New Folder / Upload Form State
     const [newFolderName, setNewFolderName] = useState('');
@@ -53,17 +58,52 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
     async function loadData() {
         setLoading(true);
         try {
-            const miscCategories: DocumentCategory[] = ['insurance', 'warranty', 'legal', 'invoice', 'other'];
+            const miscCategories: DocumentCategory[] = categoryFilter 
+                ? (Array.isArray(categoryFilter) ? categoryFilter : [categoryFilter])
+                : ['insurance', 'warranty', 'legal', 'invoice', 'other'];
+
+            const folderCategory = Array.isArray(categoryFilter) ? categoryFilter[0] : (categoryFilter || 'other');
 
             const [fetchedFolders, results] = await Promise.all([
-                propertyDocumentsService.getFolders(property.id, 'other'),
+                propertyDocumentsService.getFolders(property.id, folderCategory),
                 Promise.all(miscCategories.map(cat =>
                     propertyDocumentsService.getPropertyDocuments(property.id, { category: cat })
                 ))
             ]);
 
             setFolders(fetchedFolders);
-            setDocuments(results.flat());
+
+            let allDocs = results.flat() as any[];
+
+            if (miscCategories.includes('tenant_form')) {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const { data: candidatesData, error: candidatesError } = await supabase
+                        .from('tenant_candidates')
+                        .select('*, properties(id, address, city)')
+                        .eq('property_id', property.id);
+                        
+                    if (!candidatesError && candidatesData && candidatesData.length > 0) {
+                        const candidatesAsDocs = candidatesData.map((c: any) => ({
+                            id: c.id,
+                            user_id: user.id,
+                            property_id: c.property_id,
+                            category: 'tenant_form',
+                            title: (localStorage.getItem('rentmate_lang') === 'he' ? 'הרשמה מ-' : 'Application from ') + (c.full_name || (localStorage.getItem('rentmate_lang') === 'he' ? 'אנונימי' : 'Anonymous')),
+                            file_name: `Candidate_${c.id.substring(0, 8)}`,
+                            storage_bucket: '',
+                            storage_path: '',
+                            created_at: c.created_at,
+                            document_date: c.created_at, 
+                            properties: c.properties,
+                            rawCandidate: c
+                        }));
+                        allDocs = [...allDocs, ...candidatesAsDocs];
+                    }
+                }
+            }
+
+            setDocuments(allDocs as any);
         } catch (error) {
             console.error('Error fetching documents:', error);
         } finally {
@@ -100,7 +140,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
 
             const folder = await propertyDocumentsService.createFolder({
                 property_id: property.id,
-                category: 'other',
+                category: Array.isArray(categoryFilter) ? categoryFilter[0] : (categoryFilter || 'other'),
                 name: folderName,
                 folder_date: newFolderDate || new Date().toISOString().split('T')[0],
                 description: newFolderNote
@@ -120,7 +160,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
 
                     return propertyDocumentsService.uploadDocument(fileToUpload, {
                         propertyId: property.id,
-                        category: 'other',
+                        category: Array.isArray(categoryFilter) ? categoryFilter[0] : (categoryFilter || 'other'),
                         folderId: folder.id,
                         title: stagedFile.file.name,
                         description: stagedFile.description,
@@ -204,17 +244,25 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
     const orphanedDocs = documents.filter(d => !d.folder_id);
     const totalValue = documents.reduce((sum, doc) => sum + (doc.amount || 0), 0);
 
+    const isTenantForm = categoryFilter === 'tenant_form' || (Array.isArray(categoryFilter) && categoryFilter.includes('tenant_form'));
+    const headerTitle = isTenantForm ? t('tenantForms', { defaultValue: 'טופסי הרשמה' }) : t('documentsStorage');
+    const headerDesc = isTenantForm ? t('tenantFormsDesc', { defaultValue: 'ניהול שאלוני הרשמה ופרטי שוכרים' }) : t('documentsDesc');
+
     return (
         <div className="p-6 space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="font-bold text-foreground dark:text-white">{t('documentsStorage')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('documentsDesc')}</p>
+                    <h3 className="font-bold text-foreground dark:text-white">{headerTitle}</h3>
+                    <p className="text-sm text-muted-foreground">{headerDesc}</p>
                 </div>
                 <div className="text-right">
-                    <p className="text-xs text-muted-foreground">{t('totalSpent')}</p>
-                    <p className="text-2xl font-bold text-foreground dark:text-white">₪{totalValue.toLocaleString()}</p>
+                    {!isTenantForm && (
+                        <>
+                            <p className="text-xs text-muted-foreground">{t('totalSpent')}</p>
+                            <p className="text-2xl font-bold text-foreground dark:text-white">₪{totalValue.toLocaleString()}</p>
+                        </>
+                    )}
                     <p className="text-xs text-muted-foreground mt-1">
                         {t('documentsCount', { count: documents.length })}
                     </p>
@@ -222,21 +270,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
             </div>
 
             {/* Actions */}
-            {!readOnly && !showUploadForm && (
-                <button
-                    onClick={() => {
-                        if (isFreePlan && documents.length >= 5) {
-                            alert(t('upgradeForMoreDocuments', { defaultValue: 'Please upgrade your plan to store more than 5 documents.' }));
-                            return;
-                        }
-                        setShowUploadForm(true);
-                    }}
-                    className="w-full py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-blue-400 hover:bg-primary/10/50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-2 text-muted-foreground dark:text-muted-foreground"
-                >
-                    <Plus className="w-5 h-5" />
-                    {t('createDocumentFolder')}
-                </button>
-            )}
+
 
             {/* Create Folder Form */}
             {/* Create Folder Form (Premium UI) */}
@@ -265,7 +299,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
 
                     {/* Folder Metadata */}
                     <div className="relative space-y-5">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div className="space-y-1.5">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('subject')}</label>
                                 <input
@@ -273,7 +307,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                                     value={newFolderName}
                                     onChange={(e) => setNewFolderName(e.target.value)}
                                     placeholder={t('e.g. Tenancy Agreement 2024')}
-                                    className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-primary transition-all backdrop-blur-sm outline-none dark:text-white"
+                                    className="w-full px-4 py-2 sm:py-4 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-primary transition-all backdrop-blur-sm outline-none dark:text-white"
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -291,7 +325,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                                 value={newFolderNote}
                                 onChange={(e) => setNewFolderNote(e.target.value)}
                                 placeholder={t('optionalFolderNote')}
-                                className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-primary transition-all backdrop-blur-sm outline-none dark:text-white resize-none"
+                                className="w-full px-4 py-2 sm:py-4 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-primary transition-all backdrop-blur-sm outline-none dark:text-white resize-none"
                                 rows={2}
                             />
                         </div>
@@ -319,7 +353,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
                             <div className="w-full py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl group-hover:border-primary group-hover:bg-primary/10/30 dark:group-hover:bg-blue-900/10 transition-all flex flex-col items-center justify-center text-center gap-2">
-                                <div className="p-3 bg-primary/10 dark:bg-blue-900/20 rounded-full group-hover:scale-110 transition-transform">
+                                <div className="p-2 sm:p-4 bg-primary/10 dark:bg-blue-900/20 rounded-full group-hover:scale-110 transition-transform">
                                     <Upload className="w-6 h-6 text-primary dark:text-blue-400" />
                                 </div>
                                 <div>
@@ -331,11 +365,11 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
 
                         {/* Staged Files */}
                         {stagedFiles.length > 0 && (
-                            <div className="grid gap-3 max-h-80 overflow-y-auto pr-1">
+                            <div className="grid gap-2 sm:gap-4 max-h-80 overflow-y-auto pr-1">
                                 {stagedFiles.map((file) => (
                                     <div key={file.id} className="relative group bg-white/60 dark:bg-gray-800/60 p-4 rounded-xl border border-border dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div className="flex items-center gap-3 overflow-hidden">
+                                        <div className="flex justify-between items-start mb-2 sm:mb-4">
+                                            <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
                                                 <div className="p-2 bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm">
                                                     <FileText className="w-5 h-5 text-indigo-500" />
                                                 </div>
@@ -351,7 +385,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                                             </button>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4 mb-3">
+                                        <div className="grid grid-cols-2 gap-4 mb-2 sm:mb-4">
                                             <div>
                                                 <label className="text-xs font-medium text-muted-foreground mb-1 block">{t('date')}</label>
                                                 <DatePicker
@@ -366,7 +400,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                                                     type="number"
                                                     value={file.amount}
                                                     onChange={(e) => updateStagedFile(file.id, 'amount', e.target.value)}
-                                                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl focus:ring-1 focus:ring-indigo-500 outline-none"
+                                                    className="w-full px-2 py-2 text-xs bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl focus:ring-1 focus:ring-indigo-500 outline-none"
                                                     placeholder="0.00"
                                                 />
                                             </div>
@@ -376,7 +410,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                                                 type="text"
                                                 value={file.description}
                                                 onChange={(e) => updateStagedFile(file.id, 'description', e.target.value)}
-                                                className="w-full px-3 py-2 text-xs bg-secondary dark:bg-foreground border border-transparent focus:bg-white focus:border-blue-200 rounded-xl transition-all outline-none"
+                                                className="w-full px-2 sm:px-4 py-2 text-xs bg-secondary dark:bg-foreground border border-transparent focus:bg-white focus:border-blue-200 rounded-xl transition-all outline-none"
                                                 placeholder={t('addQuickNote')}
                                             />
                                         </div>
@@ -388,10 +422,10 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                     </div>
 
                     {/* Actions */}
-                    <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 p-4 sm:p-5 bg-gradient-to-t from-background via-background/95 to-transparent pt-8 flex gap-3 justify-end border-t border-transparent z-20">
+                    <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 p-4 sm:p-4 sm:p-6 bg-gradient-to-t from-background via-background/95 to-transparent pt-8 flex gap-2 sm:gap-4 justify-end border-t border-transparent z-20">
                         <button
                             onClick={() => setShowUploadForm(false)}
-                            className="px-5 py-2.5 text-sm font-semibold text-muted-foreground bg-muted/80 hover:bg-muted dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 rounded-xl transition-all shadow-sm border border-border/50"
+                            className="px-4 sm:px-6 py-2.5 text-sm font-semibold text-muted-foreground bg-muted/80 hover:bg-muted dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 rounded-xl transition-all shadow-sm border border-border/50"
                         >
                             {t('cancel')}
                         </button>
@@ -429,8 +463,13 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                 loading={loading}
                 property={property}
                 onDocumentClick={(doc) => {
-                    setSelectedDocument(doc);
-                    setIsDetailsModalOpen(true);
+                    if (doc.category === 'tenant_form' && (doc as any).rawCandidate) {
+                        setSelectedCandidate((doc as any).rawCandidate);
+                        setIsCandidateViewOpen(true);
+                    } else {
+                        setSelectedDocument(doc);
+                        setIsDetailsModalOpen(true);
+                    }
                 }}
             />
 
@@ -446,6 +485,15 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                     setSelectedDocument(updatedDoc as any);
                     loadData();
                 }}
+            />
+
+            <TenantCandidateModal
+                isOpen={isCandidateViewOpen}
+                onClose={() => {
+                    setIsCandidateViewOpen(false);
+                    setSelectedCandidate(null);
+                }}
+                candidate={selectedCandidate}
             />
         </div>
     );

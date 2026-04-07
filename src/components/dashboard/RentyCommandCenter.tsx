@@ -125,7 +125,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2"
+                        className="inline-flex items-center gap-2 px-2 sm:px-4 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2"
                     >
                         <Sparkles className="w-3 h-3 text-indigo-500" />
                         <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
@@ -141,7 +141,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                 <div className="flex gap-4">
                     <button
                         onClick={() => window.dispatchEvent(new CustomEvent('TOGGLE_NOTIFICATIONS'))}
-                        className="flex flex-col items-center px-3 py-1.5 bg-white/5 dark:bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group/updates"
+                        className="flex flex-col items-center px-2 sm:px-4 py-2 bg-white/5 dark:bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group/updates"
                     >
                         <span className="text-[7px] font-black uppercase tracking-widest text-muted-foreground group-hover/updates:text-indigo-400 transition-colors">{t('updates')}</span>
                         <span className="text-lg font-black text-foreground">{activeItems.length}</span>
@@ -160,7 +160,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                 onDrop={handleDrop}
             >
                 <div className={cn(
-                    "absolute inset-0 rounded-[2rem] transition-all duration-300 pointer-events-none",
+                    "absolute inset-0 rounded-2xl transition-all duration-300 pointer-events-none",
                     isDragging
                         ? "bg-indigo-500/20 ring-4 ring-indigo-500/30 scale-105"
                         : "bg-gradient-to-r from-indigo-500 to-blue-500 blur opacity-20 group-hover:opacity-30"
@@ -260,7 +260,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                                 >
                                     <Card
                                         className={cn(
-                                            "w-full rounded-[2rem] border transition-all duration-300 hover:scale-[1.01] cursor-pointer group/card overflow-hidden",
+                                            "w-full rounded-2xl border transition-all duration-300 hover:scale-[1.01] cursor-pointer group/card overflow-hidden",
                                             item.type === 'urgent'
                                                 ? "bg-rose-50/50 border-rose-200 dark:bg-rose-900/10 dark:border-rose-900/30"
                                                 : item.type === 'warning'
@@ -269,7 +269,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                                         )}
                                         onClick={() => handleCardClick(item)}
                                     >
-                                        <CardContent className="p-5 flex flex-col h-full justify-between relative">
+                                        <CardContent className="p-4 sm:p-6 flex flex-col h-full justify-between relative">
                                             {/* Decorative background circle for blue card */}
                                             {isActionOrInfo && (
                                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl opacity-50 -mr-10 -mt-10 pointer-events-none" />
@@ -298,7 +298,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                                                     {item.title}
                                                 </h3>
                                                 <p className={cn(
-                                                    "text-base leading-relaxed font-medium mb-5",
+                                                    "text-base leading-relaxed font-medium mb-4 sm:mb-6",
                                                     isActionOrInfo ? "text-primary-foreground/80" : "text-muted-foreground"
                                                 )}>
                                                     {item.desc}

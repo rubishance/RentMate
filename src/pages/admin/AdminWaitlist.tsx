@@ -106,7 +106,7 @@ export default function AdminWaitlist() {
             {/* Header & Stats */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-border dark:border-gray-700">
                 <div className="flex items-center gap-4">
-                    <div className="bg-primary-100 dark:bg-primary-900/30 p-3 rounded-xl border border-primary-200 dark:border-primary-800/50">
+                    <div className="bg-primary-100 dark:bg-primary-900/30 p-2 sm:p-4 rounded-xl border border-primary-200 dark:border-primary-800/50">
                         <Users className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                     </div>
                     <div>
@@ -115,7 +115,7 @@ export default function AdminWaitlist() {
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
+                <div className="flex flex-col sm:flex-row w-full md:w-auto gap-2 sm:gap-4">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <input
@@ -161,7 +161,7 @@ export default function AdminWaitlist() {
                                     <tr key={entry.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
                                         {/* Name */}
                                         <td className="py-4 px-6 align-top">
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2 sm:gap-4">
                                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-50 border border-primary-100 dark:bg-primary-900/30 dark:border-primary-800 flex items-center justify-center text-primary-600 font-bold uppercase">
                                                     {entry.full_name.charAt(0)}
                                                 </div>
@@ -203,7 +203,7 @@ export default function AdminWaitlist() {
                                                     size="sm"
                                                     onClick={() => handleDelete(entry.id, entry.full_name)}
                                                     disabled={isDeleting === entry.id}
-                                                    className="text-destructive hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1.5 h-auto rounded-xl"
+                                                    className="text-destructive hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-2 h-auto rounded-xl"
                                                     title="Remove from waitlist"
                                                 >
                                                     {isDeleting === entry.id ? (

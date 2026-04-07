@@ -12,7 +12,7 @@ import { motion } from 'framer-motion';
 export function RentyRagdoll() {
     return (
         <div
-            className="relative w-full h-[600px] bg-neutral-900/10 rounded-[3rem] border border-white/5 overflow-hidden flex items-center justify-center p-12 isolate"
+            className="relative w-full h-[600px] bg-neutral-900/10 rounded-2xl border border-white/5 overflow-hidden flex items-center justify-center p-12 isolate"
         >
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:32px_32px]"></div>
 

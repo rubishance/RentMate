@@ -127,7 +127,7 @@ export function NotificationCenter() {
                             <div className="max-h-[60vh] overflow-y-auto">
                                 {notifications.length === 0 ? (
                                     <div className="p-8 text-center text-muted-foreground dark:text-muted-foreground">
-                                        <div className="flex justify-center mb-3">
+                                        <div className="flex justify-center mb-2 sm:mb-4">
                                             <Bell className="w-8 h-8 opacity-20" />
                                         </div>
                                         <p className="text-sm">{t('noNotifications')}</p>
@@ -154,7 +154,7 @@ export function NotificationCenter() {
                                                     }`}
                                                 onClick={() => handleNotificationClick(notification)}
                                             >
-                                                <div className="flex gap-3">
+                                                <div className="flex gap-2 sm:gap-4">
                                                     <div className="mt-1 shrink-0">
                                                         {getIcon(notification.type)}
                                                     </div>

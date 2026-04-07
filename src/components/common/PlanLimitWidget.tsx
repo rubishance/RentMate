@@ -34,7 +34,7 @@ export function PlanLimitWidget({ entityType = 'properties' }: PlanLimitWidgetPr
                 </p>
                 <button
                     onClick={() => navigate('/settings')}
-                    className="w-full sm:w-auto px-10 py-3.5 bg-white text-[#0D47A1] hover:bg-white/90 transition-colors rounded-xl font-bold text-base md:text-lg shadow-sm"
+                    className="w-full sm:w-auto px-10 py-2 sm:py-4.5 bg-white text-[#0D47A1] hover:bg-white/90 transition-colors rounded-xl font-bold text-base md:text-lg shadow-sm"
                 >
                     {buttonText}
                 </button>

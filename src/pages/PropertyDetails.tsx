@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { PropertyHub } from '../components/stack/PropertyHub';
 import { supabase } from '../lib/supabase';
 import { Property } from '../types/database';
@@ -10,6 +10,7 @@ import { useDataCache } from '../contexts/DataCacheContext';
 export default function PropertyDetails() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const { t } = useTranslation();
     const { get, set } = useDataCache();
     const [property, setProperty] = useState<Property | null>(null);
@@ -98,6 +99,7 @@ export default function PropertyDetails() {
             <PropertyHub
                 propertyId={id}
                 property={property}
+                initialTab={location.state?.tab}
                 onDelete={handleDelete}
                 onSave={handleSave}
             />

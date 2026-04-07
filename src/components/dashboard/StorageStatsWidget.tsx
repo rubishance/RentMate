@@ -29,7 +29,7 @@ export function StorageStatsWidget({ counts, loading }: StorageStatsWidgetProps)
                 <CardContent>
                     <div className="space-y-4">
                         {[1, 2, 3].map(i => (
-                            <div key={i} className="flex items-center gap-3">
+                            <div key={i} className="flex items-center gap-2 sm:gap-4">
                                 <div className="w-10 h-10 rounded-xl bg-muted/50 dark:bg-neutral-800 animate-pulse"></div>
                                 <div className="h-4 w-full bg-muted/50 dark:bg-neutral-800 rounded-xl animate-pulse"></div>
                             </div>
@@ -74,7 +74,7 @@ export function StorageStatsWidget({ counts, loading }: StorageStatsWidgetProps)
     const totalFiles = Object.values(counts).reduce((a, b) => a + b, 0);
 
     return (
-        <Card hoverEffect glass className="h-full flex flex-col justify-between group/widget">
+        <Card hoverEffect glass className="h-full rounded-2xl flex flex-col justify-between group/widget">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <div className="flex items-center gap-2">
                     <Storage className="w-4 h-4 text-muted-foreground dashed-border p-0.5 box-content rounded-lg" />
@@ -95,7 +95,7 @@ export function StorageStatsWidget({ counts, loading }: StorageStatsWidgetProps)
                             className="group cursor-pointer flex items-center justify-between p-2 rounded-xl hover:bg-background dark:hover:bg-white/5 transition-colors border border-transparent hover:border-border/50"
                             onClick={() => navigate(`/properties?tab=${cat.id === 'utilities' ? 'utility' : cat.id}`)}
                         >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-4">
                                 <div className={`p-2 rounded-xl transition-all group-hover:scale-105 ${cat.bg}`}>
                                     <cat.icon className="w-4 h-4" />
                                 </div>

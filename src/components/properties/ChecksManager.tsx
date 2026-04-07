@@ -188,9 +188,9 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
                     </div>
 
                     {stagedFiles.length > 0 && (
-                        <div className="grid gap-3 max-h-60 overflow-y-auto">
+                        <div className="grid gap-2 sm:gap-4 max-h-60 overflow-y-auto">
                             {stagedFiles.map((file) => (
-                                <div key={file.id} className="relative group bg-white/60 dark:bg-gray-800/60 p-3 rounded-xl border border-border dark:border-gray-700 flex gap-4">
+                                <div key={file.id} className="relative group bg-white/60 dark:bg-gray-800/60 p-2 sm:p-4 rounded-xl border border-border dark:border-gray-700 flex gap-4">
                                     <div className="flex-1 space-y-2">
                                         <div className="flex justify-between">
                                             <span className="text-sm font-medium truncate">{file.file.name}</span>
@@ -216,8 +216,8 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
                         </div>
                     )}
 
-                    <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 p-4 sm:p-5 bg-gradient-to-t from-background via-background/95 to-transparent pt-8 flex gap-3 justify-end border-t border-transparent z-20">
-                        <button onClick={() => setShowUploadForm(false)} className="px-5 py-2.5 text-sm font-semibold text-muted-foreground bg-muted/80 hover:bg-muted dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 rounded-xl transition-all shadow-sm border border-border/50">{t('cancel')}</button>
+                    <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 p-4 sm:p-4 sm:p-6 bg-gradient-to-t from-background via-background/95 to-transparent pt-8 flex gap-2 sm:gap-4 justify-end border-t border-transparent z-20">
+                        <button onClick={() => setShowUploadForm(false)} className="px-4 sm:px-6 py-2.5 text-sm font-semibold text-muted-foreground bg-muted/80 hover:bg-muted dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 rounded-xl transition-all shadow-sm border border-border/50">{t('cancel')}</button>
                         <button
                             onClick={handleUpload}
                             disabled={uploading || stagedFiles.length === 0}

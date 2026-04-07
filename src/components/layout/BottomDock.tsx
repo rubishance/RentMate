@@ -15,7 +15,7 @@ const NAV_LABELS = {
         '/contracts': 'חוזים',
         '/documents': 'מסמכים',
         '/payments': 'תשלומים',
-        '/tools': 'מחשבון',
+        '/calculator': 'מחשבון',
         '/admin': 'ניהול'
     },
     en: {
@@ -24,7 +24,7 @@ const NAV_LABELS = {
         '/contracts': 'Contracts',
         '/documents': 'Documents',
         '/payments': 'Wallet',
-        '/tools': 'Calculator',
+        '/calculator': 'Calculator',
         '/admin': 'Admin'
     }
 } as const;
@@ -53,7 +53,7 @@ export function BottomDock() {
         { path: '/properties', label: labels['/properties'], icon: AssetsIcon },
         { path: '/documents', label: labels['/documents'], icon: DocumentsIcon },
         { path: '/payments', label: labels['/payments'], icon: PaymentsIcon },
-        { path: '/tools', label: labels['/tools'], icon: ToolsIcon },
+        { path: '/calculator', label: labels['/calculator'], icon: ToolsIcon },
         ...(isAdmin ? [{ path: '/admin', label: labels['/admin'], icon: AdminIcon }] : []),
     ];
 
@@ -84,12 +84,12 @@ export function BottomDock() {
                                 if (item.path === '/dashboard') prefetchRoutes.dashboard();
                                 if (item.path === '/properties') prefetchRoutes.properties();
                                 if (item.path === '/payments') prefetchRoutes.payments();
-                                if (item.path === '/tools') prefetchRoutes.settings();
+                                if (item.path === '/calculator') prefetchRoutes.settings();
                                 if (item.path === '/admin') prefetchRoutes.adminDashboard();
                             }}
                             aria-label={item.label}
                             aria-current={isActive ? 'page' : undefined}
-                            className="relative flex flex-col items-center gap-1.5 min-w-[60px] transition-all duration-300 group"
+                            className="relative flex flex-col items-center gap-2 min-w-[60px] transition-all duration-300 group"
                         >
                             <div className={cn(
                                 "flex items-center justify-center w-[3rem] h-[3rem] rounded-[1.5rem] transition-colors duration-300",

@@ -296,7 +296,7 @@ const ClientProfile = () => {
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    <span className="px-3 py-1 bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 rounded-xl text-xs font-black uppercase tracking-widest">
+                                    <span className="px-2 sm:px-4 py-1 bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 rounded-xl text-xs font-black uppercase tracking-widest">
                                         {getEffectivePlanName().replace('_', ' ')}
                                     </span>
                                     <button
@@ -310,7 +310,7 @@ const ClientProfile = () => {
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Standing</span>
-                            <span className={`px-3 py-1 rounded-xl text-xs font-black uppercase tracking-widest ${profile.subscription_status === 'active'
+                            <span className={`px-2 sm:px-4 py-1 rounded-xl text-xs font-black uppercase tracking-widest ${profile.subscription_status === 'active'
                                 ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20'
                                 : 'bg-red-50 text-red-700'
                                 }`}>
@@ -327,8 +327,8 @@ const ClientProfile = () => {
                                 <p className="text-xs text-muted-foreground font-medium italic">No invoices found for this client.</p>
                             ) : (
                                 invoices.slice(0, 5).map((inv: Invoice) => (
-                                    <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl bg-blue-50 dark:bg-foreground/50 border border-border dark:border-gray-800">
-                                        <div className="flex items-center gap-3">
+                                    <div key={inv.id} className="flex items-center justify-between p-2 sm:p-4 rounded-xl bg-blue-50 dark:bg-foreground/50 border border-border dark:border-gray-800">
+                                        <div className="flex items-center gap-2 sm:gap-4">
                                             <DocumentTextIcon className="w-5 h-5 text-muted-foreground" />
                                             <div>
                                                 <div className="text-xs font-bold text-foreground dark:text-white">₪{inv.amount}</div>
@@ -357,7 +357,7 @@ const ClientProfile = () => {
                             <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest">Interactive Timeline</h3>
                             <button
                                 onClick={() => setIsAddingNote(true)}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-primary-600/20"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-primary-600/20"
                             >
                                 <PlusIcon className="w-4 h-4" />
                                 Log Interaction
@@ -405,7 +405,7 @@ const ClientProfile = () => {
                                     <div className="space-y-4">
                                         {usageEvents.map(event => (
                                             <div key={event.id} className="flex items-center justify-between p-4 rounded-2xl bg-background dark:bg-neutral-800/20 border border-slate-100 dark:border-neutral-800">
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-2 sm:gap-4">
                                                     <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl">
                                                         <MousePointer2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                                     </div>
@@ -451,7 +451,7 @@ const ClientProfile = () => {
             {/* AI Transcript Modal */}
             {selectedBotChat && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-foreground w-full max-w-2xl max-h-[80vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-border dark:border-gray-800">
+                    <div className="bg-white dark:bg-foreground w-full max-w-2xl max-h-[80vh] rounded-2xl overflow-hidden flex flex-col shadow-2xl border border-border dark:border-gray-800">
                         <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
                             <div>
                                 <h3 className="text-lg font-black text-foreground dark:text-white uppercase tracking-tight">AI Conversation Transcript</h3>

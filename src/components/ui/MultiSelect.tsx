@@ -53,7 +53,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             <Listbox value={selected} onChange={onChange} multiple>
                 <div className="relative mt-1">
                     <Listbox.Button className={cn(
-                        "relative w-full cursor-pointer rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 py-3 rtl:pr-3 rtl:pl-10 pl-3 pr-10 rtl:text-right text-left shadow-sm focus:outline-none focus-visible:border-primary sm:text-sm transition-all duration-300 min-h-[48px]",
+                        "relative w-full cursor-pointer rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 py-2 sm:py-4 rtl:pr-3 rtl:pl-10 pl-3 pr-10 rtl:text-right text-left shadow-sm focus:outline-none focus-visible:border-primary sm:text-sm transition-all duration-300 min-h-[48px]",
                         error ? "border-destructive" : "hover:border-primary/50"
                     )}>
                         <div className="flex flex-wrap gap-2">
@@ -63,7 +63,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                                 selectedOptions.map((option) => (
                                     <span
                                         key={option.value}
-                                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-medium bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground animate-in fade-in zoom-in duration-200"
+                                        className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-lg text-xs font-medium bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground animate-in fade-in zoom-in duration-200"
                                     >
                                         {option.label}
                                         <div

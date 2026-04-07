@@ -148,7 +148,7 @@ export function ActionInbox() {
             <div className="divide-y divide-slate-50 dark:divide-slate-800">
                 {actions.length === 0 ? (
                     <div className="p-10 text-center">
-                        <CheckCircleIcon className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
+                        <CheckCircleIcon className="w-10 h-10 text-emerald-400 mx-auto mb-2 sm:mb-4" />
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Inbox Zero. Autopilot is running smoothly.</p>
                     </div>
                 ) : (
@@ -166,17 +166,17 @@ export function ActionInbox() {
                                         <div className="flex items-center gap-2">
                                             <h4 className="text-sm font-black text-foreground dark:text-white">{action.title}</h4>
                                             {action.metadata.is_lead && (
-                                                <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs font-black uppercase tracking-widest">
+                                                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs font-black uppercase tracking-widest">
                                                     LEAD
                                                 </span>
                                             )}
                                             {action.type === 'sales_lead' && (
-                                                <span className="px-1.5 py-0.5 bg-primary/10 text-blue-700 rounded text-xs font-black uppercase tracking-widest">
+                                                <span className="px-2 py-0.5 bg-primary/10 text-blue-700 rounded text-xs font-black uppercase tracking-widest">
                                                     SALE
                                                 </span>
                                             )}
                                             {new Date(action.updatedAt) < new Date(Date.now() - 24 * 60 * 60 * 1000) && (
-                                                <span className="px-1.5 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded text-xs font-black uppercase tracking-widest animate-pulse">
+                                                <span className="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded text-xs font-black uppercase tracking-widest animate-pulse">
                                                     Stagnant
                                                 </span>
                                             )}
@@ -202,7 +202,7 @@ export function ActionInbox() {
                                         </div>
                                     )}
 
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2 sm:gap-4">
                                         <button
                                             onClick={() => handleApprove(action)}
                                             className="px-4 py-2 bg-brand-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-brand-700 transition-all flex items-center gap-2"

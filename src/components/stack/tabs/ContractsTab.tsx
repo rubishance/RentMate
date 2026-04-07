@@ -8,7 +8,7 @@ import { cn, formatDate } from '../../../lib/utils';
 import { format, parseISO } from 'date-fns';
 import { Skeleton } from '../../ui/Skeleton';
 import { getContractStatusConfig } from '../../../constants/statusConfig';
-
+import { EmptyState } from '../../common/EmptyState';
 interface ContractsTabProps {
     propertyId: string;
     onAddContract?: () => void;
@@ -54,9 +54,9 @@ export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
         return (
             <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-full h-32 rounded-2xl bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-700 p-5 space-y-4">
+                    <div key={i} className="w-full h-32 rounded-2xl bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-700 p-4 sm:p-6 space-y-4">
                         <div className="flex justify-between items-start">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-4">
                                 <Skeleton className="w-10 h-10 rounded-xl" />
                                 <div className="space-y-2">
                                     <Skeleton className="w-16 h-3" />
@@ -80,17 +80,14 @@ export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
 
     if (contracts.length === 0) {
         return (
-            <div>
-                <button
-                    onClick={onAddContract}
-                    className="w-full text-center py-12 bg-background dark:bg-neutral-800 rounded-2xl border border-dashed border-slate-200 dark:border-neutral-700 hover:bg-muted/50 dark:hover:bg-neutral-700/50 transition-all group"
-                >
-                    <div className="w-16 h-16 bg-white dark:bg-black rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                        <FileTextIcon className="w-8 h-8 text-slate-300 group-hover:text-primary transition-colors" />
-                    </div>
-                    <h3 className="text-lg font-bold text-foreground mb-1">{t('noActiveContracts')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('addContractDesc')}</p>
-                </button>
+            <div className="py-8">
+                <EmptyState
+                    icon={FileTextIcon}
+                    title={t('noActiveContracts')}
+                    description={t('addContractDesc')}
+                    actionLabel={t('addContract')}
+                    onAction={onAddContract || (() => {})}
+                />
             </div>
         );
     }
@@ -110,10 +107,10 @@ export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
         return (
             <button
                 onClick={() => handleViewContract(contract)}
-                className="w-full text-left p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-slate-100 dark:border-neutral-700 shadow-sm hover:shadow-md hover:border-primary/20 transition-all group"
+                className="w-full text-left p-4 sm:p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-slate-100 dark:border-neutral-700 shadow-sm hover:shadow-md hover:border-primary/20 transition-all group"
             >
                 <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-4">
                         <div className={cn(
                             "w-10 h-10 rounded-xl flex items-center justify-center",
                             config.bg,
@@ -157,7 +154,7 @@ export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {contract.option_periods.map((opt, idx) => (
-                                <div key={idx} className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/5 dark:bg-blue-500/10 rounded-lg text-xs font-bold text-primary dark:text-blue-400">
+                                <div key={idx} className="flex items-center gap-2 px-2.5 py-1 bg-primary/5 dark:bg-blue-500/10 rounded-lg text-xs font-bold text-primary dark:text-blue-400">
                                     <CalendarPlus className="w-3.5 h-3.5" />
                                     {formatOptionPeriod(opt, idx)}
                                 </div>
@@ -170,7 +167,7 @@ export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
     };
 
     return (
-        <div className="space-y-8 w-full pb-32">
+        <div className="space-y-8 w-full">
             {activeContracts.length > 0 && (
                 <div className="space-y-4">
                     <h3 className={cn(

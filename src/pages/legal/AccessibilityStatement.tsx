@@ -55,9 +55,9 @@ export default function AccessibilityStatement() {
                         </p>
                     </div>
 
-                    <GlassCard className="p-6 md:p-10 bg-card/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
+                    <GlassCard className="p-6 md:p-10 bg-card/80 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
                         <div className="prose prose-slate dark:prose-invert max-w-none space-y-6 text-foreground/80" dir="rtl">
-                            <div className="flex items-center gap-3 mb-6">
+                            <div className="flex items-center gap-2 sm:gap-4 mb-6">
                                 <h2 className="text-2xl font-bold m-0 text-foreground">הצהרת נגישות</h2>
                                 <Badge variant="default" className="bg-primary-600 hover:bg-primary-700 text-white">תקן 5568 AA</Badge>
                             </div>

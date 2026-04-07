@@ -28,7 +28,7 @@ export default function PrivacyPolicy() {
                         </h1>
                     </div>
 
-                    <GlassCard className="p-6 md:p-10 bg-card/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
+                    <GlassCard className="p-6 md:p-10 bg-card/80 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
                         {isRtl ? (
                             <div className="prose prose-slate dark:prose-invert max-w-none space-y-6 text-foreground/80" dir="rtl">
                                 <h2 className="text-2xl font-bold text-foreground">מדיניות פרטיות - RentMate</h2>

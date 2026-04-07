@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Save, User as UserIcon, Loader2, Edit } from 'lucide-react';
+import { X, Save, User as UserIcon, Loader2, Edit, Check } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Checkbox } from '../ui/Checkbox';
@@ -22,6 +22,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
     const [lastName, setLastName] = useState('');
     const [phone, setPhone] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(true);
 
     const [isPhoneVerified, setIsPhoneVerified] = useState(initialData.phone_verified || false);
@@ -138,11 +139,14 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                 data: { full_name: fullName }
             });
 
-            onSuccess();
+            setIsSuccess(true);
+            setTimeout(() => {
+                setIsSuccess(false);
+                onSuccess();
+            }, 800);
         } catch (error) {
             console.error('Error updating profile:', error);
             alert(lang === 'he' ? `שגיאה בעדכון פרופיל: ${(error as any).message || 'שגיאה לא ידועה'}` : `Failed to update profile: ${(error as any).message || 'Unknown error'}`);
-        } finally {
             setIsLoading(false);
         }
     };
@@ -150,13 +154,18 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-            <div className="relative w-full max-w-md bg-window border border-border rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col max-h-[90dvh]">
-                <div className="p-4 border-b flex items-center justify-between shrink-0">
+            <div className="relative w-full max-w-md bg-window border-0 sm:border border-border rounded-t-3xl sm:rounded-2xl shadow-xl overflow-hidden flex flex-col h-auto max-h-[90dvh] mt-auto sm:mt-0 pb-[env(safe-area-inset-bottom)] sm:pb-0">
+                {/* Mobile Drawer Handle */}
+                <div className="w-full flex justify-center pt-3 pb-1 sm:hidden shrink-0 absolute top-0 left-0 right-0 z-50">
+                    <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-600 rounded-full" />
+                </div>
+
+                <div className="p-6 sm:px-6 pt-10 sm:pt-6 border-b flex items-center justify-between shrink-0">
                     <h2 className="text-lg font-bold">{isReadOnly ? (lang === 'he' ? 'פרופיל' : 'Profile') : (lang === 'he' ? 'עריכת פרופיל' : 'Edit Profile')}</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-muted rounded-full">
+                    <button onClick={onClose} className="p-2 hover:bg-muted rounded-full z-50">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -170,7 +179,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
 
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
+                            <div className="space-y-4">
                                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground block ml-1">{lang === 'he' ? 'שם פרטי' : 'First Name'}</label>
                                 <input
                                     type="text"
@@ -178,13 +187,13 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                     onChange={(e) => setFirstName(e.target.value)}
                                     readOnly={isReadOnly}
                                     placeholder={lang === 'he' ? 'יוסי' : 'John'}
-                                    className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
+                                    className={`w-full p-2 sm:p-6 border rounded-xl outline-none transition-all ${isReadOnly
                                         ? 'bg-muted border-border cursor-default'
                                         : 'bg-secondary border-border focus:ring-2 focus:ring-indigo-500'
                                         }`}
                                 />
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-4">
                                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground block ml-1">{lang === 'he' ? 'שם משפחה' : 'Last Name'}</label>
                                 <input
                                     type="text"
@@ -192,7 +201,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                     onChange={(e) => setLastName(e.target.value)}
                                     readOnly={isReadOnly}
                                     placeholder={lang === 'he' ? 'כהן' : 'Doe'}
-                                    className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
+                                    className={`w-full p-2 sm:p-6 border rounded-xl outline-none transition-all ${isReadOnly
                                         ? 'bg-muted border-border cursor-default'
                                         : 'bg-secondary border-border focus:ring-2 focus:ring-indigo-500'
                                         }`}
@@ -200,7 +209,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                             </div>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-4">
                             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground block ml-1 flex items-center justify-between">
                                 <span>{lang === 'he' ? 'טלפון' : 'Phone'}</span>
                                 {isPhoneVerified && !isReadOnly && phone.trim() === initialData.phone?.trim() && (
@@ -226,7 +235,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                     }}
                                     readOnly={isReadOnly}
                                     placeholder="0500000000 (include country code like +972...)"
-                                    className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
+                                    className={`w-full p-2 sm:p-6 border rounded-xl outline-none transition-all ${isReadOnly
                                         ? 'bg-muted border-border cursor-default'
                                         : 'bg-secondary border-border focus:ring-2 focus:ring-indigo-500'
                                         }`}
@@ -235,7 +244,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                     <button
                                         onClick={handleSendOtp}
                                         disabled={isSendingOtp || isLoading}
-                                        className="px-4 bg-primary text-white rounded-xl font-bold text-xs uppercase hover:bg-primary/90 transition-all flex items-center justify-center min-w-[100px]"
+                                        className="px-6 bg-primary text-white rounded-xl font-bold text-xs uppercase hover:bg-primary/90 transition-all flex items-center justify-center min-w-[100px]"
                                     >
                                         {isSendingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : (lang === 'he' ? 'שלח קוד' : 'Verify')}
                                     </button>
@@ -243,7 +252,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                             </div>
 
                             {showOtpInput && !isReadOnly && (
-                                <div className="mt-3 p-4 bg-primary/5 rounded-xl border border-primary/20 space-y-3 animate-in fade-in slide-in-from-top-2">
+                                <div className="mt-2 sm:mt-4 p-6 bg-primary/5 rounded-xl border border-primary/20 space-y-3 animate-in fade-in slide-in-from-top-2">
                                     <label className="text-xs font-black text-primary block">{lang === 'he' ? 'קוד אימות (WhatsApp)' : 'Verification Code (WhatsApp)'}</label>
                                     <div className="flex gap-2">
                                         <input
@@ -252,7 +261,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                             value={otp}
                                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                                             placeholder="123456"
-                                            className="w-full p-3 border border-primary/30 rounded-xl outline-none tracking-widest text-center font-black focus:ring-2 focus:ring-primary/50 bg-background"
+                                            className="w-full p-2 sm:p-6 border border-primary/30 rounded-xl outline-none tracking-widest text-center font-black focus:ring-2 focus:ring-primary/50 bg-background"
                                         />
                                         <button
                                             onClick={handleVerifyOtp}
@@ -269,18 +278,18 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                     </div>
                 </div>
 
-                <div className="p-4 border-t bg-secondary flex gap-3 shrink-0">
+                <div className="p-6 border-t bg-secondary flex gap-2 sm:gap-4 shrink-0">
                     {isReadOnly ? (
                         <>
                             <button
                                 onClick={onClose}
-                                className="flex-1 py-3 px-4 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-secondary active:scale-[0.98] transition-all"
+                                className="flex-1 py-2 sm:py-6 px-6 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-secondary active:scale-[0.98] transition-all"
                             >
                                 {lang === 'he' ? 'סגור' : 'Close'}
                             </button>
                             <button
                                 onClick={() => setIsReadOnly(false)}
-                                className="flex-1 py-3 px-4 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+                                className="flex-1 py-2 sm:py-6 px-6 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
                             >
                                 <Edit className="w-5 h-5" />
                                 {lang === 'he' ? 'ערוך' : 'Edit'}
@@ -296,17 +305,19 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                     setLastName(parts.slice(1).join(' ') || '');
                                     setPhone(initialData.phone || '');
                                 }}
-                                className="flex-1 py-3 px-4 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-secondary active:scale-[0.98] transition-all"
+                                className="flex-1 py-2 sm:py-6 px-6 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-secondary active:scale-[0.98] transition-all"
                             >
                                 {lang === 'he' ? 'ביטול' : 'Cancel'}
                             </button>
                             <button
                                 onClick={handleSave}
-                                disabled={isLoading}
-                                className="flex-1 py-3 px-4 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+                                disabled={isLoading || isSuccess}
+                                className={`flex-1 py-2 sm:py-6 px-6 font-medium rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-[0.98] ${
+                                    isSuccess ? 'bg-success text-success-foreground' : 'bg-primary text-white hover:bg-primary/90'
+                                }`}
                             >
-                                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                                {lang === 'he' ? 'שמור שינויים' : 'Save Changes'}
+                                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : isSuccess ? <Check className="w-5 h-5" /> : <Save className="w-5 h-5" />}
+                                {isSuccess ? (lang === 'he' ? 'נשמר בהצלחה!' : 'Saved!') : (lang === 'he' ? 'שמור שינויים' : 'Save Changes')}
                             </button>
                         </>
                     )}
@@ -330,6 +341,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
     const [emailEnabled, setEmailEnabled] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     useScrollLock(isOpen);
 
@@ -426,12 +438,14 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                 // We won't throw here to not block the main save success, but log it
             }
 
-            alert(lang === 'he' ? 'העדפות נשמרו בהצלחה!' : 'Preferences saved successfully!');
-            onClose();
+            setIsSuccess(true);
+            setTimeout(() => {
+                setIsSuccess(false);
+                onClose();
+            }, 800);
         } catch (error) {
             console.error('Error saving notification preferences:', error);
             alert(lang === 'he' ? 'שגיאה בשמירת העדפות' : 'Error saving preferences');
-        } finally {
             setIsSaving(false);
         }
     };
@@ -439,12 +453,17 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-6">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative w-full max-w-md bg-window border border-border rounded-[2rem] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90dvh] flex flex-col">
-                <div className="p-4 border-b flex items-center justify-between shrink-0">
+            <div className="relative w-full max-w-md bg-window border-0 sm:border border-border rounded-t-3xl sm:rounded-2xl shadow-xl overflow-hidden flex flex-col h-auto max-h-[90dvh] mt-auto sm:mt-0 pb-[env(safe-area-inset-bottom)] sm:pb-0">
+                {/* Mobile Drawer Handle */}
+                <div className="w-full flex justify-center pt-3 pb-1 sm:hidden shrink-0 absolute top-0 left-0 right-0 z-50">
+                    <div className="w-12 h-1.5 bg-neutral-300 dark:bg-neutral-600 rounded-full" />
+                </div>
+
+                <div className="p-6 sm:px-6 pt-10 sm:pt-6 border-b flex items-center justify-between shrink-0">
                     <h2 className="text-lg font-bold">{lang === 'he' ? 'הגדרות התראות' : 'Notification Settings'}</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-muted rounded-full">
+                    <button onClick={onClose} className="p-2 hover:bg-muted rounded-full z-50">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -457,7 +476,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                     <>
                         <div className="p-6 space-y-6 overflow-y-auto flex-1">
                             {/* Marketing Consent */}
-                            <div className="space-y-3 pb-4 border-b border-border">
+                            <div className="space-y-3 pb-6 border-b border-border">
                                 <h3 className="text-sm font-semibold text-foreground/70 mb-2">
                                     {lang === 'he' ? 'עדכונים וחדשות' : 'News & Updates'}
                                 </h3>
@@ -474,7 +493,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                             </h3>
 
                             {/* Delivery Channels */}
-                            <div className="space-y-3 pb-4 border-b border-border">
+                            <div className="space-y-3 pb-6 border-b border-border">
                                 <Checkbox
                                     label={lang === 'he' ? 'קבלת התראות ב-WhatsApp (בקרוב)' : 'WhatsApp Notifications (Soon)'}
                                     checked={whatsappEnabled}
@@ -494,7 +513,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                             </h3>
 
                             {/* Contract Expiry */}
-                            <div className="space-y-3 pb-4 border-b border-border">
+                            <div className="space-y-3 pb-6 border-b border-border">
                                 <Checkbox
                                     label={lang === 'he' ? 'התראה לפני סיום חוזה' : 'Contract Expiry Warning'}
                                     checked={contractExpiryDays > 0}
@@ -502,7 +521,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                                     className="border-none p-0 bg-transparent"
                                 />
                                 {contractExpiryDays > 0 && (
-                                    <div className="mr-8 space-y-2">
+                                    <div className="mr-8 space-y-4">
                                         <p className="text-xs text-muted-foreground">
                                             {lang === 'he' ? 'קבל התראה כמה ימים לפני שחוזה עומד להסתיים' : 'Days before contract expires'}
                                         </p>
@@ -512,7 +531,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                                             max="180"
                                             value={contractExpiryDays}
                                             onChange={(e) => setContractExpiryDays(Math.max(1, parseInt(e.target.value) || 1))}
-                                            className="w-full p-3 border border-border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full p-2 sm:p-6 border border-border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
                                         />
                                     </div>
                                 )}
@@ -520,14 +539,14 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
 
 
                             {/* Unpaid Rent */}
-                            <div className="space-y-3 pb-4 border-b border-border">
+                            <div className="space-y-3 pb-6 border-b border-border">
                                 <Checkbox
                                     label={lang === 'he' ? 'התראה על שכר דירה שלא שולם' : 'Unpaid Rent Notification'}
                                     checked={unpaidRentEnabled}
                                     onChange={setUnpaidRentEnabled}
                                     className="border-none p-0 bg-transparent"
                                 />
-                                <div className="mr-8 space-y-2">
+                                <div className="mr-8 space-y-4">
                                     <p className="text-xs text-muted-foreground">
                                         {lang === 'he' ? 'קבל התראה כאשר תשלום שכר דירה לא בוצע בזמן' : 'Get notified when a rent payment has not been paid'}
                                     </p>
@@ -535,7 +554,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                             </div>
 
                             {/* Extension Option */}
-                            <div className="space-y-3 pb-4 border-b border-border">
+                            <div className="space-y-3 pb-6 border-b border-border">
                                 <Checkbox
                                     label={lang === 'he' ? 'התראה לפני תחילת אופציית הארכה' : 'Extension Option Starting'}
                                     checked={extensionOptionDays > 0}
@@ -543,7 +562,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                                     className="border-none p-0 bg-transparent"
                                 />
                                 {extensionOptionDays > 0 && (
-                                    <div className="mr-8 space-y-2">
+                                    <div className="mr-8 space-y-4">
                                         <p className="text-xs text-muted-foreground">
                                             {lang === 'he' ? 'קבל התראה כמה ימים לפני שאופציית ההארכה מתחילה' : 'Days before extension option starts'}
                                         </p>
@@ -553,7 +572,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                                             max="180"
                                             value={extensionOptionDays}
                                             onChange={(e) => setExtensionOptionDays(Math.max(1, parseInt(e.target.value) || 1))}
-                                            className="w-full p-3 border border-border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full p-2 sm:p-6 border border-border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
                                         />
                                     </div>
                                 )}
@@ -568,7 +587,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                                     className="border-none p-0 bg-transparent"
                                 />
                                 {extensionOptionEndDays > 0 && (
-                                    <div className="mr-8 space-y-2">
+                                    <div className="mr-8 space-y-4">
                                         <p className="text-xs text-muted-foreground">
                                             {lang === 'he' ? 'קבל התראה כמה ימים לפני המועד להודיע על הארכה' : 'Days before extension announcement deadline'}
                                         </p>
@@ -578,27 +597,29 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                                             max="180"
                                             value={extensionOptionEndDays}
                                             onChange={(e) => setExtensionOptionEndDays(Math.max(1, parseInt(e.target.value) || 1))}
-                                            className="w-full p-3 border border-border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full p-2 sm:p-6 border border-border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
                                         />
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="p-4 border-t bg-secondary flex gap-3 shrink-0">
+                        <div className="p-6 border-t bg-secondary flex gap-2 sm:gap-4 shrink-0">
                             <button
                                 onClick={onClose}
-                                className="flex-1 py-3 px-4 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-secondary active:scale-[0.98] transition-all"
+                                className="flex-1 py-2 sm:py-6 px-6 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-secondary active:scale-[0.98] transition-all"
                             >
                                 {lang === 'he' ? 'ביטול' : 'Cancel'}
                             </button>
                             <button
                                 onClick={handleSave}
-                                disabled={isSaving}
-                                className="flex-1 py-3 px-4 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+                                disabled={isSaving || isSuccess}
+                                className={`flex-1 py-2 sm:py-6 px-6 font-medium rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-[0.98] ${
+                                    isSuccess ? 'bg-success text-success-foreground' : 'bg-primary text-white hover:bg-primary/90'
+                                }`}
                             >
-                                {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                                {lang === 'he' ? 'שמור' : 'Save'}
+                                {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : isSuccess ? <Check className="w-5 h-5" /> : <Save className="w-5 h-5" />}
+                                {isSuccess ? (lang === 'he' ? 'נשמר בהצלחה!' : 'Saved!') : (lang === 'he' ? 'שמור' : 'Save')}
                             </button>
                         </div>
                     </>

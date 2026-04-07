@@ -98,7 +98,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                             key={t.id}
                             type="button"
                             onClick={() => setType(t.id as CRMInteractionType)}
-                            className={`flex-1 min-w-[80px] py-2 px-3 rounded-xl flex flex-col items-center gap-1 transition-all ${type === t.id
+                            className={`flex-1 min-w-[80px] py-2 px-2 sm:px-4 rounded-xl flex flex-col items-center gap-1 transition-all ${type === t.id
                                     ? 'bg-white dark:bg-gray-800 shadow-sm text-brand-600 dark:text-brand-400 font-bold'
                                     : 'text-muted-foreground hover:bg-white/50 dark:hover:bg-gray-800/50'
                                 }`}
@@ -202,11 +202,11 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                         rows={4}
                         required
                         placeholder="Detailed notes about what happened..."
-                        className="w-full rounded-xl border-border dark:border-gray-700 bg-secondary dark:bg-foreground text-sm font-medium p-3 outline-none focus:ring-2 focus:ring-brand-500/20 resize-none"
+                        className="w-full rounded-xl border-border dark:border-gray-700 bg-secondary dark:bg-foreground text-sm font-medium p-2 sm:p-4 outline-none focus:ring-2 focus:ring-brand-500/20 resize-none"
                     />
                 </div>
 
-                <div className="flex gap-3 justify-end pt-2 border-t border-border dark:border-gray-700">
+                <div className="flex gap-2 sm:gap-4 justify-end pt-2 border-t border-border dark:border-gray-700">
                     <button
                         type="button"
                         onClick={onCancel}

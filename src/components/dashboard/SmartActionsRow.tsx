@@ -46,13 +46,13 @@ export function SmartActionsRow() {
 
     return (
         <div className="w-full overflow-x-auto pb-4 -mb-4 scrollbar-hide">
-            <div className="flex items-center gap-3 min-w-max px-1">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-max px-1">
                 {actions.map((action) => (
                     <button
                         key={action.id}
                         onClick={action.onClick}
                         className={cn(
-                            "relative group flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300",
+                            "relative group flex items-center gap-2 sm:gap-4 px-4 py-2 sm:py-4 rounded-2xl transition-all duration-300",
                             "backdrop-blur-xl border shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95",
                             "bg-white/5 dark:bg-black/20", // Deep Glass Base
                             action.gradient

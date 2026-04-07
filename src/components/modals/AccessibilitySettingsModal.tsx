@@ -60,8 +60,8 @@ export function AccessibilitySettingsModal({ isOpen, onClose }: AccessibilitySet
     ];
 
     return (
-        <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-jewel animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-6">
+            <div className="bg-white dark:bg-neutral-900 w-full overflow-y-auto shadow-jewel animate-in fade-in slide-in-from-bottom-10 sm:zoom-in-95 duration-200 relative h-auto max-h-[90dvh] flex flex-col rounded-t-3xl border-0 mt-auto sm:max-h-[85vh] sm:rounded-2xl sm:border sm:border-border/50 sm:mt-0 max-w-2xl">
                 {/* Header */}
                 <div className="sticky top-0 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-slate-100 dark:border-neutral-800 px-8 py-6 flex items-center justify-between z-10">
                     <div className="flex items-center gap-4">
@@ -90,7 +90,7 @@ export function AccessibilitySettingsModal({ isOpen, onClose }: AccessibilitySet
                     {accessibilityFeatures.map((feature) => (
                         <div
                             key={feature.id}
-                            className="bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-800 rounded-[2rem] p-6 flex items-center justify-between gap-6 hover:border-primary/20 transition-colors"
+                            className="bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-800 rounded-2xl p-6 flex items-center justify-between gap-6 hover:border-primary/20 transition-colors"
                         >
                             <div className="flex items-start gap-4 flex-1">
                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${feature.active

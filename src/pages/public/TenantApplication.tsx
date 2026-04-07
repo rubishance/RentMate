@@ -17,7 +17,8 @@ export default function TenantApplication() {
     const [propertyInfo, setPropertyInfo] = useState<{ address: string, city: string } | null>(null);
 
     const [formData, setFormData] = useState({
-        full_name: '',
+        first_name: '',
+        last_name: '',
         email: '',
         phone: '',
         id_number: '',
@@ -149,7 +150,7 @@ export default function TenantApplication() {
                 .insert({
                     property_id: propertyId,
                     token: candidateToken,
-                    full_name: formData.full_name,
+                    full_name: `${formData.first_name.trim()} ${formData.last_name.trim()}`,
                     email: formData.email,
                     phone: formData.phone,
                     id_number: formData.id_number,
@@ -172,7 +173,7 @@ export default function TenantApplication() {
     if (step === 'success') {
         return (
             <div className={`min-h-screen bg-muted/30 flex flex-col items-center justify-center p-4 ${isRtl ? 'rtl' : 'ltr'}`}>
-                <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-xl shadow-primary-900/5 mb-8">
+                <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-xl shadow-primary-900/5 mb-8">
                     <div className="w-20 h-20 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle2 className="w-10 h-10 text-primary-600" />
                     </div>
@@ -202,11 +203,11 @@ export default function TenantApplication() {
                         </div>
                     </div>
 
-                    <div className="bg-white py-8 px-6 shadow-xl shadow-primary-900/5 sm:rounded-3xl sm:px-10 border border-border text-center">
+                    <div className="bg-white py-8 px-6 shadow-xl shadow-primary-900/5 sm:rounded-2xl sm:px-10 border border-border text-center">
                         <div className="mx-auto h-16 w-16 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-amber-100 dark:border-amber-800/30">
                             <AlertTriangle className="w-8 h-8" />
                         </div>
-                        <h2 className="text-2xl font-bold text-foreground mb-3">
+                        <h2 className="text-2xl font-bold text-foreground mb-2 sm:mb-4">
                             {isRtl ? 'ההרשמה הסתיימה' : 'Registration Closed'}
                         </h2>
                         <p className="text-muted-foreground text-base leading-relaxed mb-6">
@@ -231,12 +232,12 @@ export default function TenantApplication() {
                         </div>
                     </div>
 
-                    <div className="bg-white py-8 px-6 shadow-xl shadow-primary-900/5 sm:rounded-3xl sm:px-10 border border-border">
+                    <div className="bg-white py-8 px-6 shadow-xl shadow-primary-900/5 sm:rounded-2xl sm:px-10 border border-border">
                         <div className="text-center mb-8">
                             <div className="mx-auto h-16 w-16 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-primary-100 dark:border-primary-800/30">
                                 <Building2 className="w-8 h-8" />
                             </div>
-                            <h2 className="text-2xl font-bold text-foreground mb-3">
+                            <h2 className="text-2xl font-bold text-foreground mb-2 sm:mb-4">
                                 {isRtl ? 'ברוכים הבאים לטופס המועמדות המאובטח' : 'Welcome to the Secure Application Form'}
                             </h2>
                             <p className="text-muted-foreground text-base leading-relaxed">
@@ -264,7 +265,7 @@ export default function TenantApplication() {
                         </div>
 
                         <div className="border-t border-border pt-6 mt-2">
-                            <label className="flex items-start gap-3 cursor-pointer group">
+                            <label className="flex items-start gap-2 sm:gap-4 cursor-pointer group">
                                 <div className="relative flex items-start h-5 mt-1">
                                     <input 
                                         type="checkbox" 
@@ -285,7 +286,7 @@ export default function TenantApplication() {
                             <button
                                 onClick={() => setStep('form')}
                                 disabled={!disclaimerAgreed}
-                                className={`w-full py-3.5 rounded-xl text-base font-medium transition-all shadow-premium flex justify-center items-center gap-2 ${disclaimerAgreed ? 'bg-primary-600 hover:bg-primary-700 text-white' : 'bg-primary-600/50 text-white cursor-not-allowed'}`}
+                                className={`w-full py-2 sm:py-4.5 rounded-xl text-base font-medium transition-all shadow-premium flex justify-center items-center gap-2 ${disclaimerAgreed ? 'bg-primary-600 hover:bg-primary-700 text-white' : 'bg-primary-600/50 text-white cursor-not-allowed'}`}
                             >
                                 {isRtl ? 'המשך למילוי הטופס' : 'Continue to Application'}
                                 <ChevronRight className={`w-4 h-4 ${isRtl ? 'rotate-180' : ''}`} />
@@ -318,7 +319,7 @@ export default function TenantApplication() {
                 </div>
 
                 {/* Form Card */}
-                <div className="bg-white py-8 px-4 shadow-xl shadow-primary-900/5 sm:rounded-3xl sm:px-10 border border-border">
+                <div className="bg-white py-8 px-4 shadow-xl shadow-primary-900/5 sm:rounded-2xl sm:px-10 border border-border">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         
                         {/* Personal Details */}
@@ -327,22 +328,42 @@ export default function TenantApplication() {
                                 {isRtl ? 'פרטים אישיים' : 'Personal Details'}
                             </h3>
                             <div className="grid grid-cols-1 gap-y-4 gap-x-4 sm:grid-cols-2">
-                                <div className="sm:col-span-2">
-                                    <label className="block text-base font-medium text-foreground">
-                                        {isRtl ? 'שם מלא *' : 'Full Name *'}
-                                    </label>
-                                    <div className="mt-1 relative rounded-lg shadow-sm">
-                                        <div className={`absolute inset-y-0 ${isRtl ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
-                                            <User className="h-5 w-5 text-muted-foreground" />
+                                <div className="grid grid-cols-2 gap-4 sm:col-span-2">
+                                    <div>
+                                        <label className="block text-base font-medium text-foreground">
+                                            {isRtl ? 'שם פרטי *' : 'First Name *'}
+                                        </label>
+                                        <div className="mt-1 relative rounded-lg shadow-sm">
+                                            <div className={`absolute inset-y-0 ${isRtl ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
+                                                <User className="h-5 w-5 text-muted-foreground" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.first_name}
+                                                onChange={e => setFormData({...formData, first_name: e.target.value})}
+                                                className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-2 sm:py-4 ${isRtl ? 'pr-10 z-10' : 'pl-10 z-10'}`}
+                                                placeholder={isRtl ? 'ישראל' : 'John'}
+                                            />
                                         </div>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.full_name}
-                                            onChange={e => setFormData({...formData, full_name: e.target.value})}
-                                            className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-3 ${isRtl ? 'pr-10' : 'pl-10'}`}
-                                            placeholder={isRtl ? 'ישראל ישראלי' : 'John Doe'}
-                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-base font-medium text-foreground">
+                                            {isRtl ? 'שם משפחה *' : 'Last Name *'}
+                                        </label>
+                                        <div className="mt-1 relative rounded-lg shadow-sm">
+                                            <div className={`absolute inset-y-0 ${isRtl ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
+                                                <User className="h-5 w-5 text-muted-foreground" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.last_name}
+                                                onChange={e => setFormData({...formData, last_name: e.target.value})}
+                                                className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-2 sm:py-4 ${isRtl ? 'pr-10 z-10' : 'pl-10 z-10'}`}
+                                                placeholder={isRtl ? 'ישראלי' : 'Doe'}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -359,7 +380,7 @@ export default function TenantApplication() {
                                             required
                                             value={formData.phone}
                                             onChange={e => setFormData({...formData, phone: e.target.value})}
-                                            className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-3 ${isRtl ? 'pr-10' : 'pl-10'}`}
+                                            className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-2 sm:py-4 ${isRtl ? 'pr-10' : 'pl-10'}`}
                                             placeholder="05X-XXXXXXX"
                                         />
                                     </div>
@@ -377,7 +398,7 @@ export default function TenantApplication() {
                                             type="email"
                                             value={formData.email}
                                             onChange={e => setFormData({...formData, email: e.target.value})}
-                                            className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-3 ${isRtl ? 'pr-10' : 'pl-10'}`}
+                                            className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-2 sm:py-4 ${isRtl ? 'pr-10' : 'pl-10'}`}
                                             placeholder="you@example.com"
                                         />
                                     </div>
@@ -395,7 +416,7 @@ export default function TenantApplication() {
                                             type="text"
                                             value={formData.id_number}
                                             onChange={e => setFormData({...formData, id_number: e.target.value})}
-                                            className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-3 ${isRtl ? 'pr-10' : 'pl-10'}`}
+                                            className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-2 sm:py-4 ${isRtl ? 'pr-10' : 'pl-10'}`}
                                             placeholder={isRtl ? '9 ספרות' : '9 digits'}
                                         />
                                     </div>
@@ -421,7 +442,7 @@ export default function TenantApplication() {
                                             type="text"
                                             value={formData.employment_details}
                                             onChange={e => setFormData({...formData, employment_details: e.target.value})}
-                                            className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-3 ${isRtl ? 'pr-10' : 'pl-10'}`}
+                                            className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-2 sm:py-4 ${isRtl ? 'pr-10' : 'pl-10'}`}
                                             placeholder={isRtl ? 'לדוגמה: מתכנת בחברת הייטק' : 'e.g., Software Engineer at Tech Corp'}
                                         />
                                     </div>
@@ -439,7 +460,7 @@ export default function TenantApplication() {
                                             type="number"
                                             value={formData.monthly_income}
                                             onChange={e => setFormData({...formData, monthly_income: e.target.value})}
-                                            className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-3 ${isRtl ? 'pr-10' : 'pl-10'}`}
+                                            className={`focus:ring-primary-500 focus:border-primary-500 block w-full sm:text-base border-border rounded-xl bg-muted/30 py-2 sm:py-4 ${isRtl ? 'pr-10' : 'pl-10'}`}
                                             placeholder="0"
                                             min="0"
                                         />
@@ -453,7 +474,7 @@ export default function TenantApplication() {
                             <h3 className="text-lg leading-6 font-medium text-foreground border-b border-border pb-2 mb-4">
                                 {isRtl ? 'מסמכים תומכים (אופציונלי)' : 'Supporting Documents (Optional)'}
                             </h3>
-                            <div className="bg-primary-50/50 rounded-xl p-4 border border-primary-100 mb-4 flex gap-3 text-primary-800 text-sm">
+                            <div className="bg-primary-50/50 rounded-xl p-4 border border-primary-100 mb-4 flex gap-2 sm:gap-4 text-primary-800 text-sm">
                                 <Info className="w-5 h-5 flex-shrink-0 mt-0.5 text-primary-500" />
                                 <p>{isRtl ? 'צירוף מסמכים מראש מזרז את תהליך בדיקת המועמדות ומגדיל את הסיכויים לאישור מהיר.' : 'Attaching documents in advance speeds up the screening process and increases chances of quick approval.'}</p>
                             </div>
@@ -464,7 +485,7 @@ export default function TenantApplication() {
                                     <label className="block text-base font-medium text-foreground mb-2">
                                         {isRtl ? 'צילום תעודת זהות + ספח' : 'ID Copy'}
                                     </label>
-                                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-border border-dashed rounded-xl hover:bg-muted/30 transition-colors cursor-pointer relative">
+                                    <div className="mt-1 flex justify-center px-6 pt-4 sm:pt-6 pb-6 border-2 border-border border-dashed rounded-xl hover:bg-muted/30 transition-colors cursor-pointer relative">
                                         <input
                                             type="file"
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -493,7 +514,7 @@ export default function TenantApplication() {
                                     <label className="block text-base font-medium text-foreground mb-2">
                                         {isRtl ? 'תלושי שכר (3 חודשים אחרונים)' : 'Pay Slips (Last 3 months)'}
                                     </label>
-                                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-border border-dashed rounded-xl hover:bg-muted/30 transition-colors cursor-pointer relative">
+                                    <div className="mt-1 flex justify-center px-6 pt-4 sm:pt-6 pb-6 border-2 border-border border-dashed rounded-xl hover:bg-muted/30 transition-colors cursor-pointer relative">
                                         <input
                                             type="file"
                                             multiple
@@ -511,9 +532,9 @@ export default function TenantApplication() {
                                         </div>
                                     </div>
                                     {files.payslips.length > 0 && (
-                                        <ul className="mt-3 space-y-2">
+                                        <ul className="mt-2 sm:mt-4 space-y-2">
                                             {files.payslips.map((file, idx) => (
-                                                <li key={idx} className="flex items-center justify-between text-base bg-muted/30 ring-1 ring-slate-200 rounded-xl p-2 px-3">
+                                                <li key={idx} className="flex items-center justify-between text-base bg-muted/30 ring-1 ring-slate-200 rounded-xl p-2 px-2 sm:px-4">
                                                     <span className="truncate max-w-[200px] text-muted-foreground">{file.name}</span>
                                                     <button type="button" onClick={() => removePayslip(idx)} className="text-red-500 hover:text-red-700 font-medium">
                                                         {isRtl ? 'הסר' : 'Remove'}
@@ -526,10 +547,10 @@ export default function TenantApplication() {
                             </div>
                         </div>
 
-                        <div className="pt-5">
+                        <div className="pt-4 sm:pt-6">
                             <button 
                                 type="submit" 
-                                className="w-full flex justify-center py-3.5 rounded-xl text-base bg-primary-600 hover:bg-primary-700 text-white font-medium transition-colors disabled:opacity-50 shadow-premium items-center gap-2"
+                                className="w-full flex justify-center py-2 sm:py-4.5 rounded-xl text-base bg-primary-600 hover:bg-primary-700 text-white font-medium transition-colors disabled:opacity-50 shadow-premium items-center gap-2"
                                 disabled={submitting}
                             >
                                 {submitting ? (

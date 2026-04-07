@@ -1,3 +1,4 @@
+import { withEdgeMiddleware } from '../_shared/middleware.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -5,7 +6,7 @@ const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-Deno.serve(async (req) => {
+Deno.serve(withEdgeMiddleware('check-trial-expirations', async (req, logger) => {
     try {
         // 1. Find expired trials
         // Query: Users in 'trial' status where trial_end_date < NOW()
@@ -55,7 +56,7 @@ Deno.serve(async (req) => {
                 changed_by: null // System
             });
 
-            results.push({ id: user.id, email: user.email, status: 'expired' });
+            results.push({ id: user.id, email: user.email, status: 'expired' }));
         }
 
         return new Response(

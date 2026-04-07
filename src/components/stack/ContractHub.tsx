@@ -865,7 +865,7 @@ export function ContractHub({
                       <button
                         onClick={() => setReadOnly(false)}
                         className={cn(
-                          "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors text-foreground hover:bg-secondary/50",
+                          "flex w-full items-center gap-2 rounded-xl px-2 sm:px-4 py-2.5 text-[15px] font-medium transition-colors text-foreground hover:bg-secondary/50",
                           focus ? "bg-secondary/50" : ""
                         )}
                       >
@@ -886,7 +886,7 @@ export function ContractHub({
                       <button
                         onClick={(e) => { e.preventDefault(); setIsTerminationModalOpen(true); }}
                         className={cn(
-                          "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors text-amber-600 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20",
+                          "flex w-full items-center gap-2 rounded-xl px-2 sm:px-4 py-2.5 text-[15px] font-medium transition-colors text-amber-600 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20",
                           focus ? "bg-amber-50 dark:bg-amber-900/20" : ""
                         )}
                       >
@@ -905,7 +905,7 @@ export function ContractHub({
                       <button
                         onClick={(e) => { e.preventDefault(); handleReactivateContract(); }}
                         className={cn(
-                          "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors text-emerald-600 dark:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
+                          "flex w-full items-center gap-2 rounded-xl px-2 sm:px-4 py-2.5 text-[15px] font-medium transition-colors text-emerald-600 dark:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
                           focus ? "bg-emerald-50 dark:bg-emerald-900/20" : ""
                         )}
                       >
@@ -923,7 +923,7 @@ export function ContractHub({
                     <button
                       onClick={handleDeleteContract}
                       className={cn(
-                        "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20",
+                        "flex w-full items-center gap-2 rounded-xl px-2 sm:px-4 py-2.5 text-[15px] font-medium transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20",
                         focus ? "bg-red-50 dark:bg-red-900/20" : ""
                       )}
                     >
@@ -971,17 +971,17 @@ export function ContractHub({
         className="flex-1 p-4 md:p-6 space-y-6 pb-[140px] lg:pb-24 max-w-2xl mx-auto w-full"
       >
         {/* 1. Property Address & Status Card */}
-        <div className="bg-primary border border-primary p-5 rounded-[1.5rem] shadow-[0_4px_24px_rgba(13,71,161,0.06)] flex flex-col items-start text-start relative overflow-hidden">
+        <div className="bg-primary border border-primary p-4 sm:p-6 rounded-[1.5rem] shadow-[0_4px_24px_rgba(13,71,161,0.06)] flex flex-col items-start text-start relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
           <div className="relative z-10 w-full flex flex-col items-start text-start">
-            <h2 className="text-[22px] sm:text-[26px] leading-[1.2] font-black text-white text-start tracking-tight mb-3 mt-0">
+            <h2 className="text-[22px] sm:text-[26px] leading-[1.2] font-black text-white text-start tracking-tight mb-2 sm:mb-4 mt-0">
               {(contract.properties?.address && contract.properties?.city)
                 ? `${contract.properties.address}, ${contract.properties.city}`
                 : (contract.properties?.name || t("unnamedProperty"))}
             </h2>
             <div
               className={cn(
-                "flex flex-row px-3 py-1 bg-white/10 rounded-full text-[14px] font-bold items-center gap-2 border border-white/5 shadow-sm w-fit text-white transition-all hover:bg-white/20",
+                "flex flex-row px-2 sm:px-4 py-1 bg-white/10 rounded-full text-[14px] font-bold items-center gap-2 border border-white/5 shadow-sm w-fit text-white transition-all hover:bg-white/20",
               )}
             >
               <div
@@ -1003,7 +1003,7 @@ export function ContractHub({
         <Card className="rounded-[2rem] border-0 shadow-[0_4px_24px_rgba(13,71,161,0.06)] overflow-hidden">
           <CardContent className="p-0">
             {/* Header */}
-            <div className="p-6 pb-2 flex justify-start items-center gap-3">
+            <div className="p-6 pb-2 flex justify-start items-center gap-2 sm:gap-4">
               <div className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-brand-600 dark:text-brand-400">
                 <User className="w-5 h-5 pointer-events-none" />
               </div>
@@ -1171,7 +1171,7 @@ export function ContractHub({
         <Card className="rounded-[2rem] border-0 shadow-[0_4px_24px_rgba(13,71,161,0.06)] overflow-hidden">
           <CardContent className="p-0">
             {/* Header */}
-            <div className="p-6 pb-2 flex justify-start items-center gap-3">
+            <div className="p-6 pb-2 flex justify-start items-center gap-2 sm:gap-4">
               <div className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-brand-600 dark:text-brand-400">
                 <Calendar className="w-5 h-5 pointer-events-none" />
               </div>
@@ -1245,6 +1245,7 @@ export function ContractHub({
                       />
                     </div>
                   )}
+
                 </div>
               ) : (
                 <div className="flex flex-col gap-2.5 text-start w-full mt-2">
@@ -1279,7 +1280,7 @@ export function ContractHub({
 
               {/* Duration Display */}
               {formData.start_date && formData.end_date && (
-                <div className="mt-8 p-3 bg-secondary/10 dark:bg-neutral-800/50 rounded-xl flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <div className="mt-8 p-2 sm:p-4 bg-secondary/10 dark:bg-neutral-800/50 rounded-xl flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <Clock className="w-4 h-4" />
                   <span>{t("duration")}: </span>
                   <span className="font-bold text-foreground">
@@ -1300,16 +1301,72 @@ export function ContractHub({
                   </span>
                 </div>
               )}
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* 4. Options & Extensions Section */}
-        {(formData.option_periods.length > 0 || !readOnly) && (
-          <Card className="rounded-[2rem] border-0 shadow-[0_4px_24px_rgba(13,71,161,0.06)] overflow-hidden">
-            <CardContent className="p-0">
-              {/* Header */}
-              <div className="p-6 pb-2 flex justify-start items-center gap-3">
+
+              {/* First Period Payment Details (Moved below Duration) */}
+              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-neutral-800">
+                {!readOnly ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t("amount") || "שכר דירה חודשי"}
+                      </label>
+                      <Input
+                        type="number"
+                        readOnly={readOnly}
+                        value={formData.base_rent}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            base_rent: e.target.value === "" ? "" : Number(e.target.value),
+                          })
+                        }
+                        leftIcon={<span className="text-sm font-bold">₪</span>}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t("paymentDay") || "יום בחודש לתשלום"}
+                      </label>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="31"
+                        readOnly={readOnly}
+                        value={formData.payment_day}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            payment_day: e.target.value === "" ? "" : Number(e.target.value),
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2.5 text-start w-full">
+                    <DataFieldWidget
+                      label={t("monthlyRent") || "שכר דירה חודשי"}
+                      value={`₪${Number(formData.base_rent).toLocaleString()}`}
+                      icon={<Coins className="w-full h-full" />}
+                      valueClassName="text-brand-600 dark:text-brand-400"
+                    />
+                    <DataFieldWidget
+                      label={t("paymentDay") || "יום תשלום"}
+                      value={formData.payment_day}
+                      icon={<Calendar className="w-full h-full" />}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+
+            {/* Contract Dates Option Extensions merged */}
+            {(formData.option_periods.length > 0 || !readOnly) && (
+              <div className="border-t border-slate-100 dark:border-neutral-800">
+                {/* Header */}
+              <div className="p-6 pb-2 flex justify-start items-center gap-2 sm:gap-4">
                 <div className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-brand-600 dark:text-brand-400">
                   <Shield className="w-5 h-5 pointer-events-none" />
                 </div>
@@ -1457,7 +1514,7 @@ export function ContractHub({
                               <span className="flex items-center gap-2">
                                 <span>₪{Number(option.rentAmount || 0).toLocaleString()}</span>
                                 {formData.linkage_type && formData.linkage_type !== "none" && (
-                                  <span className="text-[10px] text-green-600 font-bold bg-green-50 rounded-md px-1.5 whitespace-nowrap">צמוד מדד</span>
+                                  <span className="text-[10px] text-green-600 font-bold bg-green-50 rounded-md px-2 whitespace-nowrap">צמוד מדד</span>
                                 )}
                               </span>
                             }
@@ -1514,66 +1571,34 @@ export function ContractHub({
                   </Button>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* 5. Payments & Linkage Section */}
-        <div className="space-y-4">
-          <div className="flex justify-start items-center gap-3 pb-2 border-b border-border/50 mb-2">
-            <div className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-brand-600 dark:text-brand-400">
-              <Coins className="w-5 h-5 pointer-events-none" />
             </div>
-            <div className="flex flex-col items-end">
-              <h3 className="font-bold text-[18px] text-brand-600 dark:text-brand-400 mb-0">{t("paymentDetails")}</h3>
-            </div>
-          </div>
+          )}
+          </CardContent>
+        </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Base Payment Info */}
-            <Card className="rounded-[2rem] border-0 shadow-[0_4px_24px_rgba(13,71,161,0.06)] overflow-hidden">
-              <CardContent className="p-0">
-                <div className="p-6">
+        {/* 5. Payments & Linkage Section Combined */}
+        <Card className="rounded-[2rem] border-0 shadow-[0_4px_24px_rgba(13,71,161,0.06)] overflow-hidden mb-6">
+          <CardContent className="p-0">
+            {/* Header */}
+            <div className="p-6 pb-4 flex justify-start items-center gap-2 sm:gap-4 border-b border-slate-100 dark:border-neutral-800">
+              <div className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-brand-600 dark:text-brand-400">
+                <Coins className="w-5 h-5 pointer-events-none" />
+              </div>
+              <div className="flex flex-col items-start text-start">
+                <h3 className="font-bold text-[18px] text-brand-600 dark:text-brand-400 mb-0">
+                  {lang === 'he' ? "פרטי תשלום והצמדה" : "Payment & Linkage Details"}
+                </h3>
+              </div>
+            </div>
+
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8 md:divide-x md:divide-x-reverse divide-slate-100 dark:divide-neutral-800">
+              
+              {/* Base Payment Info */}
+              <div className="space-y-4 w-full">
                   {!readOnly ? (
-                    <div className="space-y-4">
-                      <h4 className="text-[13px] font-bold text-muted-foreground uppercase">
-                        {t("rent")}
-                      </h4>
-                      <div className="flex gap-4">
-                        <Input
-                          label={t("amount")}
-                          type="number"
-                          readOnly={readOnly}
-                          value={formData.base_rent}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              base_rent: e.target.value === "" ? "" : Number(e.target.value),
-                            })
-                          }
-                          leftIcon={<span className="text-sm font-bold">₪</span>}
-                          className="h-10 text-lg font-bold"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        <Input
-                          label={t("paymentDay")}
-                          type="number"
-                          min="1"
-                          max="31"
-                          readOnly={readOnly}
-                          value={formData.payment_day}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              payment_day: e.target.value === "" ? "" : Number(e.target.value),
-                            })
-                          }
-                        />
-                      </div>
+                    <div className="space-y-0 w-full">
                       {(!readOnly || formData.payment_method) && (
-                        <div className="pt-2 relative z-50">
+                        <div className="relative z-50">
                           <Select
                             label={t("paymentMethod")}
                             disabled={readOnly}
@@ -1592,17 +1617,6 @@ export function ContractHub({
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2.5 w-full">
-                      <DataFieldWidget
-                        label={t("monthlyRent") || "שכר דירה חודשי"}
-                        value={`₪${Number(formData.base_rent).toLocaleString()}`}
-                        icon={<Coins className="w-full h-full" />}
-                        valueClassName="text-brand-600 dark:text-brand-400"
-                      />
-                      <DataFieldWidget
-                        label={t("paymentDay") || "יום תשלום"}
-                        value={formData.payment_day}
-                        icon={<Calendar className="w-full h-full" />}
-                      />
                       {formData.payment_method && (() => {
                         const pmConfig = getPaymentMethodConfig(formData.payment_method);
                         const PmIcon = pmConfig?.icon || CreditCard;
@@ -1616,6 +1630,7 @@ export function ContractHub({
                       })()}
                     </div>
                   )}
+
 
                   {/* 5.5 Rent Steps Section (Moved inside card) */}
                   {(formData.rent_periods.length > 0 || !readOnly) && (
@@ -1742,14 +1757,10 @@ export function ContractHub({
                     </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
 
             {/* Linkage Info */}
             {(!readOnly || formData.linkage_type !== "none") && (
-              <Card className="rounded-[2rem] border-0 shadow-[0_4px_24px_rgba(13,71,161,0.06)] overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="p-6">
+              <div className="p-6 md:p-0 w-full pt-8 md:pt-0">
                     <div className="flex justify-between items-center mb-4">
                       <h4 className="text-[16.5px] font-bold text-brand-600 dark:text-brand-400 uppercase flex items-center gap-2">
                         <TrendingUp className="w-5 h-5 text-brand-600 dark:text-brand-400" />
@@ -1921,7 +1932,7 @@ export function ContractHub({
                                   <div className="flex-1 flex flex-col items-end gap-0.5">
                                     <span className="text-[14px] text-muted-foreground font-medium leading-none">{t("baseDate")}</span>
                                     <span className="font-bold text-[18px] text-brand-600 dark:text-brand-400">
-                                      {format(parseISO(formData.base_index_date), "MM/yyyy")}
+                                      {format(parseISO(formData.base_index_date), "dd/MM/yyyy")}
                                     </span>
                                   </div>
                                 )}
@@ -1941,15 +1952,14 @@ export function ContractHub({
                       </>
                     )}
                   </div>
-                </CardContent>
-              </Card>
             )}
-          </div>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 6. Security & Extras Section */}
         <div className="space-y-4">
-          <div className="flex items-center justify-start gap-3 mb-4">
+          <div className="flex items-center justify-start gap-2 sm:gap-4 mb-4">
             <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-neutral-800 flex items-center justify-center shadow-sm">
               <Shield className="w-5 h-5 text-brand-600 dark:text-brand-400" />
             </div>

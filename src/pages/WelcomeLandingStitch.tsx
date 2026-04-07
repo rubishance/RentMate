@@ -65,7 +65,7 @@ export default function WelcomeLandingStitch() {
             {/* Navigation */}
             <nav className={cn(
                 "fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-6 py-4",
-                scrolled ? "bg-black/60 backdrop-blur-xl border-b border-white/5 py-3" : "bg-transparent"
+                scrolled ? "bg-black/60 backdrop-blur-xl border-b border-white/5 py-2 sm:py-4" : "bg-transparent"
             )}>
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-8">
@@ -157,14 +157,14 @@ export default function WelcomeLandingStitch() {
                             >
                                 <Button
                                     onClick={() => navigate('/login?mode=signup')}
-                                    className="h-16 px-10 bg-primary hover:bg-primary text-white font-black text-sm uppercase tracking-widest rounded-3xl shadow-2xl shadow-primary/30 group"
+                                    className="h-16 px-10 bg-primary hover:bg-primary text-white font-black text-sm uppercase tracking-widest rounded-2xl shadow-2xl shadow-primary/30 group"
                                 >
                                     התחל עכשיו חינם
                                     <ArrowRight className="mr-3 w-5 h-5 transition-transform group-hover:-translate-x-1" />
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    className="h-16 px-10 border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-sm uppercase tracking-widest rounded-3xl backdrop-blur-md flex gap-3"
+                                    className="h-16 px-10 border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-sm uppercase tracking-widest rounded-2xl backdrop-blur-md flex gap-2 sm:gap-4"
                                 >
                                     <PlayCircle className="w-5 h-5 text-primary" />
                                     ראה איך זה עובד
@@ -209,7 +209,7 @@ export default function WelcomeLandingStitch() {
                                 transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
                                 className="absolute top-10 right-0 bg-black/40 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl"
                             >
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 sm:gap-4">
                                     <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
                                         <TrendingUp className="w-5 h-5 text-emerald-400" />
                                     </div>
@@ -225,7 +225,7 @@ export default function WelcomeLandingStitch() {
                                 transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
                                 className="absolute bottom-20 left-0 bg-black/40 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl"
                             >
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 sm:gap-4">
                                     <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                                         <Sparkles className="w-5 h-5 text-primary" />
                                     </div>
@@ -255,7 +255,7 @@ export default function WelcomeLandingStitch() {
                             <motion.div
                                 key={idx}
                                 whileHover={{ y: -10 }}
-                                className="group p-10 rounded-[3rem] bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-500"
+                                className="group p-10 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-500"
                             >
                                 <div className="flex items-start justify-between mb-10">
                                     <div className={cn(
@@ -264,7 +264,7 @@ export default function WelcomeLandingStitch() {
                                     )}>
                                         {feature.icon}
                                     </div>
-                                    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">
+                                    <span className="px-2 sm:px-4 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">
                                         {feature.tag}
                                     </span>
                                 </div>
@@ -305,7 +305,7 @@ export default function WelcomeLandingStitch() {
                     >
                         <Button
                             onClick={() => navigate('/login?mode=signup')}
-                            className="h-20 px-16 bg-white text-black hover:bg-white/90 font-black text-xl uppercase tracking-tighter rounded-[2.5rem] shadow-2xl shadow-white/10 group"
+                            className="h-20 px-16 bg-white text-black hover:bg-white/90 font-black text-xl uppercase tracking-tighter rounded-2xl shadow-2xl shadow-white/10 group"
                         >
                             להרשמה חינם עכשיו
                             <ArrowRight className="mr-4 w-6 h-6 transition-transform group-hover:-translate-x-2" />

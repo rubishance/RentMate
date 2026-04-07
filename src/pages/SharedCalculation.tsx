@@ -4,9 +4,12 @@ import { supabase } from '../lib/supabase';
 import { Calculator, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import type { SavedCalculation } from '../types/database';
 import { useTranslation } from '../hooks/useTranslation';
+import { UrlCompression } from '../lib/url-compression';
+import { useLocation } from 'react-router-dom';
 
 export function SharedCalculation() {
     const { id } = useParams();
+    const location = useLocation();
     const { t, lang } = useTranslation();
     const isRtl = lang === 'he';
 
@@ -16,7 +19,39 @@ export function SharedCalculation() {
 
     useEffect(() => {
         const fetchCalculation = async () => {
-            if (!id) return;
+            const params = new URLSearchParams(location.search);
+            const shareParam = params.get('share');
+
+            if (shareParam) {
+                try {
+                    const decoded = UrlCompression.decompress(shareParam);
+                    if (decoded && decoded.input && decoded.result) {
+                        setCalculation({
+                            id: 'shared-url',
+                            user_id: '',
+                            input_data: decoded.input as any,
+                            result_data: decoded.result as any,
+                            created_at: new Date().toISOString()
+                        } as SavedCalculation);
+                        setLoading(false);
+                        return;
+                    } else {
+                        throw new Error('Invalid calculation parameters in URL');
+                    }
+                } catch (e) {
+                    console.error("Failed to parse shared calculation URL", e);
+                    setError(t('shared_calc_not_found_desc'));
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            if (!id) {
+                setError(t('shared_calc_not_found_desc'));
+                setLoading(false);
+                return;
+            }
+
             try {
                 const { data, error } = await supabase
                     .from('calculation_shares')
@@ -94,7 +129,7 @@ export function SharedCalculation() {
     const isReconciliation = 'totalBackPayOwed' in result_data;
 
     return (
-        <div className={`min-h-screen bg-background pt-8 pb-4 px-5 ${isRtl ? 'text-right' : 'text-left'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+        <div className={`min-h-screen bg-background pt-8 pb-4 px-4 sm:px-6 ${isRtl ? 'text-right' : 'text-left'}`} dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="max-w-md mx-auto space-y-6">
                 {/* Branding Header */}
                 <div className="text-center space-y-2 mb-8 px-4">
@@ -102,13 +137,13 @@ export function SharedCalculation() {
                         <Calculator className="w-8 h-8" />
                         <span>RentMate</span>
                     </div>
-                    <div className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase">
+                    <div className="inline-block bg-primary/10 text-primary px-2 sm:px-4 py-1 rounded-full text-xs font-semibold tracking-wider uppercase">
                         {isReconciliation ? t('shared_calc_official_reconciliation') : t('shared_calc_official_index')}
                     </div>
                 </div>
 
                 {/* Main Card */}
-                <div className="bg-window border-y sm:border border-border rounded-none sm:rounded-3xl shadow-xl overflow-hidden">
+                <div className="bg-window border-y sm:border border-border rounded-none sm:rounded-2xl shadow-xl overflow-hidden">
                     <div className="p-6 space-y-6">
 
                         {!isReconciliation ? (
@@ -178,11 +213,11 @@ export function SharedCalculation() {
 
                                 {/* Summary Stats */}
                                 <div className="grid grid-cols-2 gap-4 text-center">
-                                    <div className="bg-secondary/30 p-3 rounded-xl">
+                                    <div className="bg-secondary/30 p-2 sm:p-4 rounded-xl">
                                         <div className="text-2xl font-bold">{result_data.totalMonths}</div>
                                         <div className="text-xs text-muted-foreground uppercase">{t('shared_calc_months')}</div>
                                     </div>
-                                    <div className="bg-secondary/30 p-3 rounded-xl">
+                                    <div className="bg-secondary/30 p-2 sm:p-4 rounded-xl">
                                         <div className="text-2xl font-bold">{formatCurrency(result_data.averageUnderpayment)}</div>
                                         <div className="text-xs text-muted-foreground uppercase">{t('shared_calc_avg_month')}</div>
                                     </div>
@@ -199,15 +234,15 @@ export function SharedCalculation() {
                                         <table className="w-full">
                                             <thead className="bg-secondary/50 sticky top-0">
                                                 <tr className="text-xs text-muted-foreground">
-                                                    <th className={`p-3 font-medium ${isRtl ? 'text-right' : 'text-left'}`}>{t('shared_calc_month')}</th>
-                                                    <th className={`p-3 font-medium ${isRtl ? 'text-left' : 'text-right'}`}>{t('shared_calc_diff')}</th>
+                                                    <th className={`p-2 sm:p-4 font-medium ${isRtl ? 'text-right' : 'text-left'}`}>{t('shared_calc_month')}</th>
+                                                    <th className={`p-2 sm:p-4 font-medium ${isRtl ? 'text-left' : 'text-right'}`}>{t('shared_calc_diff')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-border">
                                                 {result_data.monthlyBreakdown.map((item: any, idx: number) => (
                                                     <tr key={idx} className="bg-card">
-                                                        <td className="p-3">{item.month}</td>
-                                                        <td className={`p-3 font-medium ${isRtl ? 'text-left' : 'text-right'} ${item.difference > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                                        <td className="p-2 sm:p-4">{item.month}</td>
+                                                        <td className={`p-2 sm:p-4 font-medium ${isRtl ? 'text-left' : 'text-right'} ${item.difference > 0 ? 'text-red-600' : 'text-green-600'}`}>
                                                             {formatCurrency(item.difference)}
                                                         </td>
                                                     </tr>

@@ -30,11 +30,17 @@ export function ProtocolsManager({ property, readOnly }: ProtocolsManagerProps) 
   const fetchProtocols = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      
+      let query = supabase
         .from('protocols')
-        .select('*')
-        .eq('property_id', property.id)
+        .select('*, properties(address)')
         .order('created_at', { ascending: false });
+
+      if (property.id !== 'all') {
+        query = query.eq('property_id', property.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setProtocols(data || []);
@@ -71,7 +77,7 @@ export function ProtocolsManager({ property, readOnly }: ProtocolsManagerProps) 
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-20 no-scrollbar space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 pb-6 no-scrollbar space-y-3">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
             <Loader2 className="w-8 h-8 animate-spin mb-4" />
@@ -79,8 +85,8 @@ export function ProtocolsManager({ property, readOnly }: ProtocolsManagerProps) 
           </div>
         ) : protocols.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center bg-white/50 dark:bg-neutral-900/50 rounded-2xl border border-dashed border-slate-200 dark:border-neutral-800">
-            <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 rounded-2xl flex items-center justify-center mb-4">
-              <FileSignature className="w-8 h-8 text-violet-600 dark:text-violet-400" />
+            <div className="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center mb-4">
+              <FileSignature className="w-8 h-8 text-primary" />
             </div>
             <h3 className="text-lg font-bold text-foreground mb-1">
               {(lang === 'he' ? 'לא נמצאו פרוטוקולים' : 'No Protocols Found')}
@@ -91,7 +97,7 @@ export function ProtocolsManager({ property, readOnly }: ProtocolsManagerProps) 
           </div>
         ) : filteredProtocols.length === 0 ? (
           <div className="text-center p-8 text-muted-foreground bg-white/50 dark:bg-neutral-900/50 rounded-2xl border border-dashed border-slate-200 dark:border-neutral-800">
-            <AlertCircle className="w-8 h-8 mx-auto mb-3 opacity-50" />
+            <AlertCircle className="w-8 h-8 mx-auto mb-2 sm:mb-4 opacity-50" />
             <p>{(lang === 'he' ? 'לא נמצאו פרוטוקולים התואמים לחיפוש.' : 'No protocols match your search.')}</p>
           </div>
         ) : (
@@ -104,8 +110,8 @@ export function ProtocolsManager({ property, readOnly }: ProtocolsManagerProps) 
                 key={protocol.id}
                 className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 p-4 rounded-2xl hover:shadow-md transition-all duration-200"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-3">
+                <div className="flex justify-between items-start mb-2 sm:mb-4">
+                  <div className="flex items-center gap-2 sm:gap-4">
                     <div className={`p-2 rounded-xl ${isSigned ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
                       <FileSignature className="w-5 h-5" />
                     </div>
@@ -115,6 +121,11 @@ export function ProtocolsManager({ property, readOnly }: ProtocolsManagerProps) 
                       </h4>
                       <p className="text-xs text-muted-foreground mt-1">
                         {protocol.handover_date ? format(new Date(protocol.handover_date), 'PPP', { locale: dateLocale }) : (lang === 'he' ? 'ללא תאריך' : 'No Date')}
+                        {property.id === 'all' && (protocol as any).properties?.address && (
+                          <span className="block mt-0.5 text-primary opacity-80">
+                            {(protocol as any).properties.address}
+                          </span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -123,7 +134,7 @@ export function ProtocolsManager({ property, readOnly }: ProtocolsManagerProps) 
                   </div>
                 </div>
 
-                <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-xl p-3 mb-4">
+                <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-xl p-2 sm:p-4 mb-4">
                   <p className="text-xs text-slate-500 font-semibold mb-1">{(lang === 'he' ? 'שוכרים מעורבים:' : 'Tenants involved:')}</p>
                   <div className="text-sm font-medium text-foreground truncate">
                     {tenants.map(tn => tn.name).join(', ') || (lang === 'he' ? 'לא צוינו שוכרים' : 'No tenants listed')}
@@ -134,7 +145,7 @@ export function ProtocolsManager({ property, readOnly }: ProtocolsManagerProps) 
                   <Button 
                     variant="primary" 
                     size="sm"
-                    className="flex-1 rounded-xl bg-violet-600 hover:bg-violet-700 text-white"
+                    className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white"
                     onClick={() => setSelectedProtocol(protocol)}
                   >
                     <Eye className="w-4 h-4 mr-2" />
@@ -150,7 +161,8 @@ export function ProtocolsManager({ property, readOnly }: ProtocolsManagerProps) 
       {selectedProtocol && (
         <ProtocolView 
           protocol={selectedProtocol} 
-          onClose={() => setSelectedProtocol(null)} 
+          onClose={() => setSelectedProtocol(null)}
+          onDelete={(id) => setProtocols(prev => prev.filter(p => p.id !== id))}
         />
       )}
     </div>

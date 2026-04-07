@@ -117,7 +117,7 @@ export function RevenueTrendWidget({ isExpanded: externalIsExpanded, onToggleExp
                     onClick={toggleExpand}
                 >
                     <CardHeader className="flex flex-row items-center justify-between p-4 md:p-6 pb-2 space-y-0">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             <div className="p-2 bg-slate-100 dark:bg-neutral-800 rounded-xl shrink-0">
                                 <TrendingUp className="w-5 h-5 text-indigo-500" />
                             </div>

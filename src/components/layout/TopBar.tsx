@@ -18,7 +18,7 @@ export function TopBar() {
              */}
 
             {/* Left: Logo */}
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/dashboard')}>
+            <div className="flex items-center gap-2 sm:gap-4 cursor-pointer group" onClick={() => navigate('/dashboard')}>
                 <div className="w-8 h-8 bg-black dark:bg-white rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
                     <img
                         src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
@@ -33,9 +33,9 @@ export function TopBar() {
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-4">
                 {!loading && plan && (
-                    <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="flex items-center gap-2 sm:gap-2">
                         {plan.id === 'free' && (
                             <button
                                 onClick={() => navigate('/subscription')}
@@ -46,7 +46,7 @@ export function TopBar() {
                         )}
                         <button
                             onClick={() => navigate('/subscription')}
-                            className="hidden sm:flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-primary/10 to-cyan-600/10 hover:from-primary/20 hover:to-cyan-600/20 border border-blue-200 dark:border-blue-900 transition-all group"
+                            className="hidden sm:flex items-center gap-2 sm:gap-2 px-2.5 sm:px-2 sm:px-4 py-1 sm:py-2 rounded-full bg-gradient-to-r from-primary/10 to-cyan-600/10 hover:from-primary/20 hover:to-cyan-600/20 border border-blue-200 dark:border-blue-900 transition-all group"
                         >
                             {plan.id === 'free' || plan.id === 'solo' ? (
                                 <Star className="w-3 h-3 text-primary group-hover:scale-110 transition-transform" />

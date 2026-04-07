@@ -144,7 +144,7 @@ export default function SupportChat() {
                 </div>
 
                 {/* Sub-header Search */}
-                <div className="p-3">
+                <div className="p-2 sm:p-4">
                     <div className="relative">
                         <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
                         <input
@@ -184,7 +184,7 @@ export default function SupportChat() {
                                         Click to view...
                                     </p>
                                     {conv.unread_count > 0 && (
-                                        <span className="bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                        <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[18px] text-center">
                                             {conv.unread_count}
                                         </span>
                                     )}
@@ -235,8 +235,8 @@ export default function SupportChat() {
                         {/* Messages List */}
                         <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-4 z-0">
                             {error && (
-                                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-4 rounded-xl flex items-center justify-between gap-3 text-red-700 dark:text-red-400 font-bold text-sm mb-4">
-                                    <div className="flex items-center gap-3">
+                                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-4 rounded-xl flex items-center justify-between gap-2 sm:gap-4 text-red-700 dark:text-red-400 font-bold text-sm mb-4">
+                                    <div className="flex items-center gap-2 sm:gap-4">
                                         <RefreshCw className="w-5 h-5 animate-spin hidden" />
                                         <span>{error}</span>
                                     </div>
@@ -313,9 +313,9 @@ export default function SupportChat() {
                                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                        className="absolute bottom-[calc(100%-8px)] left-4 right-4 bg-background/95 backdrop-blur shadow-[0_-4px_15px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_15px_rgba(0,0,0,0.3)] rounded-t-xl border border-b-0 border-border px-4 py-3 flex items-center justify-between z-20"
+                                        className="absolute bottom-[calc(100%-8px)] left-4 right-4 bg-background/95 backdrop-blur shadow-[0_-4px_15px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_15px_rgba(0,0,0,0.3)] rounded-t-xl border border-b-0 border-border px-4 py-2 sm:py-4 flex items-center justify-between z-20"
                                     >
-                                        <div className="flex items-center gap-3 overflow-hidden">
+                                        <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
                                             <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center shrink-0">
                                                 {attachment.type.startsWith('image/') ? (
                                                     <img src={URL.createObjectURL(attachment)} alt="Preview" className="w-full h-full object-cover rounded opacity-80" />
@@ -338,7 +338,7 @@ export default function SupportChat() {
                                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                        className="absolute bottom-[calc(100%-8px)] left-4 right-4 bg-background/95 backdrop-blur shadow-[0_-4px_15px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_15px_rgba(0,0,0,0.3)] rounded-t-xl border border-b-0 border-border px-4 py-3 flex items-start justify-between z-20"
+                                        className="absolute bottom-[calc(100%-8px)] left-4 right-4 bg-background/95 backdrop-blur shadow-[0_-4px_15px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_15px_rgba(0,0,0,0.3)] rounded-t-xl border border-b-0 border-border px-4 py-2 sm:py-4 flex items-start justify-between z-20"
                                     >
                                         <div className="flex-1 overflow-hidden border-l-4 border-l-primary pl-3 bg-muted/40 rounded-r-lg py-1 pr-2">
                                             <p className="text-xs font-bold text-primary mb-0.5">Replying to message</p>
@@ -355,7 +355,7 @@ export default function SupportChat() {
                                     type="button" 
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isUploading}
-                                    className="p-3 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-50 transition-colors"
+                                    className="p-2 sm:p-4 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-50 transition-colors"
                                 >
                                     {isUploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Paperclip className="w-6 h-6" />}
                                 </button>
@@ -367,7 +367,7 @@ export default function SupportChat() {
                                     accept=".pdf,image/*"
                                 />
 
-                                <div className="flex-1 bg-card rounded-2xl border border-border px-4 py-3 flex items-center shadow-sm focus-within:ring-2 focus-within:ring-primary/50">
+                                <div className="flex-1 bg-card rounded-2xl border border-border px-4 py-2 sm:py-4 flex items-center shadow-sm focus-within:ring-2 focus-within:ring-primary/50">
                                     <textarea
                                         value={inputText}
                                         onChange={(e) => setInputText(e.target.value)}
@@ -386,7 +386,7 @@ export default function SupportChat() {
                                 <button
                                     onClick={handleSend}
                                     disabled={(!inputText.trim() && !attachment) || isUploading}
-                                    className="p-3 bg-green-500 hover:bg-blue-50 text-white rounded-full shadow-lg disabled:opacity-50 disabled:shadow-none transition-all transform active:scale-95"
+                                    className="p-2 sm:p-4 bg-green-500 hover:bg-blue-50 text-white rounded-full shadow-lg disabled:opacity-50 disabled:shadow-none transition-all transform active:scale-95"
                                 >
                                     {isUploading ? <Loader2 className="w-5 h-5 ml-0.5 animate-spin" /> : <Send className="w-5 h-5 ml-0.5" />}
                                 </button>

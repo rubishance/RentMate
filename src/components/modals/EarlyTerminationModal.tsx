@@ -72,7 +72,7 @@ export const EarlyTerminationModal: React.FC<EarlyTerminationModalProps> = ({
             title={isHe ? 'סיום חוזה מוקדם (ארכיון)' : 'Early Termination (Archive)'}
             size="md"
             footer={
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-4">
                     <Button
                         variant="ghost"
                         onClick={onClose}
@@ -92,10 +92,10 @@ export const EarlyTerminationModal: React.FC<EarlyTerminationModalProps> = ({
                 </div>
             }
         >
-            <div className="space-y-6 py-4 px-1">
+            <div className="space-y-6 py-6 px-1">
                 
                 {/* Warning header */}
-                <div className="flex items-start gap-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-start">
+                <div className="flex items-start gap-4 p-6 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-start">
                     <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center shrink-0">
                         <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-500" />
                     </div>
@@ -117,8 +117,8 @@ export const EarlyTerminationModal: React.FC<EarlyTerminationModalProps> = ({
                         {isHe ? 'מידע חשוב מתוך החוזה' : 'Important Contract Info'}
                     </h5>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="p-4 rounded-xl border border-slate-100 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-800/50 flex flex-col gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4">
+                        <div className="p-6 rounded-xl border border-slate-100 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-800/50 flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-[14px]">
                                 <ShieldCheck className="w-4 h-4" />
                                 {isHe ? 'ערבויות ובטחונות' : 'Guarantees'}
@@ -128,7 +128,7 @@ export const EarlyTerminationModal: React.FC<EarlyTerminationModalProps> = ({
                             </p>
                         </div>
                         
-                        <div className="p-4 rounded-xl border border-slate-100 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-800/50 flex flex-col gap-2">
+                        <div className="p-6 rounded-xl border border-slate-100 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-800/50 flex flex-col gap-2">
                             <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 font-bold text-[14px]">
                                 <Paintbrush className="w-4 h-4" />
                                 {isHe ? 'החזרת הנכס (צביעה)' : 'Painting & Return'}
@@ -178,7 +178,7 @@ export const EarlyTerminationModal: React.FC<EarlyTerminationModalProps> = ({
                     />
 
                     {calcMethod === 'auto' ? (
-                        <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 flex justify-between items-center">
+                        <div className="p-6 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 flex justify-between items-center">
                             <span className="text-[14px] font-medium text-emerald-800 dark:text-emerald-400">
                                 {isHe ? 'חלק יחסי (לפי ימים):' : 'Calculated partial rent:'}
                             </span>

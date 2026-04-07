@@ -245,7 +245,7 @@ const PlanManagement = () => {
         return (
             <button
                 onClick={() => toggleFeature(featureKey)}
-                className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all ${isActive
+                className={`flex items-center justify-between p-2 sm:p-4 rounded-xl border-2 transition-all ${isActive
                     ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                     : 'border-border dark:border-gray-700 bg-blue-50 dark:bg-foreground/50'
                     }`}
@@ -289,8 +289,8 @@ const PlanManagement = () => {
                         hoverEffect
                     >
 
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className={`p-3 rounded-xl bg-white dark:bg-black/40 shadow-sm ${COLOR_MAP[baseId] || 'text-primary'}`}>
+                        <div className="flex items-center gap-2 sm:gap-4 mb-6">
+                            <div className={`p-2 sm:p-4 rounded-xl bg-white dark:bg-black/40 shadow-sm ${COLOR_MAP[baseId] || 'text-primary'}`}>
                                 <Icon className="w-6 h-6" />
                             </div>
                             <h3 className="text-2xl font-bold font-mono tracking-tight dark:text-white uppercase">{plan.name || 'Plan Name'}</h3>
@@ -306,14 +306,14 @@ const PlanManagement = () => {
 
 
                         <div className="space-y-4 flex-1">
-                            <div className="flex items-center gap-3 text-sm">
+                            <div className="flex items-center gap-2 sm:gap-4 text-sm">
                                 <div className="p-1 rounded-full bg-blue-50/10 text-green-600">
                                     <Check className="w-3 h-3" />
                                 </div>
                                 <span className="text-foreground/80 font-bold">{plan.max_properties === -1 ? 'Unlimited' : plan.max_properties} Property Units</span>
                             </div>
                             {Object.entries(plan.features || {}).map(([key, value]) => value ? (
-                                <div key={key} className="flex items-center gap-3 text-sm">
+                                <div key={key} className="flex items-center gap-2 sm:gap-4 text-sm">
                                     <div className="p-1 rounded-full bg-blue-50/10 text-green-600">
                                         <Check className="w-3 h-3" />
                                     </div>
@@ -345,7 +345,7 @@ const PlanManagement = () => {
                         Configure pricing, marketing content, and resource limits.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <button
                         onClick={handleCreateNew}
                         disabled={isCreating}
@@ -368,7 +368,7 @@ const PlanManagement = () => {
             {(isCreating || editingId) && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in slide-in-from-top-4 duration-500">
                     {/* Left: Editor Form */}
-                    <div className="lg:col-span-8 bg-white dark:bg-gray-800 rounded-3xl border border-border dark:border-gray-700 shadow-xl overflow-hidden">
+                    <div className="lg:col-span-8 bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-xl overflow-hidden">
                         <div className="p-6 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-foreground/10 flex justify-between items-center">
                             <div>
                                 <h2 className="text-xl font-black text-foreground dark:text-white uppercase tracking-tight">
@@ -453,7 +453,7 @@ const PlanManagement = () => {
 
                             {/* Status */}
                             <div className="pt-8 border-t border-gray-50 dark:border-gray-700 flex justify-between items-center">
-                                <label className="flex items-center gap-3 cursor-pointer group">
+                                <label className="flex items-center gap-2 sm:gap-4 cursor-pointer group">
                                     <div className={`w-12 h-6 rounded-full p-1 transition-colors ${editForm.is_active ? 'bg-primary-600' : 'bg-gray-300'}`} onClick={() => handleChange('is_active', !editForm.is_active)}>
                                         <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${editForm.is_active ? 'translate-x-6' : 'translate-x-0'}`} />
                                     </div>
@@ -467,7 +467,7 @@ const PlanManagement = () => {
                                     <button
                                         onClick={handleSave}
                                         disabled={saving}
-                                        className="flex items-center gap-2 px-8 py-3 bg-primary-600 text-white rounded-2xl hover:bg-primary-700 transition-all font-black uppercase tracking-widest shadow-lg shadow-primary-600/20"
+                                        className="flex items-center gap-2 px-8 py-2 sm:py-4 bg-primary-600 text-white rounded-2xl hover:bg-primary-700 transition-all font-black uppercase tracking-widest shadow-lg shadow-primary-600/20"
                                     >
                                         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-4 h-4" />}
                                         Save Changes
@@ -487,7 +487,7 @@ const PlanManagement = () => {
             {/* Plans List */}
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 {plans.length === 0 ? (
-                    <div className="lg:col-span-3 py-20 bg-white dark:bg-gray-800 rounded-3xl border border-border dark:border-gray-700 text-center">
+                    <div className="lg:col-span-3 py-20 bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 text-center">
                         <TagIcon className="w-16 h-16 mx-auto mb-4 text-gray-100 dark:text-gray-700" />
                         <p className="font-black text-muted-foreground uppercase tracking-widest">No subscription plans defined yet.</p>
                     </div>
@@ -496,7 +496,7 @@ const PlanManagement = () => {
                         <div
                             key={plan.id}
                             className={`
-                                relative flex flex-col rounded-3xl border-2 p-8 transition-all duration-300
+                                relative flex flex-col rounded-2xl border-2 p-8 transition-all duration-300
                                 ${editingId === plan.id
                                     ? 'bg-primary-50/20 dark:bg-primary-900/10 border-primary-500 shadow-2xl opacity-50 scale-95 pointer-events-none'
                                     : 'bg-white dark:bg-gray-800 border-border dark:border-gray-700 hover:border-primary-200 dark:hover:border-primary-900 hover:shadow-xl'}
@@ -512,7 +512,7 @@ const PlanManagement = () => {
                                     <div className="text-xs font-black text-primary-600 mt-1 uppercase tracking-widest">
                                         ₪{plan.price_yearly} Yearly Billing
                                     </div>
-                                    <div className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-widest ${plan.is_active
+                                    <div className={`mt-2 inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-widest ${plan.is_active
                                         ? 'bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-900/20'
                                         : 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/20'
                                         }`}>
@@ -523,14 +523,14 @@ const PlanManagement = () => {
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => handleEdit(plan)}
-                                        className="p-3 text-muted-foreground hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-2xl border border-border dark:border-gray-700 transition-all"
+                                        className="p-2 sm:p-4 text-muted-foreground hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-2xl border border-border dark:border-gray-700 transition-all"
                                         title="Edit Plan"
                                     >
                                         <PencilSquareIcon className="w-5 h-5" />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(plan.id, plan.name)}
-                                        className="p-3 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl border border-border dark:border-gray-700 transition-all"
+                                        className="p-2 sm:p-4 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl border border-border dark:border-gray-700 transition-all"
                                         title="Delete Plan"
                                     >
                                         <TrashIcon className="w-5 h-5" />
@@ -539,20 +539,20 @@ const PlanManagement = () => {
                             </div>
 
                             <div className="flex-1 space-y-4">
-                                <div className="grid grid-cols-2 gap-3 mb-6">
-                                    <div className="p-3 bg-blue-50 dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
+                                <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-6">
+                                    <div className="p-2 sm:p-4 bg-blue-50 dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
                                         <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Assets</div>
                                         <div className="text-sm font-black text-foreground dark:text-white">{plan.max_properties === -1 ? 'Unlimited' : plan.max_properties}</div>
                                     </div>
-                                    <div className="p-3 bg-blue-50 dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
+                                    <div className="p-2 sm:p-4 bg-blue-50 dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
                                         <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Cloud</div>
                                         <div className="text-sm font-black text-foreground dark:text-white">{plan.max_storage_mb === -1 ? 'Unlimited' : `${(plan.max_storage_mb / 1024).toFixed(1)}GB`}</div>
                                     </div>
-                                    <div className="p-3 bg-blue-50 dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
+                                    <div className="p-2 sm:p-4 bg-blue-50 dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
                                         <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">AI Help</div>
                                         <div className="text-sm font-black text-foreground dark:text-white">{plan.max_sessions} SESS</div>
                                     </div>
-                                    <div className="p-3 bg-blue-50 dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
+                                    <div className="p-2 sm:p-4 bg-blue-50 dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
                                         <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">WhatsApp</div>
                                         <div className="text-sm font-black text-foreground dark:text-white">{plan.max_whatsapp_messages === -1 ? '∞' : plan.max_whatsapp_messages} MSG</div>
                                     </div>

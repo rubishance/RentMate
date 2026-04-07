@@ -77,7 +77,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
                 {onRetry && (
                     <button
                         onClick={onRetry}
-                        className="button-jewel flex items-center gap-2 rounded-xl px-6 py-3 font-bold text-white shadow-lg shadow-brand-500/25 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brand-500/40 active:translate-y-0 active:scale-95 text-sm"
+                        className="button-jewel flex items-center gap-2 rounded-xl px-6 py-2 sm:py-4 font-bold text-white shadow-lg shadow-brand-500/25 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brand-500/40 active:translate-y-0 active:scale-95 text-sm"
                     >
                         <RefreshCw className="h-5 w-5" />
                         <span>{t('reset')}</span>
@@ -88,7 +88,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
                     <button
                         onClick={handleReport}
                         disabled={isReporting}
-                        className="group flex items-center gap-2 rounded-xl border-2 border-red-100 bg-red-50/50 px-6 py-3 font-bold text-red-600 backdrop-blur-sm transition-all hover:bg-red-50 hover:border-red-200 disabled:opacity-50 dark:border-red-900/30 dark:bg-red-900/10 dark:text-red-400 dark:hover:bg-red-900/20 text-sm"
+                        className="group flex items-center gap-2 rounded-xl border-2 border-red-100 bg-red-50/50 px-6 py-2 sm:py-4 font-bold text-red-600 backdrop-blur-sm transition-all hover:bg-red-50 hover:border-red-200 disabled:opacity-50 dark:border-red-900/30 dark:bg-red-900/10 dark:text-red-400 dark:hover:bg-red-900/20 text-sm"
                     >
                         {isReporting ? (
                             <RefreshCw className="h-5 w-5 animate-spin" />
@@ -100,7 +100,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
                 )}
 
                 {reportSent && (
-                    <div className="flex items-center gap-2 px-6 py-3 bg-secondary/10 text-secondary rounded-xl font-bold border border-green-100 animate-in zoom-in duration-300 text-sm">
+                    <div className="flex items-center gap-2 px-6 py-2 sm:py-4 bg-secondary/10 text-secondary rounded-xl font-bold border border-green-100 animate-in zoom-in duration-300 text-sm">
                         <RefreshCw className="h-5 w-5" />
                         <span>{t('reportSuccess')}</span>
                     </div>
@@ -109,7 +109,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
                 {showHomeButton && (
                     <button
                         onClick={() => navigate('/')}
-                        className="group flex items-center gap-2 rounded-xl border-2 border-slate-200 bg-white/50 px-6 py-3 font-bold text-slate-700 backdrop-blur-sm transition-all hover:bg-white hover:border-brand-200 hover:text-brand-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:border-brand-700 text-sm"
+                        className="group flex items-center gap-2 rounded-xl border-2 border-slate-200 bg-white/50 px-6 py-2 sm:py-4 font-bold text-slate-700 backdrop-blur-sm transition-all hover:bg-white hover:border-brand-200 hover:text-brand-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:border-brand-700 text-sm"
                     >
                         {isRtl ? <MoveLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" /> : <Home className="h-5 w-5" />}
                         <span>{t('backToHome')}</span>

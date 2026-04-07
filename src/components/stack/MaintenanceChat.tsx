@@ -40,7 +40,7 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
                     <span className="text-sm text-muted-foreground">{propertyAddress || 'Ben Yehuda 14'}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-amber-100 text-amber-700 text-sm font-bold uppercase tracking-widest rounded-full">In Progress</span>
+                    <span className="px-2 sm:px-4 py-1 bg-amber-100 text-amber-700 text-sm font-bold uppercase tracking-widest rounded-full">In Progress</span>
                 </div>
             </div>
 
@@ -85,7 +85,7 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                             placeholder={t('typeMessage')}
-                            className="w-full bg-background dark:bg-neutral-800 border-none rounded-2xl px-4 py-3 text-base focus-visible:ring-1 focus-visible:ring-primary shadow-none h-auto"
+                            className="w-full bg-background dark:bg-neutral-800 border-none rounded-2xl px-4 py-2 sm:py-4 text-base focus-visible:ring-1 focus-visible:ring-primary shadow-none h-auto"
                         />
                     </div>
                     <Button onClick={handleSend} size="icon" className="rounded-full w-10 h-10 shrink-0">

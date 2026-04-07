@@ -59,7 +59,7 @@ export function MobileDatePicker({ value, onChange, minDate, maxDate }: MobileDa
     };
 
     return (
-        <div className="relative w-full bg-white dark:bg-neutral-900 rounded-[2.5rem] flex flex-col font-sans">
+        <div className="relative w-full bg-white dark:bg-neutral-900 rounded-2xl flex flex-col font-sans">
             <div className="relative flex justify-between h-[240px] overflow-hidden rounded-2xl bg-white dark:bg-neutral-800/10">
                 {/* Center Highlight */}
                 <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-12 bg-slate-50 dark:bg-neutral-800/50 shadow-sm pointer-events-none z-0 backdrop-blur-md rounded-2xl" />

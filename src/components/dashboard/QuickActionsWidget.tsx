@@ -9,6 +9,7 @@ import type { Property } from '../../types/database';
 import { SelectPropertyModal } from '../modals/SelectPropertyModal';
 import { ReportGenerationModal } from '../modals/ReportGenerationModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 interface QuickActionsWidgetProps {
     isExpanded: boolean;
@@ -19,6 +20,7 @@ export function QuickActionsWidget({ isExpanded, onToggleExpand }: QuickActionsW
     const { lang } = useTranslation();
     const { user } = useAuth();
     const { push } = useStack();
+    const navigate = useNavigate();
     const isRtl = lang === 'he';
 
     const [properties, setProperties] = useState<Property[]>([]);
@@ -54,6 +56,14 @@ export function QuickActionsWidget({ isExpanded, onToggleExpand }: QuickActionsW
 
     const tools = [
         {
+            id: 'calculator_reconciliation',
+            icon: <Zap className="w-4 h-4 text-emerald-500" />,
+            title: isRtl ? 'חישוב סדרת תשלומים' : 'Payment Series Calculator',
+            subtitle: isRtl ? 'חישוב חיובים מצטברים והפרשי מדד' : 'Calculate accumulated payments and index differences',
+            action: () => navigate('/calculator', { state: { activeTab: 'reconciliation' } }),
+            bg: 'bg-emerald-500/10'
+        },
+        {
             id: 'protocol',
             icon: <FileSignature className="w-4 h-4 text-amber-500" />,
             title: isRtl ? 'פרוטוקול מסירה דיגיטלי' : 'Digital Protocol',
@@ -81,12 +91,12 @@ export function QuickActionsWidget({ isExpanded, onToggleExpand }: QuickActionsW
 
     return (
         <>
-            <Card className="glass-premium dark:bg-neutral-900/40 border-white/5 shadow-minimal w-full overflow-hidden flex flex-col rounded-[2.5rem]">
+            <Card className="glass-premium dark:bg-neutral-900/40 border-white/5 shadow-minimal w-full overflow-hidden flex flex-col rounded-2xl">
                 <CardHeader 
                     className="flex flex-row items-center justify-between pb-2 cursor-pointer group/header"
                     onClick={onToggleExpand}
                 >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-4">
                         <div className="p-2 bg-slate-100 dark:bg-neutral-800 rounded-xl shrink-0">
                             <Zap className="w-5 h-5 text-amber-500" />
                         </div>
@@ -111,7 +121,7 @@ export function QuickActionsWidget({ isExpanded, onToggleExpand }: QuickActionsW
                             className="overflow-hidden"
                         >
                             <CardContent className="p-6">
-                                <div className="grid grid-cols-1 gap-3">
+                                <div className="grid grid-cols-1 gap-2 sm:gap-4">
                                     {tools.map((tool) => (
                                         <button
                                             key={tool.id}
@@ -121,7 +131,7 @@ export function QuickActionsWidget({ isExpanded, onToggleExpand }: QuickActionsW
                                             }}
                                             className="group cursor-pointer flex items-center justify-between p-2 rounded-xl hover:bg-background dark:hover:bg-white/5 transition-colors border border-transparent hover:border-border/50 w-full text-start"
                                         >
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2 sm:gap-4">
                                                 <div className={`p-2 rounded-xl transition-all group-hover:scale-105 shrink-0 flex items-center justify-center ${tool.bg}`}>
                                                     {tool.icon}
                                                 </div>

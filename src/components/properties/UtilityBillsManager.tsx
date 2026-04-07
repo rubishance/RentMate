@@ -341,7 +341,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
             {view === 'types' ? (
                 <div className="space-y-4">
                     <h3 className="font-bold text-foreground dark:text-white px-2 mb-4">{t('utilitiesStorage')}</h3>
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 gap-2 sm:gap-4">
                         {utilities.map(util => {
                             const Icon = util.icon;
                             // Count bills for this type (might need actual data from DB, but for UI we can show indicators)
@@ -349,10 +349,10 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                 <button
                                     key={util.id}
                                     onClick={() => handleSelectUtility(util.id)}
-                                    className="flex items-center justify-between p-5 bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-800 rounded-2xl hover:border-primary/30 transition-all hover:shadow-md group text-start outline-none"
+                                    className="flex items-center justify-between p-4 sm:p-6 bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-800 rounded-2xl hover:border-primary/30 transition-all hover:shadow-md group text-start outline-none"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className={cn("p-3 rounded-xl group-hover:scale-110 transition-transform", util.bg, util.color)}>
+                                        <div className={cn("p-2 sm:p-4 rounded-xl group-hover:scale-110 transition-transform", util.bg, util.color)}>
                                             <Icon className="w-6 h-6" />
                                         </div>
                                         <div>
@@ -376,7 +376,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                         >
                             <ChevronRight className="w-6 h-6 rotate-180" />
                         </button>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             {utilities.find(u => u.id === activeUtility)?.icon && (
                                 <div className={cn("p-2 rounded-xl", utilities.find(u => u.id === activeUtility)?.bg, utilities.find(u => u.id === activeUtility)?.color)}>
                                     {(() => {
@@ -435,7 +435,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
 
                             {/* Folder Metadata */}
                             <div className="relative space-y-5">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('subject')}</label>
                                         <Input
@@ -488,7 +488,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                     />
                                     <div className="w-full py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl group-hover:border-primary group-hover:bg-primary/10/30 dark:group-hover:bg-blue-900/10 transition-all flex flex-col items-center justify-center text-center gap-2">
-                                        <div className="p-3 bg-primary/10 dark:bg-blue-900/20 rounded-full group-hover:scale-110 transition-transform">
+                                        <div className="p-2 sm:p-4 bg-primary/10 dark:bg-blue-900/20 rounded-full group-hover:scale-110 transition-transform">
                                             <Upload className="w-6 h-6 text-primary dark:text-blue-400" />
                                         </div>
                                         <div>
@@ -507,12 +507,12 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                 <div key={file.id} className="bg-white/60 dark:bg-gray-800/60 p-4 rounded-xl border border-border dark:border-gray-700 shadow-sm backdrop-blur-sm transition-all relative">
 
                                                     {stagedFiles.length > 1 && (
-                                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 sm:px-4 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
                                                             {t('bill', { defaultValue: 'Bill' })} 1 / {stagedFiles.length}
                                                         </div>
                                                     )}
 
-                                                    <div className="flex justify-between items-start mb-3 mt-2">
+                                                    <div className="flex justify-between items-start mb-2 sm:mb-4 mt-2">
                                                         <div className="flex items-center gap-2 overflow-hidden flex-1">
                                                             <div className="p-1.5 bg-primary/10 dark:bg-blue-900/30 text-primary dark:text-blue-400 rounded-xl shrink-0">
                                                                 <FileText className="w-4 h-4" />
@@ -539,18 +539,18 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
 
                                                     {/* AI Badge */}
                                                     {file.isAnalyzing ? (
-                                                        <div className="mb-3 flex items-center gap-2 text-xs text-primary animate-pulse">
+                                                        <div className="mb-2 sm:mb-4 flex items-center gap-2 text-xs text-primary animate-pulse">
                                                             <Loader2 className="w-3 h-3 animate-spin" />
                                                             Scanning bill...
                                                         </div>
                                                     ) : file.aiData ? (
-                                                        <div className="mb-3 space-y-2">
+                                                        <div className="mb-2 sm:mb-4 space-y-2">
                                                             <div className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-xl w-fit">
                                                                 <Sparkles className="w-3 h-3" />
                                                                 <span>Auto-filled by Gemini</span>
                                                             </div>
                                                             {file.isDuplicate && (
-                                                                <div className="flex items-center gap-2 text-xs text-destructive bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-xl border border-red-100 dark:border-red-900/30">
+                                                                <div className="flex items-center gap-2 text-xs text-destructive bg-red-50 dark:bg-red-900/20 px-2 py-2 rounded-xl border border-red-100 dark:border-red-900/30">
                                                                     <X className="w-3.5 h-3.5" />
                                                                     <span className="font-bold">Duplicate Detected!</span>
                                                                     <span>A bill with this number, vendor, and date already exists.</span>
@@ -559,7 +559,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                         </div>
                                                     ) : null}
 
-                                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                                    <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-2 sm:mb-4">
                                                         <div className="col-span-1 space-y-1">
                                                             <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">Asset Match</label>
                                                             <select
@@ -658,14 +658,14 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                 )}
                             </div>
 
-                            <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 p-4 sm:p-5 bg-gradient-to-t from-background via-background/95 to-transparent pt-8 flex gap-3 justify-end border-t border-transparent z-20">
+                            <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 p-4 sm:p-4 sm:p-6 bg-gradient-to-t from-background via-background/95 to-transparent pt-8 flex gap-2 sm:gap-4 justify-end border-t border-transparent z-20">
                                 <Button
                                     variant="ghost"
                                     onClick={() => {
                                         setStagedFiles([]);
                                         setShowUploadForm(false);
                                     }}
-                                    className="px-5 py-2.5 text-sm font-semibold text-muted-foreground bg-muted/80 hover:bg-muted dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 rounded-xl transition-all shadow-sm border border-border/50"
+                                    className="px-4 sm:px-6 py-2.5 text-sm font-semibold text-muted-foreground bg-muted/80 hover:bg-muted dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 rounded-xl transition-all shadow-sm border border-border/50"
                                 >
                                     {t('cancel')}
                                 </Button>
@@ -724,7 +724,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 sm:p-8">
                     <button
                         onClick={() => setPreviewImage(null)}
-                        className="absolute top-4 right-4 p-3 text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors z-[101]"
+                        className="absolute top-4 right-4 p-2 sm:p-4 text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors z-[101]"
                         title={t('close')}
                     >
                         <X className="w-6 h-6" />

@@ -49,7 +49,7 @@ export function DashboardChatBar({ className }: DashboardChatBarProps) {
                 className="relative group"
             >
                 {/* Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[2rem]" />
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
 
                 <form
                     onSubmit={handleSubmit}

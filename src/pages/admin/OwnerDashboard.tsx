@@ -127,7 +127,7 @@ export default function OwnerDashboard() {
         <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-600 tracking-tight">
                         Owner Control Center
                     </h1>
@@ -142,7 +142,7 @@ export default function OwnerDashboard() {
 
             {/* Financial Pulse Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-xl shadow-primary-500/5 relative overflow-hidden group">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-xl shadow-primary-500/5 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                         <BanknotesIcon className="w-24 h-24 text-primary-600" />
                     </div>
@@ -159,7 +159,7 @@ export default function OwnerDashboard() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5">
                         <UsersIcon className="w-24 h-24 text-primary" />
                     </div>
@@ -174,7 +174,7 @@ export default function OwnerDashboard() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5">
                         <UsersIcon className="w-24 h-24 text-primary" />
                     </div>
@@ -189,7 +189,7 @@ export default function OwnerDashboard() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5">
                         <ServerIcon className="w-24 h-24 text-blue-600" />
                     </div>
@@ -208,7 +208,7 @@ export default function OwnerDashboard() {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Growth Chart */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-6">User Growth & Revenue</h3>
                     <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%">
@@ -229,14 +229,14 @@ export default function OwnerDashboard() {
 
                 {/* Quick Actions / System Status */}
                 <div className="space-y-6">
-                    <div className="bg-foreground text-white p-6 rounded-3xl shadow-2xl relative overflow-hidden">
+                    <div className="bg-foreground text-white p-6 rounded-2xl shadow-2xl relative overflow-hidden">
                         <div className="relative z-10">
                             <h3 className="text-lg font-black uppercase tracking-tight mb-2">Technical Infrastructure</h3>
                             <div className="space-y-3">
                                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                                    <div className="flex justify-between items-center mb-3">
+                                    <div className="flex justify-between items-center mb-2 sm:mb-4">
                                         <span className="text-xs font-black uppercase tracking-widest text-blue-400">Database & API</span>
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
                                             <span className="text-xs font-mono text-blue-400">HEALTHY</span>
                                         </div>
@@ -257,11 +257,11 @@ export default function OwnerDashboard() {
                                             />
                                         </div>
                                         <div className="flex gap-4 pt-1">
-                                            <div className="flex items-center gap-1.5">
+                                            <div className="flex items-center gap-2">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
                                                 <span className="text-xs font-black uppercase text-muted-foreground">Media ({metrics?.storage?.media_mb?.toFixed(1)} MB)</span>
                                             </div>
-                                            <div className="flex items-center gap-1.5">
+                                            <div className="flex items-center gap-2">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
                                                 <span className="text-xs font-black uppercase text-muted-foreground">Docs ({metrics?.storage?.docs_mb?.toFixed(1)} MB)</span>
                                             </div>
@@ -269,7 +269,7 @@ export default function OwnerDashboard() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-2 gap-2 sm:gap-4">
                                     <button
                                         disabled={toggling === 'maintenance_mode'}
                                         onClick={() => toggleSystemSetting('maintenance_mode', metrics?.system_status?.maintenance_mode || false)}
@@ -317,7 +317,7 @@ export default function OwnerDashboard() {
                         <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/30 rounded-full blur-3xl"></div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden group">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden group">
                         <div className="flex justify-between items-start mb-4">
                             <div>
                                 <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight">Active Broadcasts</h3>
@@ -341,9 +341,9 @@ export default function OwnerDashboard() {
                         <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-primary-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                         <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-4">Admin Privileges</h3>
-                        <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-800">
+                        <div className="flex items-center gap-2 sm:gap-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-800">
                             <ShieldCheckIcon className="w-6 h-6 text-amber-600" />
                             <div>
                                 <div className="text-xs font-bold text-amber-800 dark:text-amber-400">Super Admin Active</div>

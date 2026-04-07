@@ -67,7 +67,7 @@ export default function AuditLogs() {
                         Track system-wide security events, authentication attempts, and administrative actions.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <div className="hidden sm:block px-4 py-2 bg-muted dark:bg-foreground rounded-xl text-xs font-black text-muted-foreground uppercase tracking-widest border border-border dark:border-gray-700">
                         Top 200 Events
                     </div>
@@ -82,7 +82,7 @@ export default function AuditLogs() {
             </div>
 
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-3 text-red-700 dark:text-red-400 font-bold text-sm">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-2 sm:gap-4 text-red-700 dark:text-red-400 font-bold text-sm">
                     <ExclamationTriangleIcon className="w-6 h-6 flex-shrink-0" />
                     <div>
                         <p>Access Denied or Connection Failed</p>
@@ -99,7 +99,7 @@ export default function AuditLogs() {
                     placeholder="Search logs by action, user ID or specific details..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all shadow-sm text-foreground dark:text-white"
+                    className="w-full pl-11 pr-4 py-2 sm:py-4.5 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all shadow-sm text-foreground dark:text-white"
                 />
             </div>
 
@@ -126,7 +126,7 @@ export default function AuditLogs() {
                                 filteredLogs.map((log) => (
                                     <tr key={log.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors">
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2 sm:gap-4">
                                                 <div className={`p-1.5 rounded-xl border ${log.action.includes('DELETE') ? 'bg-destructive/10 text-destructive border-red-100 dark:bg-red-900/20 dark:border-red-800' :
                                                     log.action.includes('UPDATE') ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800' :
                                                         'bg-primary-50 text-primary-600 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800'

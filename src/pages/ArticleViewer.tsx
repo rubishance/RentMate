@@ -113,8 +113,9 @@ export function ArticleViewer() {
         // sections[2] is Hebrew
         displayContent = lang === 'he' ? sections[2] : sections[1];
 
-        // Prepend the common intro (titles)
-        displayContent = sections[0] + '\n' + displayContent;
+        // Prepend only the relevant title based on language
+        const articleTitle = lang === 'he' ? metadata?.title_he : metadata?.title_en;
+        displayContent = `# ${articleTitle}\n\n` + displayContent;
     }
 
     return (
@@ -156,10 +157,10 @@ export function ArticleViewer() {
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             <button
                                 onClick={() => navigate('/login?mode=signup')}
-                                className="px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
+                                className="px-6 py-2 sm:py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
                             >
                                 {t('try_rentmate_free')}
                             </button>
